@@ -679,7 +679,7 @@ void UsbTest()
             gUsbDevice[0].MaxPacketSize = 8;
             gUsbDevice[0].UsbSpeed = USB_SPEED_USB11;
          }
-         gDumpPtd = 0;
+         gDumpPtd = 1;
          gSlowKludge = 0;
          GetDevDesc(0);
          gDumpPtd = 0;
@@ -700,6 +700,7 @@ void UsbTest()
 int SetUsbAddress(uint8_t Adr)
 {
    SetupPkt Pkt;
+   int8_t Dummy;
 
 // copy data read from device descriptor while was address zero
    memcpy(&gUsbDevice[Adr],&gUsbDevice[0],sizeof(PanoUsbDevice));
@@ -711,7 +712,7 @@ int SetUsbAddress(uint8_t Adr)
    Pkt.wVal_u.wValueHi = 0;
    Pkt.wIndex = 0;
    Pkt.wLength = 0;
-   return SetupTransaction(0,&Pkt,NULL,0);
+   return SetupTransaction(0,&Pkt,&Dummy,sizeof(Dummy));
 }
 
 int SetConfiguration(uint8_t Adr,uint8_t Configuration)
@@ -1486,8 +1487,7 @@ void InitPtd(u32 *Ptd,uint8_t Adr,uint8_t EndPoint,uint8_t Pid,u16 PayLoadAdr,in
 
    /* DW2 */
    Ptd[2] |= TO_DW2_DATA_START_ADDR(base_to_chip(PayLoadAdr));
-//   Ptd[2] |= TO_DW2_RL(rl);
-   Ptd[2] |= TO_DW2_RL(8);
+   Ptd[2] |= TO_DW2_RL(rl);
 
    /* DW3 */
    Ptd[3] |= TO_DW3_NAKCOUNT(nak);
@@ -1538,19 +1538,43 @@ int SetupTransaction(uint8_t Adr,SetupPkt *p,int8_t *pResponse,int ResponseLen)
          LOG("Waiting for slow transfer\n");
          msleep(1000);
       }
+#if 1
    // Update the toggle an ping bits
       pDev->Toggle = FROM_DW3_DATA_TOGGLE(Ptd[3]);
       pDev->Ping = FROM_DW3_PING(Ptd[3]);
+#endif
 
-      pDev->PipeType = PTYPE_BULK;
-      InitPtd(&Ptd,Adr,0,IN_PID,RespPayloadAdr,ResponseLen);
-      if((Ret = DoTransfer(Ptd)) != 0) {
+   // control requests may need a terminating data "status" ack;
+   // bulk ones may need a terminating short packet (zero length).
+      if(ResponseLen > 0) {
+         pDev->PipeType = PTYPE_CONTROL;
+         InitPtd(&Ptd,Adr,0,IN_PID,RespPayloadAdr,ResponseLen);
+      }
+      else {
+      // for zero length DATA stages, STATUS is always IN
+         pDev->PipeType = PTYPE_BULK;
+//         pDev->Toggle = 0;
+         InitPtd(&Ptd,Adr,0,IN_PID,RespPayloadAdr,ResponseLen);
+      }
+
+      Ret = DoTransfer(Ptd);
+
+      {
+         uint32_t Leds = REG_RD(GPIO_READ_ADDR);
+         Leds |= GPIO_BIT_LED_RED;
+         REG_WR(GPIO_WRITE_ADDR,Leds);
+      }
+
+      if(Ret != 0) {
          break;
       }
+
       if(gDumpPtd) {
          DumpPtd("Setup ptd:\n",Ptd);
       }
-      mem_reads8(RespPayloadAdr,pResponse,ResponseLen);
+      if(ResponseLen > 0) {
+         mem_reads8(RespPayloadAdr,pResponse,ResponseLen);
+      }
    } while(false);
 
    return Ret;
