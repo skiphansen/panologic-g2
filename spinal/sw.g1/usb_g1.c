@@ -286,6 +286,7 @@ int SetupTransaction(uint8_t Adr,SetupPkt *p,int8_t *pResponse,int ResponseLen);
 int GetDevDesc(uint8_t Adr);
 int SetUsbAddress(uint8_t Adr);
 u32 base_to_chip(u32 base);
+void SetDebugLED(bool bOn);
 
 void msleep(int ms)
 {
@@ -581,7 +582,7 @@ void UsbTest()
    isp1760_write32(HC_ATL_IRQ_MASK_OR_REG,1);
    isp1760_write32(HC_INTERRUPT_ENABLE,HC_ATL_INT | HC_SOT_INT);
 
-#if 1
+#if 0
    LOG("Waiting for button press\n");
    while(!button_pressed());
 #endif
@@ -591,7 +592,7 @@ void UsbTest()
    gUsbDevice[0].MaxPacketSize = 64;
    gUsbDevice[0].UsbSpeed = USB_SPEED_HIGH;
    GetDevDesc(0);
-   LOG("Set root hub address\n");
+   LOG("Set root hub adr to %d\n",ROOT_HUB_ADR);
    SetUsbAddress(ROOT_HUB_ADR);
    LOG("Set root hub configuration\n");
    SetConfiguration(ROOT_HUB_ADR,1);
@@ -652,12 +653,6 @@ void UsbTest()
          GetPortStatus(EXTERNAL_HUB_ADR,i+1,&PortStatus);
          DumpPortStatus(i+1,PortStatus);
          LOG("Get device desc\n");
-         {
-            uint32_t Leds = REG_RD(GPIO_READ_ADDR);
-            Leds &= ~GPIO_BIT_LED_RED;
-            REG_WR(GPIO_WRITE_ADDR,Leds);
-         }
-
          gUsbDevice[0].TTPort = (uint8_t) i;
          gUsbDevice[0].HubDevnum = EXTERNAL_HUB_ADR;
 
@@ -679,12 +674,13 @@ void UsbTest()
             gUsbDevice[0].MaxPacketSize = 8;
             gUsbDevice[0].UsbSpeed = USB_SPEED_USB11;
          }
-         gDumpPtd = 1;
-         gSlowKludge = 0;
-         GetDevDesc(0);
          gDumpPtd = 0;
+         GetDevDesc(0);
          LOG("Set adr to %d\n",EXTERNAL_HUB_ADR + i + 1);
+         gSlowKludge = 0;
          SetUsbAddress(EXTERNAL_HUB_ADR + i + 1);
+         LOG("Set configuration to 1\n");
+         SetConfiguration(EXTERNAL_HUB_ADR + i + 1,1);
       }
 #if 0
       SetHubFeature(EXTERNAL_HUB_ADR,
@@ -694,13 +690,13 @@ void UsbTest()
 #endif
    }
 
-   Dump1760Mem();
+//   Dump1760Mem();
 }
 
 int SetUsbAddress(uint8_t Adr)
 {
    SetupPkt Pkt;
-   int8_t Dummy;
+   int Ret;
 
 // copy data read from device descriptor while was address zero
    memcpy(&gUsbDevice[Adr],&gUsbDevice[0],sizeof(PanoUsbDevice));
@@ -712,13 +708,17 @@ int SetUsbAddress(uint8_t Adr)
    Pkt.wVal_u.wValueHi = 0;
    Pkt.wIndex = 0;
    Pkt.wLength = 0;
-   return SetupTransaction(0,&Pkt,&Dummy,sizeof(Dummy));
+   Ret = SetupTransaction(0,&Pkt,NULL,0);
+/* After a device receives a SetAddress() request, the device must be able
+   to complete processing of the request and be able to successfully complete
+   the Status stage of the request within 50 ms.*/
+   msleep(50);
+   return Ret;
 }
 
 int SetConfiguration(uint8_t Adr,uint8_t Configuration)
 {
    SetupPkt Pkt;
-   int8_t Dummy;
 
    /* fill in setup packet */
    Pkt.ReqType_u.bmRequestType = bmREQ_SET;
@@ -728,13 +728,12 @@ int SetConfiguration(uint8_t Adr,uint8_t Configuration)
    Pkt.wIndex = 0;
    Pkt.wLength = 0;
 
-   return SetupTransaction(Adr,&Pkt,&Dummy,sizeof(Dummy));
+   return SetupTransaction(Adr,&Pkt,NULL,0);
 }
 
 int SetHubFeature(uint16_t Adr,uint8_t bmRequestType,uint8_t bRequest,uint16_t wIndex)
 {
    SetupPkt Pkt;
-   uint8_t Dummy;
 
    /* fill in setup packet */
    Pkt.ReqType_u.bmRequestType = bmRequestType;
@@ -744,13 +743,12 @@ int SetHubFeature(uint16_t Adr,uint8_t bmRequestType,uint8_t bRequest,uint16_t w
    Pkt.wIndex = wIndex;
    Pkt.wLength = 0;
 
-   return SetupTransaction(Adr,&Pkt,&Dummy,sizeof(Dummy));
+   return SetupTransaction(Adr,&Pkt,NULL,0);
 }
 
 int ClearHubFeature(uint8_t Adr,uint8_t bmRequestType,uint8_t bRequest,uint16_t wIndex)
 {
    SetupPkt Pkt;
-   uint8_t Dummy;
 
    /* fill in setup packet */
    Pkt.ReqType_u.bmRequestType = bmRequestType;
@@ -760,13 +758,12 @@ int ClearHubFeature(uint8_t Adr,uint8_t bmRequestType,uint8_t bRequest,uint16_t 
    Pkt.wIndex = wIndex;
    Pkt.wLength = 0;
 
-   return SetupTransaction(Adr,&Pkt,&Dummy,sizeof(Dummy));
+   return SetupTransaction(Adr,&Pkt,NULL,0);
 }
 
 int SetInterface(uint8_t Adr,uint16_t AltSetting,uint16_t Interface)
 {
    SetupPkt Pkt;
-   int8_t Dummy;
 
    /* fill in setup packet */
    Pkt.ReqType_u.bmRequestType = bmREQ_SET;
@@ -775,7 +772,7 @@ int SetInterface(uint8_t Adr,uint16_t AltSetting,uint16_t Interface)
    Pkt.wIndex = Interface;
    Pkt.wLength = 0;
 
-   return SetupTransaction(Adr,&Pkt,&Dummy,sizeof(Dummy));
+   return SetupTransaction(Adr,&Pkt,NULL,0);
 }
 
 int DumpPortStatus(uint16_t Port,uint32_t Status)
@@ -967,6 +964,7 @@ void DumpPtd(const char *msg,u32 *p)
 
    LOG_RAW("Token: %s\n",TokenTbl[(p[1] >> 10) & 0x3]);
    LOG_RAW("EpType: %s\n",EpTypeTbl[(p[1] >> 12) & 0x3]);
+   print_1cr("DT",(p[3] >> 25) & 0x1);
 
    if((p[1] >> 14) & 0x1) {
       if(p[3] & (1 << 27)) {
@@ -981,7 +979,6 @@ void DumpPtd(const char *msg,u32 *p)
    }
    print_1cr("Start Adr",(((p[2] >> 8) & 0xffff) << 3) + 0x400);
    print_1cr("Cerr",(p[3] >> 23) & 0x3);
-   print_1cr("DT",(p[3] >> 25) & 0x1);
    print_1cr("Ping",(p[3] >> 26) & 0x1);
 
    print_1cr("J",(p[4] >> 5) & 0x1);
@@ -1324,7 +1321,31 @@ int _DoTransfer(u32 *ptd,const char *Func,int Line)
    {
       int i = 0;
       int Toggle = 0;
-
+#if 1
+      for( ; ; ) {
+         Value = isp1760_read32(HC_INTERRUPT_REG) & ~INT_REG_RESERVED_BITS;
+         isp1760_write32(HC_INTERRUPT_REG,Value);
+         if(Value & HC_ATL_INT) {
+         // Read the Done bit map to clear the bits
+            u32 Done = isp1760_read32(HC_ATL_PTD_DONEMAP_REG);
+            if(Done == 0) {
+               LOG("Int reg: 0x%x, done: 0x%x!\n",Value,Done);
+            }
+            Done = isp1760_read32(HC_ATL_PTD_DONEMAP_REG);
+            if(Done != 0) {
+               LOG("Done wasn't cleared by read back! 0x%x\n",Done);
+            }
+         // Read back the Ptd to check status
+            mem_reads8(ATL_PTD_OFFSET,PtdBuf,sizeof(PtdBuf));
+            if((PtdBuf[3] >> 31) & 0x1) {
+               DumpPtd("PTD still active!",PtdBuf);
+               continue;
+            }
+            break;
+         }
+         Ret = 0;
+      }
+#else 
       while(i < 2000) {
          Value = isp1760_read32(HC_INTERRUPT_REG) & ~INT_REG_RESERVED_BITS;
          if(Value != 0) {
@@ -1383,16 +1404,16 @@ int _DoTransfer(u32 *ptd,const char *Func,int Line)
          }
          isp1760_write32(HC_INTERRUPT_REG,Value);
       }
+      if(i >= 2000) {
+         LOG("%s#%d: Timeout!\n",Func,Line);
+      }
+#endif
    }
 
    isp1760_write32(HC_ATL_PTD_SKIPMAP_REG,0xffffffff);
    isp1760_write32(HC_BUFFER_STATUS_REG,0);
 
    if(Ret == 0) {
-   // Read the Done bit map to clear the bits
-      isp1760_read32(HC_ATL_PTD_DONEMAP_REG);
-   // Read back the Ptd to check status
-      mem_reads8(ATL_PTD_OFFSET,PtdBuf,sizeof(PtdBuf));
       if(((PtdBuf[3] >> 28) & 0x1) || ((PtdBuf[3] >> 30) & 0x1)) {
          Ret = 1;
       }
@@ -1409,7 +1430,7 @@ int _DoTransfer(u32 *ptd,const char *Func,int Line)
       UsbRegDump();
    }
    else if(gDumpPtd) {
-      DumpPtd("Ptd after execution",ptd);
+      DumpPtd("Ptd after execution",PtdBuf);
    }
 
 // Copy the PTD read from 1760 back into the orginal buffer
@@ -1511,32 +1532,42 @@ int SetupTransaction(uint8_t Adr,SetupPkt *p,int8_t *pResponse,int ResponseLen)
    u32 Ptd[8];
    u16 CmdPayloadAdr = 0x2000;
    u16 RespPayloadAdr = 0x2008;
+   uint8_t Pid;
    PanoUsbDevice *pDev = &gUsbDevice[Adr];
    int Ret = 0;   // assume the best
+
+   if(p->wLength != ResponseLen) {
+      LOG("p->wLength != ResponseLen!\n");
+   }
 
 // Temp kludges
    pDev->PipeType = PTYPE_CONTROL;
    pDev->LastPacket = true;
 
+   if(gDumpPtd) {
+      LOG("Setup phase\n");
+   }
    do {
    // copy setup packet into payload memory
       mem_writes8(CmdPayloadAdr,p,sizeof(SetupPkt));
       InitPtd(&Ptd,Adr,0,SETUP_PID,CmdPayloadAdr,sizeof(SetupPkt));
 
       if(gDumpPtd) {
-#if 0
+#if 1
          LOG("Waiting for button press\n");
          while(!button_pressed());
-         DumpPtd("Setup ptd:\n",Ptd);
 #endif
       }
+
       if((Ret = DoTransfer(Ptd)) != 0) {
          break;
       }
 
       if(gSlowKludge) {
+#if 0
          LOG("Waiting for slow transfer\n");
          msleep(1000);
+#endif
       }
 #if 1
    // Update the toggle an ping bits
@@ -1544,36 +1575,59 @@ int SetupTransaction(uint8_t Adr,SetupPkt *p,int8_t *pResponse,int ResponseLen)
       pDev->Ping = FROM_DW3_PING(Ptd[3]);
 #endif
 
-   // control requests may need a terminating data "status" ack;
-   // bulk ones may need a terminating short packet (zero length).
-      if(ResponseLen > 0) {
+      if(p->wLength > 0) {
+      // There is a data phase, read the data
+         if(gDumpPtd) {
+            LOG("Data phase\n");
+         }
+
          pDev->PipeType = PTYPE_CONTROL;
-         InitPtd(&Ptd,Adr,0,IN_PID,RespPayloadAdr,ResponseLen);
+         if(p->bRequest & USB_SETUP_HOST_TO_DEVICE) {
+            Pid = OUT_PID;
+         }
+         else {
+            Pid = IN_PID;
+         }
+         InitPtd(&Ptd,Adr,0,Pid,RespPayloadAdr,ResponseLen);
+         SetDebugLED(true);
+         Ret = DoTransfer(Ptd);
+         SetDebugLED(false);
+         if(Ret != 0) {
+            break;
+         }
+         mem_reads8(RespPayloadAdr,pResponse,ResponseLen);
+      }
+
+   /* The direction of data and status transfer depends on whether the host 
+      is sending data to the device or the device is sending data to the host. 
+      The Status stage transfer is always in the opposite direction of the Data 
+      stage. If there is no Data stage, the Status stage is from the device to 
+      the host.
+
+      Control requests may need a terminating data "status" ack;
+      bulk ones may need a terminating short packet (zero length). */
+      if(gDumpPtd) {
+         LOG("Status phase\n");
+      }
+      if(p->wLength > 0) {
+      // There was a data phase
+         pDev->PipeType = PTYPE_CONTROL;
+         if(p->bRequest & USB_SETUP_HOST_TO_DEVICE) {
+            Pid = IN_PID;
+         }
+         else {
+            Pid = OUT_PID;
+         }
       }
       else {
       // for zero length DATA stages, STATUS is always IN
-         pDev->PipeType = PTYPE_BULK;
-//         pDev->Toggle = 0;
-         InitPtd(&Ptd,Adr,0,IN_PID,RespPayloadAdr,ResponseLen);
+         Pid = IN_PID;
       }
-
+      InitPtd(&Ptd,Adr,0,Pid,RespPayloadAdr,0);
       Ret = DoTransfer(Ptd);
-
-      {
-         uint32_t Leds = REG_RD(GPIO_READ_ADDR);
-         Leds |= GPIO_BIT_LED_RED;
-         REG_WR(GPIO_WRITE_ADDR,Leds);
-      }
 
       if(Ret != 0) {
          break;
-      }
-
-      if(gDumpPtd) {
-         DumpPtd("Setup ptd:\n",Ptd);
-      }
-      if(ResponseLen > 0) {
-         mem_reads8(RespPayloadAdr,pResponse,ResponseLen);
       }
    } while(false);
 
@@ -1583,5 +1637,17 @@ int SetupTransaction(uint8_t Adr,SetupPkt *p,int8_t *pResponse,int ResponseLen)
 u32 base_to_chip(u32 base)
 {
    return ((base - 0x400) >> 3);
+}
+
+void SetDebugLED(bool bOn)
+{
+   uint32_t Leds = REG_RD(GPIO_READ_ADDR);
+   if(bOn) {
+      Leds &= ~GPIO_BIT_LED_RED;
+   }
+   else {
+      Leds |= GPIO_BIT_LED_RED;
+   }
+   REG_WR(GPIO_WRITE_ADDR,Leds);
 }
 
