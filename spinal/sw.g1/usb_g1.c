@@ -653,7 +653,7 @@ void UsbTest()
          GetPortStatus(EXTERNAL_HUB_ADR,i+1,&PortStatus);
          DumpPortStatus(i+1,PortStatus);
          LOG("Get device desc\n");
-         gUsbDevice[0].TTPort = (uint8_t) i;
+         gUsbDevice[0].TTPort = (uint8_t) (i + 1);
          gUsbDevice[0].HubDevnum = EXTERNAL_HUB_ADR;
 
       // Maximum packet length of control transfers for low speed: 8 bytes,
