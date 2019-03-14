@@ -98,6 +98,27 @@ e-mail   :  support@circuitsathome.com
 #define USB_FEATURE_DEVICE_REMOTE_WAKEUP        1       // Device recipient
 #define USB_FEATURE_TEST_MODE                   2       // Device recipient
 
+// USB Device Classes
+#define USB_CLASS_USE_CLASS_INFO        0x00    // Use Class Info in the Interface Descriptors
+#define USB_CLASS_AUDIO                 0x01    // Audio
+#define USB_CLASS_COM_AND_CDC_CTRL      0x02    // Communications and CDC Control
+#define USB_CLASS_HID                   0x03    // HID
+#define USB_CLASS_PHYSICAL              0x05    // Physical
+#define USB_CLASS_IMAGE                 0x06    // Image
+#define USB_CLASS_PRINTER               0x07    // Printer
+#define USB_CLASS_MASS_STORAGE          0x08    // Mass Storage
+#define USB_CLASS_HUB                   0x09    // Hub
+#define USB_CLASS_CDC_DATA              0x0a    // CDC-Data
+#define USB_CLASS_SMART_CARD            0x0b    // Smart-Card
+#define USB_CLASS_CONTENT_SECURITY      0x0d    // Content Security
+#define USB_CLASS_VIDEO                 0x0e    // Video
+#define USB_CLASS_PERSONAL_HEALTH       0x0f    // Personal Healthcare
+#define USB_CLASS_DIAGNOSTIC_DEVICE     0xdc    // Diagnostic Device
+#define USB_CLASS_WIRELESS_CTRL         0xe0    // Wireless Controller
+#define USB_CLASS_MISC                  0xef    // Miscellaneous
+#define USB_CLASS_APP_SPECIFIC          0xfe    // Application Specific
+#define USB_CLASS_VENDOR_SPECIFIC       0xff    // Vendor Specific
+
 /* descriptor data structures */
 
 /* Device descriptor structure */

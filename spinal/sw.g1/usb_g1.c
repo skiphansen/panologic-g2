@@ -83,6 +83,7 @@ int button_pressed(void);
 /* Common setup data constant combinations  */
 #define bmREQ_GET_DESCR     USB_SETUP_DEVICE_TO_HOST | USB_SETUP_TYPE_STANDARD | USB_SETUP_RECIPIENT_DEVICE     //get descriptor request type
 #define bmREQ_SET           USB_SETUP_HOST_TO_DEVICE | USB_SETUP_TYPE_STANDARD | USB_SETUP_RECIPIENT_DEVICE     //set request type for all but 'set feature' and 'set interface'
+#define bmREQ_SET_INTF      USB_SETUP_HOST_TO_DEVICE | USB_SETUP_TYPE_STANDARD | USB_SETUP_RECIPIENT_INTERFACE  //set interface request type
 #define bmREQ_CL_GET_INTF   USB_SETUP_DEVICE_TO_HOST | USB_SETUP_TYPE_CLASS | USB_SETUP_RECIPIENT_INTERFACE     //get interface request type
 
 /* USB Setup Packet Structure   */
@@ -142,7 +143,6 @@ typedef struct {
 } GCC_PACKED PanoUsbDevice;
 
 uint8_t gDumpPtd = 0;
-uint8_t gSlowKludge = 0;
 
 // Indexed by USB address
 PanoUsbDevice gUsbDevice[MAX_USB_DEVICES + 1];
@@ -284,6 +284,9 @@ int GetHubDesc(uint16_t Adr);
 void InitPtd(u32 *Ptd,uint8_t Adr,uint8_t EndPoint,uint8_t Pid,u16 PayLoadAdr,int Len);
 int SetupTransaction(uint8_t Adr,SetupPkt *p,int8_t *pResponse,int ResponseLen);
 int GetDevDesc(uint8_t Adr);
+int GetConfigDesc(uint8_t Adr);
+void DumpInterfaceDesc(USB_INTERFACE_DESCRIPTOR *p);
+void DumpEndpointDesc(USB_ENDPOINT_DESCRIPTOR *p);
 int SetUsbAddress(uint8_t Adr);
 u32 base_to_chip(u32 base);
 void SetDebugLED(bool bOn);
@@ -504,6 +507,8 @@ void UsbTest()
 {
    int i;
    uint32_t PortStatus;
+   uint8_t Adr;
+
 #if 0
    u32 Value;
 // Reset
@@ -603,7 +608,7 @@ void UsbTest()
 // Only Port 3 is connected
    SetHubFeature(ROOT_HUB_ADR,bmREQ_SET_PORT_FEATURE,HUB_FEATURE_PORT_POWER,3);
 
-   msleep(1000);
+   msleep(150);
    LOG("After powering up port 3\n");
    ClearHubFeature(ROOT_HUB_ADR,bmREQ_CLEAR_PORT_FEATURE,HUB_FEATURE_C_PORT_CONNECTION,3);
    SetHubFeature(ROOT_HUB_ADR,bmREQ_SET_PORT_FEATURE,HUB_FEATURE_PORT_RESET,3);
@@ -623,12 +628,16 @@ void UsbTest()
    SetConfiguration(EXTERNAL_HUB_ADR,1);
    LOG("Get external hub desc\n");
    GetHubDesc(EXTERNAL_HUB_ADR);
+   LOG("Get external hub configuration desc\n");
+   GetConfigDesc(EXTERNAL_HUB_ADR);
+
 // Power up all three ports
    for(i = 0; i < 3; i++) {
       LOG("Power UP external hub port %d\n",i+1);
       SetHubFeature(EXTERNAL_HUB_ADR,
                     bmREQ_SET_PORT_FEATURE,HUB_FEATURE_PORT_POWER,i+1);
    }
+   msleep(1000);
    LOG("Port status after power up\n");
    for(i = 0; i < 3; i++) {
       GetPortStatus(EXTERNAL_HUB_ADR,i+1,&PortStatus);
@@ -640,19 +649,26 @@ void UsbTest()
                       bmREQ_CLEAR_PORT_FEATURE,HUB_FEATURE_C_PORT_CONNECTION,i);
 #endif
    }
-   msleep(1000);
 // Check status of ports
+   Adr = EXTERNAL_HUB_ADR + 1;
    for(i = 0; i < 3; i++) {
       GetPortStatus(EXTERNAL_HUB_ADR,i+1,&PortStatus);
       DumpPortStatus(i+1,PortStatus);
       if(PortStatus & bmHUB_PORT_STATUS_PORT_CONNECTION) {
-         LOG("Device connected to port %d, reset port\n",i+1);
+
+         LOG("Device connected to port %d, power up port\n",i+1);
+         SetHubFeature(EXTERNAL_HUB_ADR,
+                       bmREQ_SET_PORT_FEATURE,HUB_FEATURE_PORT_POWER,i+1);
+      // 9.1.2: The host then waits for at least 100 ms to allow completion 
+      // of an insertion process and for power at the device to become stable.
+         msleep(150);
+         LOG("Reset port %d\n",i+1);
          SetHubFeature(EXTERNAL_HUB_ADR,bmREQ_SET_PORT_FEATURE,
                        HUB_FEATURE_PORT_RESET,i+1);
-         msleep(1000);
+         msleep(20);
          GetPortStatus(EXTERNAL_HUB_ADR,i+1,&PortStatus);
          DumpPortStatus(i+1,PortStatus);
-         LOG("Get device desc\n");
+         LOG("Get device desc, port %d\n",i+1);
          gUsbDevice[0].TTPort = (uint8_t) (i + 1);
          gUsbDevice[0].HubDevnum = EXTERNAL_HUB_ADR;
 
@@ -674,20 +690,15 @@ void UsbTest()
             gUsbDevice[0].MaxPacketSize = 8;
             gUsbDevice[0].UsbSpeed = USB_SPEED_USB11;
          }
-         gDumpPtd = 0;
          GetDevDesc(0);
-         LOG("Set adr to %d\n",EXTERNAL_HUB_ADR + i + 1);
-         gSlowKludge = 0;
-         SetUsbAddress(EXTERNAL_HUB_ADR + i + 1);
+         LOG("Set adr to %d for device on port %d\n",Adr,i+1);
+         SetUsbAddress(Adr);
+         LOG("Get configuration descriptor for device on port %d\n",i+1);
+         GetConfigDesc(Adr);
          LOG("Set configuration to 1\n");
-         SetConfiguration(EXTERNAL_HUB_ADR + i + 1,1);
+         SetConfiguration(Adr,1);
       }
-#if 0
-      SetHubFeature(EXTERNAL_HUB_ADR,
-                    bmREQ_SET_PORT_FEATURE,HUB_FEATURE_PORT_POWER,i);
-      ClearHubFeature(EXTERNAL_HUB_ADR,
-                      bmREQ_CLEAR_PORT_FEATURE,HUB_FEATURE_C_PORT_CONNECTION,i);
-#endif
+      Adr++;
    }
 
 //   Dump1760Mem();
@@ -847,7 +858,7 @@ int GetHubDesc(uint16_t Adr)
 
    do {
       Err = SetupTransaction(Adr,&Pkt,(int8_t *)&Desc,sizeof(Desc));
-      if(Err != 0) {
+      if(Err < 0) {
          break;
       }
 
@@ -881,7 +892,7 @@ int GetDevDesc(uint8_t Adr)
 
    do {
       Err = SetupTransaction(Adr,&Pkt,(int8_t *)&DevDesc,sizeof(DevDesc));
-      if(Err != 0) {
+      if(Err < 0) {
          break;
       }
 
@@ -906,6 +917,149 @@ int GetDevDesc(uint8_t Adr)
    } while(false);
 
    return Err;
+}
+
+int GetConfigDesc(uint8_t Adr)
+{
+   union {
+      USB_CONFIGURATION_DESCRIPTOR ConfigDesc;
+      char OtherDesc[350];
+   } u;
+   SetupPkt Pkt;
+   int BytesLeft;
+   int Err = 0;
+   uint8_t *p = u.OtherDesc;
+   int i;
+   int j;
+   uint8_t bMultiTT = false;
+   uint8_t bAlternateSetting;
+   uint8_t bInterfaceNumber;
+
+   /* fill in setup packet */
+   Pkt.ReqType_u.bmRequestType = bmREQ_GET_DESCR;
+   Pkt.bRequest = USB_REQUEST_GET_DESCRIPTOR;
+   Pkt.wVal_u.wValueLo = 0;
+   Pkt.wVal_u.wValueHi = USB_DESCRIPTOR_CONFIGURATION;
+   Pkt.wIndex = 0;
+   Pkt.wLength = sizeof(u);
+
+   do {
+      Err = SetupTransaction(Adr,&Pkt,(int8_t *)&u,sizeof(u));
+      if(Err < 0) {
+         break;
+      }
+      BytesLeft = Err;
+
+      print_1cr("  bLength",u.ConfigDesc.bLength);
+      print_1cr("  bDescriptorType",u.ConfigDesc.bDescriptorType);
+      print_1cr("  wTotalLength",u.ConfigDesc.wTotalLength);
+      print_1cr("  bNumInterfaces",u.ConfigDesc.bNumInterfaces);
+      print_1cr("  bConfigurationValue",u.ConfigDesc.bConfigurationValue);
+      print_1cr("  iConfiguration",u.ConfigDesc.iConfiguration);
+      print_1cr("  bmAttributes",u.ConfigDesc.bmAttributes);
+      print_1cr("  bMaxPower",u.ConfigDesc.bMaxPower);
+
+/*  A request for a configuration descriptor returns the configuration
+    descriptor, all interface descriptors, and endpoint descriptors for all
+    of the interfaces in a single request.
+ 
+    The first interface descriptor follows the configuration descriptor.
+    The endpoint descriptors for the first interface follow the first
+    interface descriptor.
+ 
+    If there are additional interfaces, their interface descriptor and
+    endpoint descriptors follow the first interface’s endpoint descriptors.
+ 
+    Class-specific and/or vendor-specific descriptors follow the standard
+    descriptors they extend or modify.
+*/
+      if(u.ConfigDesc.wTotalLength > sizeof(u)) {
+         LOG("Error: OtherDesc buffer too short\n");
+         break;
+      }
+      p += u.ConfigDesc.bLength;
+      BytesLeft -= u.ConfigDesc.bLength;
+
+      while(BytesLeft > 0) {
+         if(BytesLeft < *p) {
+            LOG("Error: not enough bytes left %d < %d\n",BytesLeft,*p);
+            break;
+         }
+         switch(p[1]) {
+            case USB_DESCRIPTOR_INTERFACE: {
+               USB_INTERFACE_DESCRIPTOR *pDesc = (USB_INTERFACE_DESCRIPTOR *) p;
+               DumpInterfaceDesc(pDesc);
+               if(pDesc->bInterfaceClass == USB_CLASS_HUB &
+                  pDesc->bInterfaceProtocol == 2) 
+               {
+                  bMultiTT = true;
+                  bAlternateSetting = pDesc->bAlternateSetting;
+                  bInterfaceNumber = pDesc->bInterfaceNumber;
+               }
+               break;
+            }
+
+            case USB_DESCRIPTOR_ENDPOINT:
+               DumpEndpointDesc((USB_ENDPOINT_DESCRIPTOR *) p);
+               break;
+
+
+            case HID_DESCRIPTOR_HID:
+               LOG_RAW("  Skipping HID descriptor%s\n",p[5] != 1 ? "s" : "");
+               break;
+
+            default:
+               LOG_RAW("  Skipping descriptor type 0x%x\n",p[1]);
+         }
+         BytesLeft -= *p;
+         p += *p;
+      }
+   } while(false);
+
+   if(bMultiTT) {
+      LOG("MultiTT hub, selecting altsetting %d on interface %d\n",
+          bAlternateSetting,bInterfaceNumber);
+      Pkt.ReqType_u.bmRequestType = bmREQ_SET_INTF;
+      Pkt.bRequest = USB_REQUEST_SET_INTERFACE;
+      Pkt.wVal_u.wValue = bAlternateSetting;
+      Pkt.wIndex = bInterfaceNumber;
+      Pkt.wLength = 0;
+      SetupTransaction(Adr,&Pkt,NULL,0);
+   }
+
+   return Err;
+}
+
+void DumpInterfaceDesc(USB_INTERFACE_DESCRIPTOR *p)
+{
+   LOG_RAW("\n  Interface descriptor:\n");
+   print_1cr("  bLength",p->bLength);
+   print_1cr("  bDescriptorType",p->bDescriptorType);
+   print_1cr("  bInterfaceNumber",p->bInterfaceNumber);
+   print_1cr("  bAlternateSetting",p->bAlternateSetting);
+   print_1cr("  bNumEndpoints",p->bNumEndpoints);
+   print_1cr("  bInterfaceClass",p->bInterfaceClass);
+   print_1cr("  bInterfaceSubClass",p->bInterfaceSubClass);
+   print_1cr("  bInterfaceProtocol",p->bInterfaceProtocol);
+   print_1cr("  iInterface",p->iInterface);
+}
+
+void DumpEndpointDesc(USB_ENDPOINT_DESCRIPTOR *p)
+{
+   const char *TTLookup[] = {
+      "Control",
+      "Isochronous",
+      "Bulk",
+      "Interrupt"
+   };
+   LOG_RAW("\n  Endpoint descriptor:\n");
+   print_1cr("  bLength",p->bLength);
+   print_1cr("  bDescriptorType",p->bDescriptorType);
+   print_1cr("  bEndpointAddress",p->bEndpointAddress);
+   LOG_RAW("  bmAttributes: 0x%x - %s\n",p->bmAttributes,
+           TTLookup[p->bmAttributes & 0x3]);
+   print_1cr("  wMaxPacketSize",p->wMaxPacketSize);
+   print_1cr("  bInterval",p->bInterval);
 }
 
 void print_1cr(const char *label,int value)
@@ -1527,6 +1681,7 @@ void InitPtd(u32 *Ptd,uint8_t Adr,uint8_t EndPoint,uint8_t Pid,u16 PayLoadAdr,in
    Ptd[3] |= TO_DW3_CERR(ERR_COUNTER);
 }
 
+// return number of bytes read or < 0 for error
 int SetupTransaction(uint8_t Adr,SetupPkt *p,int8_t *pResponse,int ResponseLen)
 {
    u32 Ptd[8];
@@ -1563,17 +1718,9 @@ int SetupTransaction(uint8_t Adr,SetupPkt *p,int8_t *pResponse,int ResponseLen)
          break;
       }
 
-      if(gSlowKludge) {
-#if 0
-         LOG("Waiting for slow transfer\n");
-         msleep(1000);
-#endif
-      }
-#if 1
    // Update the toggle an ping bits
       pDev->Toggle = FROM_DW3_DATA_TOGGLE(Ptd[3]);
       pDev->Ping = FROM_DW3_PING(Ptd[3]);
-#endif
 
       if(p->wLength > 0) {
       // There is a data phase, read the data
@@ -1582,20 +1729,21 @@ int SetupTransaction(uint8_t Adr,SetupPkt *p,int8_t *pResponse,int ResponseLen)
          }
 
          pDev->PipeType = PTYPE_CONTROL;
-         if(p->bRequest & USB_SETUP_HOST_TO_DEVICE) {
-            Pid = OUT_PID;
-         }
-         else {
+         if(p->ReqType_u.bmRequestType & USB_SETUP_DEVICE_TO_HOST) {
             Pid = IN_PID;
          }
+         else {
+            Pid = OUT_PID;
+         }
          InitPtd(&Ptd,Adr,0,Pid,RespPayloadAdr,ResponseLen);
-         SetDebugLED(true);
          Ret = DoTransfer(Ptd);
-         SetDebugLED(false);
-         if(Ret != 0) {
+         if(Ret < 0) {
             break;
          }
-         mem_reads8(RespPayloadAdr,pResponse,ResponseLen);
+         if(p->ReqType_u.bmRequestType & USB_SETUP_DEVICE_TO_HOST) {
+            Ret = (Ptd[3] & 0x7fff);
+            mem_reads8(RespPayloadAdr,pResponse,ResponseLen);
+         }
       }
 
    /* The direction of data and status transfer depends on whether the host 
@@ -1612,11 +1760,11 @@ int SetupTransaction(uint8_t Adr,SetupPkt *p,int8_t *pResponse,int ResponseLen)
       if(p->wLength > 0) {
       // There was a data phase
          pDev->PipeType = PTYPE_CONTROL;
-         if(p->bRequest & USB_SETUP_HOST_TO_DEVICE) {
-            Pid = IN_PID;
+         if(p->ReqType_u.bmRequestType & USB_SETUP_DEVICE_TO_HOST) {
+            Pid = OUT_PID;
          }
          else {
-            Pid = OUT_PID;
+            Pid = IN_PID;
          }
       }
       else {
@@ -1624,9 +1772,8 @@ int SetupTransaction(uint8_t Adr,SetupPkt *p,int8_t *pResponse,int ResponseLen)
          Pid = IN_PID;
       }
       InitPtd(&Ptd,Adr,0,Pid,RespPayloadAdr,0);
-      Ret = DoTransfer(Ptd);
-
-      if(Ret != 0) {
+      if(DoTransfer(Ptd) != 0) {
+         Ret = -1;
          break;
       }
    } while(false);
