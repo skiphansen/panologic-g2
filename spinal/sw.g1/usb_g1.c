@@ -67,9 +67,10 @@ int button_pressed(void);
 #define RW_TEST_VALUE   0x5555aaaa
 #define INT_REG_RESERVED_BITS 0xfffffc15
 
-// Support a maximum of 5 devices (root hub, built in external hub, 3 external
-// devices
-#define MAX_USB_DEVICES    5
+// Support a maximum of 6 devices (setup scratch, root hub, 
+// built in external hub, 3 external devices)
+#define MAX_USB_DEVICES    6
+#define MAX_ENDPOINTS      4  // maybe this is enough ? setup, in/out/control ??
 
 #define ROOT_HUB_ADR       1     // hub built into the isp1760
 #define EXTERNAL_HUB_ADR   2     // Pano's built in hub
@@ -126,9 +127,14 @@ typedef struct {
 #define PTYPE_INT          1
 #define PTYPE_CONTROL      2
 
+typedef int (ControlCB)(uint8_t Adr,uint8_t *Data,uint32_t Len);
+
 typedef struct {
-   uint16_t CtrlOutBuf;
-   uint16_t CtrlInBuf;
+   ControlCB *ControlCB;
+   uint16_t CtrlInBuf;        // address in 1780 memory of control data buffer
+   uint8_t PipeType[MAX_ENDPOINTS];
+   uint8_t Interval[MAX_ENDPOINTS];
+
    uint8_t TTPort;
    uint8_t HubDevnum;
    uint8_t bDeviceClass;      // Class code (assigned by the USB-IF). 0xFF-Vendor specific.
@@ -138,7 +144,6 @@ typedef struct {
    uint32_t Toggle:1;
    uint32_t Ping:1;
    uint32_t Present:1;        // This device is present
-   uint32_t PipeType:2;
    uint32_t LastPacket:1;
 } GCC_PACKED PanoUsbDevice;
 
@@ -188,11 +193,12 @@ struct ptd {
 #define FROM_DW2_RL(x)        (((x) >> 25) & 0xf)
 /* DW3 */
 #define FROM_DW3_NRBYTESTRANSFERRED(x)    ((x) & 0x7fff)
-#define FROM_DW3_SCS_NRBYTESTRANSFERRED(x)   ((x) & 0x07ff)
+#define FROM_DW3_SCS_NRBYTESTRANSFERRED(x)   ((x) & 0x0fff) // wsa 0x7ff
 #define TO_DW3_NAKCOUNT(x)    ((x) << 19)
 #define FROM_DW3_NAKCOUNT(x)     (((x) >> 19) & 0xf)
 #define TO_DW3_CERR(x)        ((x) << 23)
 #define FROM_DW3_CERR(x)      (((x) >> 23) & 0x3)
+#define DW3_DATA_TOGGLE_BIT   (1 << 25)
 #define TO_DW3_DATA_TOGGLE(x)    ((x) << 25)
 #define FROM_DW3_DATA_TOGGLE(x)     (((x) >> 25) & 0x1)
 #define TO_DW3_PING(x)        ((x) << 26)
@@ -215,53 +221,23 @@ struct ptd {
 /* Errata 1 */
 #define RL_COUNTER   (0)
 #define NAK_COUNTER  (0)
-#define ERR_COUNTER  (2)
+//#define ERR_COUNTER  (2)
+#define ERR_COUNTER  (1)
 
-#if 0
-struct isp1760_qtd {
-   u8 packet_type;
-   void *data_buffer;
-   u32 payload_addr;
+// Internal 1760 memory
+#define SETUP_CMD_BUF      0x2000
+#define SETUP_RESP_BUF     (SETUP_CMD_BUF + 8)
 
-   /* the rest is HCD-private */
-   struct list_head qtd_list;
-   struct urb *urb;
-   size_t length;
-   size_t actual_length;
+// Max control payload is 1024 bytes for high speed
+// one per device except for device 0 (setup scratch) and device 1(root hub)
+#define INTERRUPT_IN_BUF   (SETUP_RESP_BUF + 4096)
+#define INTERRUPT_IN_SIZE  1024
+// Address 0 is only used during setup and address 1 is the root hub, neither
+// need interrupt buffers
+#define INT_IN_BUF_ADR(x)  (INTERRUPT_IN_BUF + ((x- 2) * INTERRUPT_IN_SIZE))
+#define INT_PTD_ADR(x)     (INT_PTD_OFFSET + (x* 8 * sizeof(uint32_t)))
 
-   /* QTD_ENQUEUED:  waiting for transfer (inactive) */
-   /* QTD_PAYLOAD_ALLOC:   chip mem has been allocated for payload */
-   /* QTD_XFER_STARTED: valid ptd has been written to isp176x - only
-            interrupt handler may touch this qtd! */
-   /* QTD_XFER_COMPLETE:   payload has been transferred successfully */
-   /* QTD_RETIRE:    transfer error/abort qtd */
-#define QTD_ENQUEUED    0
-#define QTD_PAYLOAD_ALLOC  1
-#define QTD_XFER_STARTED   2
-#define QTD_XFER_COMPLETE  3
-#define QTD_RETIRE      4
-   u32 status;
-};
-
-/* Queue head, one for each active endpoint */
-struct isp1760_qh {
-   struct list_head qh_list;
-   struct list_head qtd_list;
-   u32 toggle;
-   u32 ping;
-   int slot;
-   int tt_buffer_dirty; /* See USB2.0 spec section 11.17.5 */
-};
-
-/* magic numbers that can affect system performance */
-#define  EHCI_TUNE_CERR    3  /* 0-3 qtd retries; 0 == don't stop */
-#define  EHCI_TUNE_RL_HS      4  /* nak throttle; see 4.9 */
-#define  EHCI_TUNE_RL_TT      0
-#define  EHCI_TUNE_MULT_HS 1  /* 1-3 transactions/uframe; 4.10.3 */
-#define  EHCI_TUNE_MULT_TT 1
-#define  EHCI_TUNE_FLS     2  /* (small) 256 frame schedule */
-
-#endif
+// 
 static u32 isp1760_read32(u32 reg);
 static void isp1760_write32(u32 reg,u32 Value);
 static void isp1760_bits(u32 reg,u32 Sets,u32 Resets);
@@ -287,9 +263,14 @@ int GetDevDesc(uint8_t Adr);
 int GetConfigDesc(uint8_t Adr);
 void DumpInterfaceDesc(USB_INTERFACE_DESCRIPTOR *p);
 void DumpEndpointDesc(USB_ENDPOINT_DESCRIPTOR *p);
+void DumpClass(const char *Msg,uint8_t bClass);
 int SetUsbAddress(uint8_t Adr);
 u32 base_to_chip(u32 base);
 void SetDebugLED(bool bOn);
+int OpenControlInPipe(uint8_t Adr,uint8_t Endpoint);
+void PollUsbInt(void);
+void TransformPtd2Int(u32 *Ptd,uint8_t Adr,uint8_t EndPoint);
+void ReadAndDumpIntPtd(uint8_t Adr);
 
 void msleep(int ms)
 {
@@ -690,6 +671,7 @@ void UsbTest()
             gUsbDevice[0].MaxPacketSize = 8;
             gUsbDevice[0].UsbSpeed = USB_SPEED_USB11;
          }
+
          GetDevDesc(0);
          LOG("Set adr to %d for device on port %d\n",Adr,i+1);
          SetUsbAddress(Adr);
@@ -699,6 +681,17 @@ void UsbTest()
          SetConfiguration(Adr,1);
       }
       Adr++;
+   }
+
+   OpenControlInPipe(5,1);
+   for( ; ; ) {
+      PollUsbInt();
+      if(button_pressed()) {
+         ReadAndDumpIntPtd(5);
+         UsbRegDump();
+         Dump1760Mem();
+         while(button_pressed());
+      }
    }
 
 //   Dump1760Mem();
@@ -903,7 +896,7 @@ int GetDevDesc(uint8_t Adr)
       print_1cr("  bLength",DevDesc.bLength);
       print_1cr("  bDescriptorType",DevDesc.bDescriptorType);
       print_1cr("  bcdUSB",DevDesc.bcdUSB);
-      print_1cr("  bDeviceClass",DevDesc.bDeviceClass);
+      DumpClass("  bDeviceClass",DevDesc.bDeviceClass);
       print_1cr("  bDeviceSubClass",DevDesc.bDeviceSubClass);
       print_1cr("  bDeviceProtocol",DevDesc.bDeviceProtocol);
       print_1cr("  bMaxPacketSize0",DevDesc.bMaxPacketSize0);
@@ -921,6 +914,7 @@ int GetDevDesc(uint8_t Adr)
 
 int GetConfigDesc(uint8_t Adr)
 {
+   PanoUsbDevice *pDev = &gUsbDevice[Adr];
    union {
       USB_CONFIGURATION_DESCRIPTOR ConfigDesc;
       char OtherDesc[350];
@@ -934,6 +928,7 @@ int GetConfigDesc(uint8_t Adr)
    uint8_t bMultiTT = false;
    uint8_t bAlternateSetting;
    uint8_t bInterfaceNumber;
+   uint8_t bGamePad = false;
 
    /* fill in setup packet */
    Pkt.ReqType_u.bmRequestType = bmREQ_GET_DESCR;
@@ -999,10 +994,19 @@ int GetConfigDesc(uint8_t Adr)
                break;
             }
 
-            case USB_DESCRIPTOR_ENDPOINT:
-               DumpEndpointDesc((USB_ENDPOINT_DESCRIPTOR *) p);
+            case USB_DESCRIPTOR_ENDPOINT: {
+               USB_ENDPOINT_DESCRIPTOR *pDesc = (USB_ENDPOINT_DESCRIPTOR *) p;
+               uint8_t Endpoint = pDesc->bEndpointAddress & 0x7f;
+               DumpEndpointDesc(pDesc);
+               if(Endpoint < MAX_ENDPOINTS) {
+                  pDev->Interval[Endpoint] = pDesc->bInterval;
+                  LOG("Endpoint %d interval %d\n",Endpoint,pDesc->bInterval);
+               }
+               else {
+                  LOG("Error Endpoint %d > MAX_ENDPOINTS\n",Endpoint);
+               }
                break;
-
+            }
 
             case HID_DESCRIPTOR_HID:
                LOG_RAW("  Skipping HID descriptor%s\n",p[5] != 1 ? "s" : "");
@@ -1038,7 +1042,7 @@ void DumpInterfaceDesc(USB_INTERFACE_DESCRIPTOR *p)
    print_1cr("  bInterfaceNumber",p->bInterfaceNumber);
    print_1cr("  bAlternateSetting",p->bAlternateSetting);
    print_1cr("  bNumEndpoints",p->bNumEndpoints);
-   print_1cr("  bInterfaceClass",p->bInterfaceClass);
+   DumpClass("  bInterfaceClass",p->bInterfaceClass);
    print_1cr("  bInterfaceSubClass",p->bInterfaceSubClass);
    print_1cr("  bInterfaceProtocol",p->bInterfaceProtocol);
    print_1cr("  iInterface",p->iInterface);
@@ -1062,6 +1066,34 @@ void DumpEndpointDesc(USB_ENDPOINT_DESCRIPTOR *p)
    print_1cr("  bInterval",p->bInterval);
 }
 
+void DumpClass(const char *Msg,uint8_t bClass)
+{
+   const char *ClassNames[] = {
+      "AUDIO",             // 0x01, Audio
+      "COM_AND_CDC_CTRL",  // 0x02, Communications and CDC Control
+      "HID",               // 0x03, HID
+      NULL,                // 0x04
+      "PHYSICAL",          // 0x05, Physical
+      "IMAGE",             // 0x06, Image
+      "PRINTER",           // 0x07, Printer
+      "MASS_STORAGE",      // 0x08, Mass Storage
+      "HUB",               // 0x09, Hub
+      "CDC_DATA",          // 0x0a, CDC-Data
+      "SMART_CARD",        // 0x0b, Smart-Card
+      NULL,
+      "CONTENT_SECURITY",  // 0x0d, Content Security
+      "VIDEO",             // 0x0e, Video
+      "PERSONAL_HEALTH",   // 0x0f, Personal Healthcare
+   };
+
+   if(bClass > 0 < bClass <= 0xf && ClassNames[bClass-1] != NULL) {
+      LOG_RAW("%s: %s (%d)\n",Msg,ClassNames[bClass-1],bClass);
+   }
+   else {
+      LOG_RAW("%s: %d\n",Msg,bClass);
+   }
+}
+
 void print_1cr(const char *label,int value)
 {
    LOG_RAW("%s: 0x%x\n",label,value);
@@ -1080,7 +1112,7 @@ void DumpPtd(const char *msg,u32 *p)
       "control",
       "???",
       "bulk",
-      "???"
+      "interrupt"
    };
    const char *SeTypeTbl[] = {
       "full-speed",
@@ -1128,7 +1160,7 @@ void DumpPtd(const char *msg,u32 *p)
          LOG_RAW("Start Split\n");
       }
       LOG_RAW("  SE: %s\n",SeTypeTbl[(p[1] >> 16) & 0x3]);
-      print_1cr("  Port",((p[1] >> 18) & 0x7f) + 1);
+      print_1cr("  Port",(p[1] >> 18) & 0x7f);
       print_1cr("  HubAdr",(p[1] >> 25) & 0x7f);
    }
    print_1cr("Start Adr",(((p[2] >> 8) & 0xffff) << 3) + 0x400);
@@ -1136,7 +1168,16 @@ void DumpPtd(const char *msg,u32 *p)
    print_1cr("Ping",(p[3] >> 26) & 0x1);
 
    print_1cr("J",(p[4] >> 5) & 0x1);
-   print_1cr("NextPTD",p[4] & 0x1f);
+
+   if(((p[1] >> 12) & 0x3) == 3) {
+   // Interrupt PTD
+      print_1cr("uSA",p[4] & 0xf);
+      print_1cr("uFrame",p[2] & 0xff);
+      print_1cr("uSCS",p[5] & 0xff);
+   }
+   else {
+      print_1cr("NextPTD",p[4] & 0x1f);
+   }
 
    for(i = 0; i < 8; i++) {
       LOG_RAW("DW%d: 0x%08x\n",i,p[i]);
@@ -1600,6 +1641,7 @@ void InitPtd(u32 *Ptd,uint8_t Adr,uint8_t EndPoint,uint8_t Pid,u16 PayLoadAdr,in
    u32 multi;
    u32 rl = RL_COUNTER;
    u32 nak = NAK_COUNTER;
+   uint8_t PipeType = pDev->PipeType[EndPoint];
 
    memset(Ptd,0,8 * sizeof(u32));
 
@@ -1619,10 +1661,10 @@ void InitPtd(u32 *Ptd,uint8_t Adr,uint8_t EndPoint,uint8_t Pid,u16 PayLoadAdr,in
    Ptd[1] |= TO_DW1_DEVICE_ADDR(Adr);
    Ptd[1] |= TO_DW1_PID_TOKEN(Pid);
 
-   if(pDev->PipeType == PTYPE_BULK) {
+   if(PipeType == PTYPE_BULK) {
       Ptd[1] |= DW1_TRANS_BULK;
    }
-   if(pDev->PipeType == PTYPE_INT) {
+   if(PipeType == PTYPE_INT) {
       Ptd[1] |= DW1_TRANS_INT;
    }
 
@@ -1637,7 +1679,7 @@ void InitPtd(u32 *Ptd,uint8_t Adr,uint8_t EndPoint,uint8_t Pid,u16 PayLoadAdr,in
 
       /* SE bit for Split INT transfers */
       // sh: not necessary?  Already set above for all pipe types...
-      if(pDev->PipeType == PTYPE_INT && pDev->UsbSpeed == USB_SPEED_LOW) {
+      if(PipeType == PTYPE_INT && pDev->UsbSpeed == USB_SPEED_LOW) {
          Ptd[1] |= DW1_SE_USB_LOSPEED;
       }
 #if 0
@@ -1655,7 +1697,7 @@ void InitPtd(u32 *Ptd,uint8_t Adr,uint8_t EndPoint,uint8_t Pid,u16 PayLoadAdr,in
    else {
    // High speed
       Ptd[0] |= TO_DW0_MULTI(multi);
-      if(pDev->PipeType == PTYPE_CONTROL || pDev->PipeType == PTYPE_BULK) {
+      if(PipeType == PTYPE_CONTROL || PipeType == PTYPE_BULK) {
          Ptd[3] |= TO_DW3_PING(pDev->Ping);
       }
    }
@@ -1667,7 +1709,7 @@ void InitPtd(u32 *Ptd,uint8_t Adr,uint8_t EndPoint,uint8_t Pid,u16 PayLoadAdr,in
    /* DW3 */
    Ptd[3] |= TO_DW3_NAKCOUNT(nak);
    Ptd[3] |= TO_DW3_DATA_TOGGLE(pDev->Toggle);
-   if(pDev->PipeType == PTYPE_CONTROL) {
+   if(PipeType == PTYPE_CONTROL) {
       if(Pid == SETUP_PID) {
          Ptd[3] &= ~TO_DW3_DATA_TOGGLE(1);
       }
@@ -1685,8 +1727,8 @@ void InitPtd(u32 *Ptd,uint8_t Adr,uint8_t EndPoint,uint8_t Pid,u16 PayLoadAdr,in
 int SetupTransaction(uint8_t Adr,SetupPkt *p,int8_t *pResponse,int ResponseLen)
 {
    u32 Ptd[8];
-   u16 CmdPayloadAdr = 0x2000;
-   u16 RespPayloadAdr = 0x2008;
+   u16 CmdPayloadAdr = SETUP_CMD_BUF;
+   u16 RespPayloadAdr = SETUP_RESP_BUF;
    uint8_t Pid;
    PanoUsbDevice *pDev = &gUsbDevice[Adr];
    int Ret = 0;   // assume the best
@@ -1695,8 +1737,8 @@ int SetupTransaction(uint8_t Adr,SetupPkt *p,int8_t *pResponse,int ResponseLen)
       LOG("p->wLength != ResponseLen!\n");
    }
 
-// Temp kludges
-   pDev->PipeType = PTYPE_CONTROL;
+   pDev->PipeType[0] = PTYPE_CONTROL;
+// Temp kludge
    pDev->LastPacket = true;
 
    if(gDumpPtd) {
@@ -1728,7 +1770,6 @@ int SetupTransaction(uint8_t Adr,SetupPkt *p,int8_t *pResponse,int ResponseLen)
             LOG("Data phase\n");
          }
 
-         pDev->PipeType = PTYPE_CONTROL;
          if(p->ReqType_u.bmRequestType & USB_SETUP_DEVICE_TO_HOST) {
             Pid = IN_PID;
          }
@@ -1759,7 +1800,6 @@ int SetupTransaction(uint8_t Adr,SetupPkt *p,int8_t *pResponse,int ResponseLen)
       }
       if(p->wLength > 0) {
       // There was a data phase
-         pDev->PipeType = PTYPE_CONTROL;
          if(p->ReqType_u.bmRequestType & USB_SETUP_DEVICE_TO_HOST) {
             Pid = OUT_PID;
          }
@@ -1798,3 +1838,240 @@ void SetDebugLED(bool bOn)
    REG_WR(GPIO_WRITE_ADDR,Leds);
 }
 
+int OpenControlInPipe(uint8_t Adr,uint8_t Endpoint)
+{
+   u32 Ptd[8];
+   uint16_t Buf = INT_IN_BUF_ADR(Adr);
+   PanoUsbDevice *pDev = &gUsbDevice[Adr];
+   u32 PtdAdr = INT_PTD_OFFSET + (Adr * 8 * sizeof(uint32_t));
+   u32 PtdBit = 1 << Adr;
+   u32 Bits;
+   int Ret = 0;
+
+   pDev->PipeType[Endpoint] = PTYPE_INT;
+   pDev->Toggle = 0;
+   InitPtd(&Ptd,Adr,Endpoint,IN_PID,Buf,8 /*INTERRUPT_IN_SIZE */);
+   TransformPtd2Int(&Ptd,Adr,Endpoint);
+//   Ptd[5] = 0xff; /* Execute Complete Split on any uFrame */
+   Ptd[5] = 0x80;
+
+   DumpPtd("Ptd before execution:",Ptd);
+
+   mem_writes8(PtdAdr+4,&Ptd[1],28);
+   mem_writes8(PtdAdr,Ptd,4);
+
+// Set ATL Skip Map register
+//   isp1760_write32(HC_ATL_PTD_SKIPMAP_REG,0xffffffe);
+   isp1760_write32(HC_INT_PTD_LASTPTD_REG,0x80000000);
+   Bits = isp1760_read32(HC_INT_PTD_SKIPMAP_REG);
+// Enable our PTD
+   Bits &= ~PtdBit;
+   isp1760_write32(HC_INT_PTD_SKIPMAP_REG,Bits);
+   LOG("Set HC_INT_PTD_SKIPMAP_REG to 0x%x\n",Bits);
+
+// Enable completion interrupts for our PTD
+   Bits = isp1760_read32(HC_INT_IRQ_MASK_OR_REG);
+   Bits |= PtdBit;
+   isp1760_write32(HC_INT_IRQ_MASK_OR_REG,Bits);
+   LOG("Set HC_INT_IRQ_MASK_OR_REG to 0x%x\n",Bits);
+
+   Bits = isp1760_read32(HC_INTERRUPT_ENABLE);
+   if((Bits & HC_INTL_INT) == 0) {
+      Bits |= HC_INTL_INT;
+      isp1760_write32(HC_INTERRUPT_ENABLE,Bits);
+      LOG("Set HC_INTERRUPT_ENABLE to 0x%x\n",Bits);
+   }
+
+   Bits = isp1760_read32(HC_BUFFER_STATUS_REG);
+
+   if((Bits & INT_BUF_FILL) == 0) { 
+      Bits |= INT_BUF_FILL;
+      isp1760_write32(HC_BUFFER_STATUS_REG,Bits);
+      LOG("Set HC_BUFFER_STATUS_REG to 0x%x\n",Bits);
+   }
+
+   return Ret;
+}
+
+void PollUsbInt()
+{
+   u32 Value;
+   u32 Done;
+   static bool bDoIt = true;
+
+   Value = isp1760_read32(HC_INTERRUPT_REG);
+   isp1760_write32(HC_INTERRUPT_REG,Value);
+   if(Value & HC_ATL_INT) {
+   // Read the Done bit map to clear the bits
+      Done = isp1760_read32(HC_ATL_PTD_DONEMAP_REG);
+//    LOG("Int reg: 0x%x, ATL done: 0x%x!\n",Value,Done);
+   }
+
+   if(Value & HC_INTL_INT) {
+   // Read the Done bit map to clear the bits
+      Done = isp1760_read32(HC_INT_PTD_DONEMAP_REG);
+//    LOG("Int reg: 0x%x, Int done: 0x%x!\n",Value,Done);
+      if(Done != 0) {
+         int8_t Adr;
+         u32 DoneBit = 1;
+         for(Adr = 0; Adr < MAX_USB_DEVICES; Adr++) {
+            if(Done & DoneBit) {
+               SetDebugLED(true);
+            // Got one!
+               u32 PtdBuf[8];
+               static uint8_t LastDataBuf[8];
+               uint8_t DataBuf[8];
+               u32 PtdAdr = INT_PTD_ADR(Adr);
+               int Len;
+               uint8_t Endpoint;
+
+               mem_reads8(PtdAdr,PtdBuf,sizeof(PtdBuf));
+//               if(gUsbDevice[i].ControlCB(Adr,DataBuf,Len)) {
+               if(bDoIt) {
+               // Restart the PTD
+//                  bDoIt = false;
+//                  LOG_RAW("%x",PtdBuf[3]);
+                  if((PtdBuf[3] >> 28) & 0x1) {
+                  // error
+                  }
+                  else {
+                     Endpoint = (PtdBuf[0] >> 31) | ((PtdBuf[1] & 0x7) << 1);
+
+                     Len = FROM_DW3_SCS_NRBYTESTRANSFERRED(PtdBuf[3]);
+                     if(Len > 0 && Len <= sizeof(DataBuf)) {
+                     // copy the data from device memory to RAM
+                        mem_reads8(INT_IN_BUF_ADR(Adr),DataBuf,Len);
+                        if(memcmp(DataBuf,LastDataBuf,sizeof(DataBuf)) != 0) {
+                           LOG("New data: %02x %02x %02x %02x %02x %02x %02x %02x\n",
+                               DataBuf[0],DataBuf[1],DataBuf[2],DataBuf[3],
+                               DataBuf[4],DataBuf[5],DataBuf[6],DataBuf[7]);
+                           memcpy(LastDataBuf,DataBuf,sizeof(LastDataBuf));
+                        }
+                     }
+                     else {
+                        LOG("Error: Len %d, data not read\n",Len);
+                     }
+                     //DumpPtd("After interrupt",PtdBuf);
+                  }
+
+                  PtdBuf[0] |= DW0_VALID_BIT;
+//                  PtdBuf[3] &= ~(0x0fff | DW3_SC_BIT);
+                  PtdBuf[3] &= DW3_DATA_TOGGLE_BIT;
+                  PtdBuf[3] |= DW3_ACTIVE_BIT | TO_DW3_CERR(ERR_COUNTER);
+//                LOG_RAW(" %x\n",PtdBuf[3]);
+//                  TransformPtd2Int(PtdBuf,Adr,Endpoint);
+               // when we set uSCS blindly to 0xff we might complete
+               // another transfer immediately.
+                  PtdBuf[5] = 0xff; /* Execute Complete Split on any uFrame */
+                  PtdBuf[4] = 0x1;
+//                  PtdBuf[5] = 0x80;
+
+//                LOG("Adr: %d, Endpoint: %d\n",Adr,Endpoint);
+//                  DumpPtd("After reset",PtdBuf);
+                  mem_writes8(PtdAdr+4,&PtdBuf[1],28);
+               // Enable our PTD
+                  mem_writes8(PtdAdr,PtdBuf,4);
+               }
+               SetDebugLED(false);
+            }
+            DoneBit <<= 1;
+         }
+      }
+   }
+}
+
+void TransformPtd2Int(u32 *Ptd,uint8_t Adr,uint8_t EndPoint)
+{
+   u32 usof;
+   u32 period;
+   PanoUsbDevice *pDev = &gUsbDevice[Adr];
+   uint8_t Interval = pDev->Interval[EndPoint];
+
+   /*
+    * Most of this is guessing. ISP1761 datasheet is quite unclear, and
+    * the algorithm from the original Philips driver code, which was
+    * pretty much used in this driver before as well, is quite horrendous
+    * and, i believe, incorrect. The code below follows the datasheet and
+    * USB2.0 spec as far as I can tell, and plug/unplug seems to be much
+    * more reliable this way (fingers crossed...).
+    */
+
+   if(pDev->UsbSpeed == USB_SPEED_HIGH) {
+      /* urb->interval is in units of microframes (1/8 ms) */
+      period = Interval >> 3;
+
+      if(Interval > 4) {
+         usof = 0x01; /* One bit set => interval 1 ms * uFrame-match */
+      }
+      else if(Interval > 2) {
+         usof = 0x22; /* Two bits set => interval 1/2 ms */
+      }
+      else if(Interval > 1) {
+         usof = 0x55; /* Four bits set => interval 1/4 ms */
+      }
+      else {
+         usof = 0xff; /* All bits set => interval 1/8 ms */
+      }
+   }
+   else {
+   /* According to the ISP1760 spec sheet pg 81:
+      Bits 7 to 3 is the polling rate in milliseconds. Polling rate is
+      defined as 2(b - 1) mSOF; where b = 4 to 16. When b is 4, executed
+      every millisecond.
+    
+      The Linux driver seems to be way off here.  My test gamepad had an
+      interval of 10 which resulted in uFrame of zero the Linux code.
+    
+      Table 79:
+      B  Rate  uFrame[7:3]
+      5  2ms   0 0001
+      6  4ms   0 0010 or 0 0011
+      7  8ms   0 0100 or 0 0111
+      8  16ms  0 1000 or 0 1111
+      9  32ms  1 0000 or 1 1111
+   */
+      if(Interval < 4) {
+         period = 0x08;
+      }
+      else if(Interval < 8) {
+         period = 0x10;
+      }
+      else if(Interval < 16) {
+         period = 0x20;
+      }
+      else if(Interval < 32) {
+         period = 0x40;
+      }
+      else {
+         period = 0x80;
+      }
+//      usof = 0x0f; /* Execute Start Split on any of the four first uFrames */
+      usof = 1;
+#if 0 // sh: don't do this here !
+      /*
+       * First 8 bits in dw5 is uSCS and "specifies which uSOF the
+       * complete split needs to be sent. Valid only for IN." Also,
+       * "All bits can be set to one for every transfer." (p 82,
+       * ISP1761 data sheet.) 0x1c is from Philips driver. Where did
+       * that number come from? 0xff seems to work fine...
+       */
+      /* ptd->dw5 = 0x1c; */
+      Ptd[5] = 0xff; /* Execute Complete Split on any uFrame */
+#endif
+   }
+
+   Ptd[2] |= period;
+   Ptd[4] = usof;
+}
+
+void ReadAndDumpIntPtd(uint8_t Adr)
+{
+   u32 PtdBuf[8];
+   PanoUsbDevice *pDev = &gUsbDevice[Adr];
+   u32 PtdAdr = INT_PTD_OFFSET + (Adr * 8 * sizeof(uint32_t));
+//   u32 PtdAdr = INT_PTD_OFFSET;
+
+   LOG("Reading PTD from 0x%x\n",PtdAdr);
+   mem_reads8(PtdAdr,PtdBuf,sizeof(PtdBuf));
+   DumpPtd("Int PTD",PtdBuf);
+}
