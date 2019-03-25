@@ -134,6 +134,7 @@ typedef struct {
    uint16_t CtrlInBuf;        // address in 1780 memory of control data buffer
    uint8_t PipeType[MAX_ENDPOINTS];
    uint8_t Interval[MAX_ENDPOINTS];
+   uint16_t LangID;
 
    uint8_t TTPort;
    uint8_t HubDevnum;
@@ -254,14 +255,14 @@ int SetConfiguration(uint8_t Adr,uint8_t Configuration);
 int SetHubFeature(uint16_t Adr,uint8_t bmRequestType,uint8_t bRequest,uint16_t wIndex);
 int ClearHubFeature(uint8_t Adr,uint8_t bmRequestType,uint8_t bRequest,uint16_t wIndex);
 int SetInterface(uint8_t Adr,uint16_t AltSetting,uint16_t Interface);
-int DumpPortStatus(uint16_t Port,uint32_t Status);
+void DumpPortStatus(uint16_t Port,uint32_t Status);
 int GetPortStatus(uint8_t Adr,uint16_t Port,uint32_t *pStatus);
 int GetHubDesc(uint16_t Adr);
 void InitPtd(u32 *Ptd,uint8_t Adr,uint8_t EndPoint,uint8_t Pid,u16 PayLoadAdr,int Len);
-int SetupTransaction(uint8_t Adr,SetupPkt *p,int8_t *pResponse,int ResponseLen);
+int SetupTransaction(uint8_t Adr,SetupPkt *p,void *pResponse,int ResponseLen);
 int GetDevDesc(uint8_t Adr);
 int GetConfigDesc(uint8_t Adr);
-void DumpInterfaceDesc(USB_INTERFACE_DESCRIPTOR *p);
+void DumpInterfaceDesc(uint8_t Adr,USB_INTERFACE_DESCRIPTOR *p);
 void DumpEndpointDesc(USB_ENDPOINT_DESCRIPTOR *p);
 void DumpClass(const char *Msg,uint8_t bClass);
 int SetUsbAddress(uint8_t Adr);
@@ -271,6 +272,8 @@ int OpenControlInPipe(uint8_t Adr,uint8_t Endpoint);
 void PollUsbInt(void);
 void TransformPtd2Int(u32 *Ptd,uint8_t Adr,uint8_t EndPoint);
 void ReadAndDumpIntPtd(uint8_t Adr);
+int GetStringDesc(uint8_t Adr,uint16_t LangId,uint8_t Index,uint8_t *Buf,size_t MaxLen);
+void DumpStringDesc(const char *Label,uint8_t Index,uint8_t Adr);
 
 void msleep(int ms)
 {
@@ -704,6 +707,7 @@ int SetUsbAddress(uint8_t Adr)
 
 // copy data read from device descriptor while was address zero
    memcpy(&gUsbDevice[Adr],&gUsbDevice[0],sizeof(PanoUsbDevice));
+   gUsbDevice[0].LangID = 0;  // reset for next time
 
    /* fill in setup packet */
    Pkt.ReqType_u.bmRequestType = bmREQ_SET;
@@ -779,7 +783,7 @@ int SetInterface(uint8_t Adr,uint16_t AltSetting,uint16_t Interface)
    return SetupTransaction(Adr,&Pkt,NULL,0);
 }
 
-int DumpPortStatus(uint16_t Port,uint32_t Status)
+void DumpPortStatus(uint16_t Port,uint32_t Status)
 {
    const char *Sep = "";
    const struct {
@@ -837,7 +841,6 @@ int GetPortStatus(uint8_t Adr,uint16_t Port,uint32_t *pStatus)
 int GetHubDesc(uint16_t Adr)
 {
    SetupPkt Pkt;
-   uint32_t Status;
    struct HubDescriptor Desc;
    int Err;
 
@@ -903,9 +906,9 @@ int GetDevDesc(uint8_t Adr)
       print_1cr("  idVendor",DevDesc.idVendor);
       print_1cr("  idProduct",DevDesc.idProduct);
       print_1cr("  bcdDevice",DevDesc.bcdDevice);
-      print_1cr("  iManufacturer",DevDesc.iManufacturer);
-      print_1cr("  iProduct",DevDesc.iProduct);
-      print_1cr("  iSerialNumber",DevDesc.iSerialNumber);
+      DumpStringDesc("  iManufacturer",DevDesc.iManufacturer,Adr);
+      DumpStringDesc("  iProduct",DevDesc.iProduct,Adr);
+      DumpStringDesc("  iSerialNumber",DevDesc.iSerialNumber,Adr);
       print_1cr("  bNumConfigurations",DevDesc.bNumConfigurations);
    } while(false);
 
@@ -917,18 +920,15 @@ int GetConfigDesc(uint8_t Adr)
    PanoUsbDevice *pDev = &gUsbDevice[Adr];
    union {
       USB_CONFIGURATION_DESCRIPTOR ConfigDesc;
-      char OtherDesc[350];
+      uint8_t OtherDesc[350];
    } u;
    SetupPkt Pkt;
    int BytesLeft;
    int Err = 0;
    uint8_t *p = u.OtherDesc;
-   int i;
-   int j;
    uint8_t bMultiTT = false;
    uint8_t bAlternateSetting;
    uint8_t bInterfaceNumber;
-   uint8_t bGamePad = false;
 
    /* fill in setup packet */
    Pkt.ReqType_u.bmRequestType = bmREQ_GET_DESCR;
@@ -950,7 +950,7 @@ int GetConfigDesc(uint8_t Adr)
       print_1cr("  wTotalLength",u.ConfigDesc.wTotalLength);
       print_1cr("  bNumInterfaces",u.ConfigDesc.bNumInterfaces);
       print_1cr("  bConfigurationValue",u.ConfigDesc.bConfigurationValue);
-      print_1cr("  iConfiguration",u.ConfigDesc.iConfiguration);
+      DumpStringDesc("  iConfiguration",u.ConfigDesc.iConfiguration,Adr);
       print_1cr("  bmAttributes",u.ConfigDesc.bmAttributes);
       print_1cr("  bMaxPower",u.ConfigDesc.bMaxPower);
 
@@ -983,8 +983,8 @@ int GetConfigDesc(uint8_t Adr)
          switch(p[1]) {
             case USB_DESCRIPTOR_INTERFACE: {
                USB_INTERFACE_DESCRIPTOR *pDesc = (USB_INTERFACE_DESCRIPTOR *) p;
-               DumpInterfaceDesc(pDesc);
-               if(pDesc->bInterfaceClass == USB_CLASS_HUB &
+               DumpInterfaceDesc(Adr,pDesc);
+               if(pDesc->bInterfaceClass == USB_CLASS_HUB &&
                   pDesc->bInterfaceProtocol == 2) 
                {
                   bMultiTT = true;
@@ -1034,7 +1034,7 @@ int GetConfigDesc(uint8_t Adr)
    return Err;
 }
 
-void DumpInterfaceDesc(USB_INTERFACE_DESCRIPTOR *p)
+void DumpInterfaceDesc(uint8_t Adr,USB_INTERFACE_DESCRIPTOR *p)
 {
    LOG_RAW("\n  Interface descriptor:\n");
    print_1cr("  bLength",p->bLength);
@@ -1045,7 +1045,7 @@ void DumpInterfaceDesc(USB_INTERFACE_DESCRIPTOR *p)
    DumpClass("  bInterfaceClass",p->bInterfaceClass);
    print_1cr("  bInterfaceSubClass",p->bInterfaceSubClass);
    print_1cr("  bInterfaceProtocol",p->bInterfaceProtocol);
-   print_1cr("  iInterface",p->iInterface);
+   DumpStringDesc("  iInterface",p->iInterface,Adr);
 }
 
 void DumpEndpointDesc(USB_ENDPOINT_DESCRIPTOR *p)
@@ -1086,7 +1086,7 @@ void DumpClass(const char *Msg,uint8_t bClass)
       "PERSONAL_HEALTH",   // 0x0f, Personal Healthcare
    };
 
-   if(bClass > 0 < bClass <= 0xf && ClassNames[bClass-1] != NULL) {
+   if(bClass > 0 && bClass <= 0xf && ClassNames[bClass-1] != NULL) {
       LOG_RAW("%s: %s (%d)\n",Msg,ClassNames[bClass-1],bClass);
    }
    else {
@@ -1514,8 +1514,6 @@ int _DoTransfer(u32 *ptd,const char *Func,int Line)
 
 // Poll interrupt register for up to 2 seconds...
    {
-      int i = 0;
-      int Toggle = 0;
 #if 1
       for( ; ; ) {
          Value = isp1760_read32(HC_INTERRUPT_REG) & ~INT_REG_RESERVED_BITS;
@@ -1541,6 +1539,8 @@ int _DoTransfer(u32 *ptd,const char *Func,int Line)
          Ret = 0;
       }
 #else 
+      int i = 0;
+      int Toggle = 0;
       while(i < 2000) {
          Value = isp1760_read32(HC_INTERRUPT_REG) & ~INT_REG_RESERVED_BITS;
          if(Value != 0) {
@@ -1615,8 +1615,10 @@ int _DoTransfer(u32 *ptd,const char *Func,int Line)
    }
 
    if(Ret != 0) {
+      SetDebugLED(true);
       LOG("%s#%d: ",Func,Line);
       LOG("Transfer failed!\n");
+      SetDebugLED(false);
       if(!gDumpPtd) {
          DumpPtd("Ptd before execution:",ptd);
       }
@@ -1724,7 +1726,7 @@ void InitPtd(u32 *Ptd,uint8_t Adr,uint8_t EndPoint,uint8_t Pid,u16 PayLoadAdr,in
 }
 
 // return number of bytes read or < 0 for error
-int SetupTransaction(uint8_t Adr,SetupPkt *p,int8_t *pResponse,int ResponseLen)
+int SetupTransaction(uint8_t Adr,SetupPkt *p,void *pResponse,int ResponseLen)
 {
    u32 Ptd[8];
    u16 CmdPayloadAdr = SETUP_CMD_BUF;
@@ -1746,8 +1748,8 @@ int SetupTransaction(uint8_t Adr,SetupPkt *p,int8_t *pResponse,int ResponseLen)
    }
    do {
    // copy setup packet into payload memory
-      mem_writes8(CmdPayloadAdr,p,sizeof(SetupPkt));
-      InitPtd(&Ptd,Adr,0,SETUP_PID,CmdPayloadAdr,sizeof(SetupPkt));
+      mem_writes8(CmdPayloadAdr,(u32 *)p,sizeof(SetupPkt));
+      InitPtd(Ptd,Adr,0,SETUP_PID,CmdPayloadAdr,sizeof(SetupPkt));
 
       if(gDumpPtd) {
 #if 1
@@ -1755,7 +1757,6 @@ int SetupTransaction(uint8_t Adr,SetupPkt *p,int8_t *pResponse,int ResponseLen)
          while(!button_pressed());
 #endif
       }
-
       if((Ret = DoTransfer(Ptd)) != 0) {
          break;
       }
@@ -1776,14 +1777,14 @@ int SetupTransaction(uint8_t Adr,SetupPkt *p,int8_t *pResponse,int ResponseLen)
          else {
             Pid = OUT_PID;
          }
-         InitPtd(&Ptd,Adr,0,Pid,RespPayloadAdr,ResponseLen);
+         InitPtd(&Ptd[0],Adr,0,Pid,RespPayloadAdr,ResponseLen);
          Ret = DoTransfer(Ptd);
          if(Ret < 0) {
             break;
          }
          if(p->ReqType_u.bmRequestType & USB_SETUP_DEVICE_TO_HOST) {
             Ret = (Ptd[3] & 0x7fff);
-            mem_reads8(RespPayloadAdr,pResponse,ResponseLen);
+            mem_reads8(RespPayloadAdr,(u32 *) pResponse,ResponseLen);
          }
       }
 
@@ -1811,8 +1812,8 @@ int SetupTransaction(uint8_t Adr,SetupPkt *p,int8_t *pResponse,int ResponseLen)
       // for zero length DATA stages, STATUS is always IN
          Pid = IN_PID;
       }
-      InitPtd(&Ptd,Adr,0,Pid,RespPayloadAdr,0);
-      if(DoTransfer(Ptd) != 0) {
+      InitPtd(&Ptd[0],Adr,0,Pid,RespPayloadAdr,0);
+      if(DoTransfer(&Ptd[0]) != 0) {
          Ret = -1;
          break;
       }
@@ -1850,8 +1851,8 @@ int OpenControlInPipe(uint8_t Adr,uint8_t Endpoint)
 
    pDev->PipeType[Endpoint] = PTYPE_INT;
    pDev->Toggle = 0;
-   InitPtd(&Ptd,Adr,Endpoint,IN_PID,Buf,8 /*INTERRUPT_IN_SIZE */);
-   TransformPtd2Int(&Ptd,Adr,Endpoint);
+   InitPtd(&Ptd[0],Adr,Endpoint,IN_PID,Buf,8 /*INTERRUPT_IN_SIZE */);
+   TransformPtd2Int(&Ptd[0],Adr,Endpoint);
 //   Ptd[5] = 0xff; /* Execute Complete Split on any uFrame */
    Ptd[5] = 0x80;
 
@@ -1916,14 +1917,12 @@ void PollUsbInt()
          u32 DoneBit = 1;
          for(Adr = 0; Adr < MAX_USB_DEVICES; Adr++) {
             if(Done & DoneBit) {
-               SetDebugLED(true);
             // Got one!
                u32 PtdBuf[8];
                static uint8_t LastDataBuf[8];
                uint8_t DataBuf[8];
                u32 PtdAdr = INT_PTD_ADR(Adr);
-               int Len;
-               uint8_t Endpoint;
+               size_t Len;
 
                mem_reads8(PtdAdr,PtdBuf,sizeof(PtdBuf));
 //               if(gUsbDevice[i].ControlCB(Adr,DataBuf,Len)) {
@@ -1935,12 +1934,10 @@ void PollUsbInt()
                   // error
                   }
                   else {
-                     Endpoint = (PtdBuf[0] >> 31) | ((PtdBuf[1] & 0x7) << 1);
-
                      Len = FROM_DW3_SCS_NRBYTESTRANSFERRED(PtdBuf[3]);
                      if(Len > 0 && Len <= sizeof(DataBuf)) {
                      // copy the data from device memory to RAM
-                        mem_reads8(INT_IN_BUF_ADR(Adr),DataBuf,Len);
+                        mem_reads8(INT_IN_BUF_ADR(Adr),(u32 *) DataBuf,Len);
                         if(memcmp(DataBuf,LastDataBuf,sizeof(DataBuf)) != 0) {
                            LOG("New data: %02x %02x %02x %02x %02x %02x %02x %02x\n",
                                DataBuf[0],DataBuf[1],DataBuf[2],DataBuf[3],
@@ -1972,7 +1969,6 @@ void PollUsbInt()
                // Enable our PTD
                   mem_writes8(PtdAdr,PtdBuf,4);
                }
-               SetDebugLED(false);
             }
             DoneBit <<= 1;
          }
@@ -2067,11 +2063,61 @@ void TransformPtd2Int(u32 *Ptd,uint8_t Adr,uint8_t EndPoint)
 void ReadAndDumpIntPtd(uint8_t Adr)
 {
    u32 PtdBuf[8];
-   PanoUsbDevice *pDev = &gUsbDevice[Adr];
    u32 PtdAdr = INT_PTD_OFFSET + (Adr * 8 * sizeof(uint32_t));
 //   u32 PtdAdr = INT_PTD_OFFSET;
 
    LOG("Reading PTD from 0x%x\n",PtdAdr);
    mem_reads8(PtdAdr,PtdBuf,sizeof(PtdBuf));
    DumpPtd("Int PTD",PtdBuf);
+}
+
+// return number of bytes read or < 0 for error
+int GetStringDesc(uint8_t Adr,uint16_t LangId,uint8_t Index,uint8_t *Buf,size_t MaxLen)
+{
+   SetupPkt Pkt;
+
+   /* fill in setup packet */
+   Pkt.ReqType_u.bmRequestType = bmREQ_GET_DESCR;
+   Pkt.bRequest = USB_REQUEST_GET_DESCRIPTOR;
+   Pkt.wVal_u.wValueLo = Index;
+   Pkt.wVal_u.wValueHi = USB_DESCRIPTOR_STRING;
+   Pkt.wIndex = LangId;
+   Pkt.wLength = MaxLen;
+
+   return SetupTransaction(Adr,&Pkt,Buf,MaxLen);
+}
+
+void DumpStringDesc(const char *Label,uint8_t Index,uint8_t Adr)
+{
+   if(Index == 0) {
+      print_1cr(Label,Index);
+   }
+   else do {
+      uint8_t Buf[48];
+      int i;
+      int Err;
+
+      PanoUsbDevice *pDev = &gUsbDevice[Adr];
+
+      if(pDev->LangID == 0) {
+      // Get LangID
+         if((Err = GetStringDesc(Adr,0,0,Buf,sizeof(Buf))) < 4) {
+            break;
+         }
+         pDev->LangID = (Buf[3] << 8) + Buf[2];
+      }
+
+      if((Err = GetStringDesc(Adr,pDev->LangID,Index,Buf,sizeof(Buf))) < 0) {
+         break;
+      }
+      if(Buf[0] > sizeof(Buf)) {
+         LOG_RAW("String truncated, %d > %d\n",Buf[0],sizeof(Buf));
+         Buf[0] = sizeof(Buf);
+      }
+      LOG_RAW("%s: ",Label);
+      for(i = 2; i < Buf[0]; i += 2) {
+         LOG_RAW("%c",Buf[i]);
+      }
+      LOG_RAW("\n");
+   } while(false);
 }
