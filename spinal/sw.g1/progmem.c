@@ -63,6 +63,7 @@ int main()
     REG_WR(GPIO_WRITE_ADDR, GPIO_BIT_LED_GREEN | GPIO_BIT_LED_BLUE | GPIO_BIT_LED_RED);
 
 //    UsbProbe();
+    drv_usb_kbd_init();
     UsbTest();
 
     while(1){
