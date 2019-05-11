@@ -48,6 +48,16 @@ e-mail   :  support@circuitsathome.com
 #define USB_REQUEST_SET_INTERFACE               11      // Standard Device Request - SET INTERFACE
 #define USB_REQUEST_SYNCH_FRAME                 12      // Standard Device Request - SYNCH FRAME
 
+/*
+ * HID requests
+ */
+#define USB_REQ_GET_REPORT                      0x01
+#define USB_REQ_GET_IDLE                        0x02
+#define USB_REQ_GET_PROTOCOL                    0x03
+#define USB_REQ_SET_REPORT                      0x09
+#define USB_REQ_SET_IDLE                        0x0A
+#define USB_REQ_SET_PROTOCOL                    0x0B
+
 #define USB_FEATURE_ENDPOINT_HALT               0       // CLEAR/SET FEATURE - Endpoint Halt
 #define USB_FEATURE_DEVICE_REMOTE_WAKEUP        1       // CLEAR/SET FEATURE - Device remote wake-up
 #define USB_FEATURE_TEST_MODE                   2       // CLEAR/SET FEATURE - Test mode
@@ -63,6 +73,15 @@ e-mail   :  support@circuitsathome.com
 #define USB_SETUP_RECIPIENT_INTERFACE           0x01    // Device Request bmRequestType recipient - interface
 #define USB_SETUP_RECIPIENT_ENDPOINT            0x02    // Device Request bmRequestType recipient - endpoint
 #define USB_SETUP_RECIPIENT_OTHER               0x03    // Device Request bmRequestType recipient - other
+
+#define USB_RECIP_DEVICE                        USB_SETUP_RECIPIENT_DEVICE
+#define USB_RECIP_INTERFACE                     USB_SETUP_RECIPIENT_INTERFACE
+#define USB_RECIP_ENDPOINT                      USB_SETUP_RECIPIENT_ENDPOINT
+#define USB_RECIP_OTHER                         USB_SETUP_RECIPIENT_OTHER
+
+#define USB_TYPE_STANDARD                       USB_SETUP_TYPE_STANDARD
+#define USB_TYPE_CLASS                          USB_SETUP_TYPE_CLASS
+#define USB_TYPE_VENDOR                         USB_SETUP_TYPE_VENDOR
 
 /* USB descriptors  */
 

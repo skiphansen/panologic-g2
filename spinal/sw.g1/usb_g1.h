@@ -43,6 +43,8 @@ typedef struct UsbDriverIf_TAG {
    struct UsbDriverIf_TAG *pNext;
    ClaimDevice *ClaimDevice;
    const char *DriverName;
+   uint8_t Adr;
+   uint8_t EndPoint;
 } UsbDriverIf;
 
 
@@ -54,5 +56,8 @@ void UsbInit(void);
 void UsbRegisterDriver(UsbDriverIf *pDriverIf);
 uint8_t *FindDesc(uint8_t Type,uint8_t *Buf);
 int OpenControlInPipe(uint8_t Adr,uint8_t Endpoint,ControlCB *Funct,uint8_t *InBuf,size_t Len);
+int SendUsbCtrlMsg(uint8_t Adr,unsigned char request,unsigned char requesttype,
+                   unsigned short value,unsigned short index,void *data, 
+                   unsigned short size,int timeout);
 #endif   // _USB_G1_H_
 

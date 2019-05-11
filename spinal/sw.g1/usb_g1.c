@@ -963,6 +963,34 @@ int GetConfigDesc(uint8_t Adr)
    return Err;
 }
 
+int SendUsbCtrlMsg(
+   uint8_t Adr,
+   unsigned char request,
+   unsigned char requesttype,
+   unsigned short value,
+   unsigned short index,
+   void *data, 
+   unsigned short size,
+   int timeout
+)
+{
+   PanoUsbDevice *pDev = &gUsbDevice[Adr];
+   SetupPkt Pkt;
+   int Err;
+
+   /* fill in setup packet */
+   Pkt.ReqType_u.bmRequestType = requesttype;
+   Pkt.bRequest = request;
+   Pkt.wVal_u.wValue = value;
+   Pkt.wIndex = index;
+   Pkt.wLength = size;
+
+   Err = SetupTransaction(Adr,&Pkt,(int8_t *)data,size);
+
+   return Err;
+}
+
+
 
 /*
 [ISP176x] – How does the ISP176x host controller Linux 2.6.9 HCD perform host
@@ -1272,9 +1300,10 @@ int _DoTransfer(u32 *ptd,const char *Func,int Line)
    isp1760_write32(HC_ATL_PTD_SKIPMAP_REG,0);
 
    isp1760_write32(HC_ATL_IRQ_MASK_OR_REG,1);
-   isp1760_write32(HC_INTERRUPT_ENABLE,HC_ATL_INT | HC_SOT_INT);
-
-   isp1760_write32(HC_BUFFER_STATUS_REG,ATL_BUF_FILL);
+   Value = isp1760_read32(HC_INTERRUPT_ENABLE);
+   isp1760_write32(HC_INTERRUPT_ENABLE,Value | HC_ATL_INT | HC_SOT_INT);
+   Value = isp1760_read32(HC_BUFFER_STATUS_REG);
+   isp1760_write32(HC_BUFFER_STATUS_REG,Value | ATL_BUF_FILL);
 
 // Poll interrupt register for up to 2 seconds...
    {
@@ -1370,7 +1399,8 @@ int _DoTransfer(u32 *ptd,const char *Func,int Line)
    }
 
    isp1760_write32(HC_ATL_PTD_SKIPMAP_REG,0xffffffff);
-   isp1760_write32(HC_BUFFER_STATUS_REG,0);
+   Value = isp1760_read32(HC_BUFFER_STATUS_REG);
+   isp1760_write32(HC_BUFFER_STATUS_REG,Value & ~ATL_BUF_FILL);
 
    if(Ret == 0) {
       if(((PtdBuf[3] >> 28) & 0x1) || ((PtdBuf[3] >> 30) & 0x1)) {
@@ -1516,7 +1546,7 @@ int SetupTransaction(uint8_t Adr,SetupPkt *p,void *pResponse,int ResponseLen)
       InitPtd(Ptd,Adr,0,SETUP_PID,CmdPayloadAdr,sizeof(SetupPkt));
 
       if(gDumpPtd) {
-#if 1
+#if 0
          LOG("Waiting for button press\n");
          while(!button_pressed());
 #endif
@@ -1541,6 +1571,7 @@ int SetupTransaction(uint8_t Adr,SetupPkt *p,void *pResponse,int ResponseLen)
          }
          else {
             Pid = OUT_PID;
+            mem_writes8(RespPayloadAdr,(u32 *) pResponse,ResponseLen);
          }
          InitPtd(&Ptd[0],Adr,0,Pid,RespPayloadAdr,ResponseLen);
          Ret = DoTransfer(Ptd);
@@ -1615,7 +1646,6 @@ int OpenControlInPipe(uint8_t Adr,uint8_t Endpoint,ControlCB *Funct,uint8_t *Buf
    u32 PtdBit = 1 << Adr;
    u32 Bits;
    int Ret = 1;   // Assume the worse
-
 
    do {
       Endpoint &= 0x7f;

@@ -53,7 +53,9 @@ int KeyboardClaim(uint8_t Adr,uint8_t *Descriptors);
 static UsbDriverIf KbdIf = {
    NULL,
    KeyboardClaim,
-   "Keyboard"
+   "Keyboard",
+   0,
+	0
 };
 
 /*
@@ -233,11 +235,8 @@ int usb_kbd_deregister(void)
    is issued with a timeout of 0. This means, that the job is queued without
    waiting for job completion */
 
-static void usb_kbd_setled(struct usb_device *dev)
+static void usb_kbd_setled()
 {
-#if 0
-   struct usb_interface_descriptor *iface;
-   iface = &dev->config.if_desc[0];
    leds=0;
    if(scroll_lock!=0)
       leds|=1;
@@ -247,10 +246,10 @@ static void usb_kbd_setled(struct usb_device *dev)
    leds<<=1;
    if(num_lock!=0)
       leds|=1;
-   usb_control_msg(dev, usb_sndctrlpipe(dev, 0),
-                   USB_REQ_SET_REPORT, USB_TYPE_CLASS | USB_RECIP_INTERFACE,
-                   0x200, iface->bInterfaceNumber,(void *)&leds, 1, 0);
-#endif
+   LOG("Leds: 0x%x\n",leds);
+   SendUsbCtrlMsg(KbdIf.Adr, USB_REQ_SET_REPORT, 
+                  USB_TYPE_CLASS | USB_RECIP_INTERFACE,
+                   0x200, 0,(void *)&leds, 1, 0);
 }
 
 
@@ -331,7 +330,8 @@ void * memscan(void * addr, int c, uint32_t size)
 /* Interrupt service routine */
 static int usb_kbd_irq(uint8_t Adr)
 {
-   int i,res;
+   int i;
+   int res = 0;
 
    switch(new[0]) {
       case 0x0:   /* No combo key pressed */
@@ -353,10 +353,8 @@ static int usb_kbd_irq(uint8_t Adr)
    }
    if((new[2]>3) && (old[2]==new[2])) /* still pressed */
       res|=usb_kbd_translate(new[2],new[0],2);
-#if 0
    if(res==1)
-      usb_kbd_setled(dev);
-#endif
+      usb_kbd_setled();
    memcpy(&old[0],&new[0], 8);
    return 1; /* install IRQ Handler again */
 }
@@ -784,6 +782,9 @@ int KeyboardClaim(uint8_t Adr,uint8_t *Buf)
       pIfDesc->bInterfaceProtocol == 1 && pIfDesc->bNumEndpoints == 1 &&
       (ep->bEndpointAddress & 0x80) == 0x80 && (ep->bmAttributes & 3) == 3)
    {
+      KbdIf.Adr = Adr;
+      KbdIf.EndPoint = ep->bEndpointAddress & 0x7f;
+      LOG("ep->bEndpointAddress: %d\n",ep->bEndpointAddress);
       OpenControlInPipe(Adr,ep->bEndpointAddress,usb_kbd_irq,new,sizeof(new));
       Ret = 0;
    }
