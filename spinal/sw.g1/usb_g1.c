@@ -667,7 +667,7 @@ void UsbTest()
          printf("%c",usb_kbd_getc());
       }
       if(button_pressed()) {
-         ReadAndDumpIntPtd(5);
+         ReadAndDumpIntPtd(4);
          UsbRegDump();
          Dump1760Mem();
          while(button_pressed());
@@ -1327,9 +1327,9 @@ int _DoTransfer(u32 *ptd,const char *Func,int Line)
                DumpPtd("PTD still active!",PtdBuf);
                continue;
             }
+            Ret = 0;
             break;
          }
-         Ret = 0;
       }
 #else 
       int i = 0;
@@ -1663,19 +1663,12 @@ int OpenControlInPipe(uint8_t Adr,uint8_t Endpoint,ControlCB *Funct,uint8_t *Buf
    //   Ptd[5] = 0xff; /* Execute Complete Split on any uFrame */
       Ptd[5] = 0x80;
 
-   //   DumpPtd("Ptd before execution:",Ptd);
+      // LOG("PtdAdr 0x%x\n",PtdAdr);
+      // DumpPtd("Ptd before execution:",Ptd);
 
       mem_writes8(PtdAdr+4,&Ptd[1],28);
       mem_writes8(PtdAdr,Ptd,4);
 
-   // Set ATL Skip Map register
-   //   isp1760_write32(HC_ATL_PTD_SKIPMAP_REG,0xffffffe);
-      isp1760_write32(HC_INT_PTD_LASTPTD_REG,0x80000000);
-      Bits = isp1760_read32(HC_INT_PTD_SKIPMAP_REG);
-   // Enable our PTD
-      Bits &= ~PtdBit;
-      isp1760_write32(HC_INT_PTD_SKIPMAP_REG,Bits);
-      LOG("Set HC_INT_PTD_SKIPMAP_REG to 0x%x\n",Bits);
 
    // Enable completion interrupts for our PTD
       Bits = isp1760_read32(HC_INT_IRQ_MASK_OR_REG);
@@ -1697,6 +1690,13 @@ int OpenControlInPipe(uint8_t Adr,uint8_t Endpoint,ControlCB *Funct,uint8_t *Buf
          isp1760_write32(HC_BUFFER_STATUS_REG,Bits);
          LOG("Set HC_BUFFER_STATUS_REG to 0x%x\n",Bits);
       }
+   // Set ATL Skip Map register
+      isp1760_write32(HC_INT_PTD_LASTPTD_REG,0x80000000);
+      Bits = isp1760_read32(HC_INT_PTD_SKIPMAP_REG);
+   // Enable our PTD
+      Bits &= ~PtdBit;
+      isp1760_write32(HC_INT_PTD_SKIPMAP_REG,Bits);
+      LOG("Set HC_INT_PTD_SKIPMAP_REG to 0x%x\n",Bits);
       Ret = 0;
    } while(false);
 
@@ -2191,9 +2191,8 @@ void ReadAndDumpIntPtd(uint8_t Adr)
 {
    u32 PtdBuf[8];
    u32 PtdAdr = INT_PTD_OFFSET + (Adr * 8 * sizeof(uint32_t));
-//   u32 PtdAdr = INT_PTD_OFFSET;
 
-   LOG("Reading PTD from 0x%x\n",PtdAdr);
+   LOG("Reading PTD for Adr %d from 0x%x\n",Adr,PtdAdr);
    mem_reads8(PtdAdr,PtdBuf,sizeof(PtdBuf));
    DumpPtd("Int PTD",PtdBuf);
 }
