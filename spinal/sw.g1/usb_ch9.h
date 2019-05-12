@@ -83,6 +83,11 @@ e-mail   :  support@circuitsathome.com
 #define USB_TYPE_CLASS                          USB_SETUP_TYPE_CLASS
 #define USB_TYPE_VENDOR                         USB_SETUP_TYPE_VENDOR
 
+#define USB_DT_HID                              (USB_TYPE_CLASS | 0x01)
+#define USB_DT_REPORT                           (USB_TYPE_CLASS | 0x02)
+#define USB_DT_PHYSICAL                         (USB_TYPE_CLASS | 0x03)
+#define USB_DT_HUB                              (USB_TYPE_CLASS | 0x09)
+
 /* USB descriptors  */
 
 #define USB_DESCRIPTOR_DEVICE                   0x01    // bDescriptorType for a Device Descriptor.

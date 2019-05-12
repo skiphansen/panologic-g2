@@ -37,7 +37,7 @@ typedef struct {
    uint32_t LastPacket:1;
 } GCC_PACKED PanoUsbDevice;
 
-typedef int (ClaimDevice)(uint8_t Adr,uint8_t *Descriptors);
+typedef int (ClaimDevice)(uint8_t Adr,uint8_t *Descriptors,int BufLen);
 
 typedef struct UsbDriverIf_TAG {
    struct UsbDriverIf_TAG *pNext;
@@ -59,5 +59,6 @@ int OpenControlInPipe(uint8_t Adr,uint8_t Endpoint,ControlCB *Funct,uint8_t *InB
 int SendUsbCtrlMsg(uint8_t Adr,unsigned char request,unsigned char requesttype,
                    unsigned short value,unsigned short index,void *data, 
                    unsigned short size,int timeout);
+int GetDesc(uint8_t ReqType, uint8_t Type,uint8_t Adr,uint8_t *Buf,size_t BufLen);
 #endif   // _USB_G1_H_
 

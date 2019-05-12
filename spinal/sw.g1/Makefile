@@ -1,7 +1,7 @@
 
 MEM_WORDS       = 8192
 
-OBJ_FILES       = start.o progmem.o print.o uart.o usb_g1.o usb_kbd.o printf.o 
+OBJ_FILES       = start.o progmem.o print.o uart.o usb_g1.o usb_kbd.o usb_gamepad.o printf.o 
 
 TOOLS_PREFIX    = /opt/riscv32i/bin
 TARGET          = $(TOOLS_PREFIX)/riscv32-unknown-elf

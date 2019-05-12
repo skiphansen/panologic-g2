@@ -23,7 +23,8 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston,
  * MA 02111-1307 USA
  * 
- * Major modifcations for use with the Pano Logic device by Skip Hansen 3/30/19
+ *  Major modifcations for use with the non-standard usb_g1.c USB subsystem
+ *  by Skip Hansen 3/30/19
  * 
  */
 #include <stdio.h>
@@ -48,14 +49,14 @@
    #define LOG_RAW(format, ...)
 #endif
 
-int KeyboardClaim(uint8_t Adr,uint8_t *Descriptors);
+int KeyboardClaim(uint8_t Adr,uint8_t *Buf,int BufLen);
 
 static UsbDriverIf KbdIf = {
    NULL,
    KeyboardClaim,
    "Keyboard",
    0,
-	0
+   0
 };
 
 /*
@@ -768,7 +769,7 @@ static int usb_kbd_get_hid_desc(struct usb_device *dev)
 #endif
 
 
-int KeyboardClaim(uint8_t Adr,uint8_t *Buf)
+int KeyboardClaim(uint8_t Adr,uint8_t *Buf,int BufLen)
 {
    int Ret = 1;   // Assume the worse
    USB_DEVICE_DESCRIPTOR *pDevDesc = (USB_DEVICE_DESCRIPTOR *) Buf;
@@ -784,9 +785,8 @@ int KeyboardClaim(uint8_t Adr,uint8_t *Buf)
    {
       KbdIf.Adr = Adr;
       KbdIf.EndPoint = ep->bEndpointAddress & 0x7f;
-      LOG("ep->bEndpointAddress: %d\n",ep->bEndpointAddress);
-      OpenControlInPipe(Adr,ep->bEndpointAddress,usb_kbd_irq,new,sizeof(new));
-      Ret = 0;
+      Ret = OpenControlInPipe(Adr,ep->bEndpointAddress,usb_kbd_irq,
+                              new,sizeof(new));
    }
 
    return Ret;

@@ -64,6 +64,7 @@ int main()
 
 //    UsbProbe();
     drv_usb_kbd_init();
+    drv_usb_gp_init();
     UsbTest();
 
     while(1){
@@ -78,7 +79,7 @@ int main()
             REG_WR(GPIO_WRITE_ADDR,Leds);
             wait(WAIT_CYCLES);
         // and send a character to the uart
-            print("This is yea another test\n");
+            print("This is yet another test\n");
 //            REG_WR(UART_TX_DATA,'a');
 
         }

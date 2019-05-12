@@ -88,6 +88,7 @@ int button_pressed(void);
    void Dump1760Mem(void);
    void DumpHubDesc(uint8_t Adr,struct HubDescriptor *pHubDesc);
    void DumpPortStatus(uint16_t Port,uint32_t Status);
+   void DumpHidDesc(USB_HID_DESCRIPTOR *pDesc);
 #else
    #define LOG(format, ...)
    #define LOG_RAW(format, ...)
@@ -104,10 +105,11 @@ int button_pressed(void);
    #define ReadAndDumpIntPtd(x)
    #define DumpHubDesc(x,y)
    #define DumpPortStatus(x,y)
+   #define DumpHidDesc(x)
 #endif
 
 
-#define WAIT_CYCLES_1MS    1184
+#define WAIT_CYCLES_1MS    1190
 
 #define RW_TEST_VALUE   0x5555aaaa
 #define INT_REG_RESERVED_BITS 0xfffffc15
@@ -272,13 +274,12 @@ int GetPortStatus(uint8_t Adr,uint16_t Port,uint32_t *pStatus);
 int GetHubDesc(uint16_t Adr);
 void InitPtd(u32 *Ptd,uint8_t Adr,uint8_t EndPoint,uint8_t Pid,u16 PayLoadAdr,int Len);
 int SetupTransaction(uint8_t Adr,SetupPkt *p,void *pResponse,int ResponseLen);
-int GetDesc(uint8_t Type,uint8_t Adr,uint8_t *Buf,size_t BufLen);
 int GetDevDesc(uint8_t Adr);
 int GetConfigDesc(uint8_t Adr);
 int SetUsbAddress(uint8_t Adr);
 u32 base_to_chip(u32 base);
 void SetDebugLED(bool bOn);
-void PollUsbInt(void);
+u32 PollUsbInt(void);
 void TransformPtd2Int(u32 *Ptd,uint8_t Adr,uint8_t EndPoint);
 int GetStringDesc(uint8_t Adr,uint16_t LangId,uint8_t Index,uint8_t *Buf,size_t MaxLen);
 void ConfigureDev(uint8_t Adr);
@@ -286,12 +287,9 @@ void ConfigureDev(uint8_t Adr);
 void msleep(int ms)
 {
     volatile int cnt = 0;
-    int i;
     int cycles = ms * WAIT_CYCLES_1MS;
 
-    for(i = 0; i < cycles; ++i) {
-        ++cnt;
-    }
+    while(cnt++ < cycles);
 }
 
 static u32 isp1760_read32(u32 reg)
@@ -668,6 +666,7 @@ void UsbTest()
       }
       if(button_pressed()) {
          ReadAndDumpIntPtd(4);
+         ReadAndDumpIntPtd(5);
          UsbRegDump();
          Dump1760Mem();
          while(button_pressed());
@@ -804,12 +803,12 @@ int GetHubDesc(uint16_t Adr)
 }
 
 // return number of bytes read or < 0 for error
-int GetDesc(uint8_t Type,uint8_t Adr,uint8_t *Buf,size_t BufLen)
+int GetDesc(uint8_t ReqType, uint8_t Type,uint8_t Adr,uint8_t *Buf,size_t BufLen)
 {
    SetupPkt Pkt;
 
    /* fill in setup packet */
-   Pkt.ReqType_u.bmRequestType = bmREQ_GET_DESCR;
+   Pkt.ReqType_u.bmRequestType = ReqType;
    Pkt.bRequest = USB_REQUEST_GET_DESCRIPTOR;
    Pkt.wVal_u.wValueLo = 0;
    Pkt.wVal_u.wValueHi = Type;
@@ -936,13 +935,15 @@ int GetConfigDesc(uint8_t Adr)
                break;
             }
 
-            case HID_DESCRIPTOR_HID:
-               LOG_RAW("  Skipping %d bytes of HID descriptor%s\n",
-                       p[0],p[5] != 1 ? "s" : "");
+            case HID_DESCRIPTOR_HID: {
+               USB_HID_DESCRIPTOR *pDesc = (USB_HID_DESCRIPTOR *) p;
+               DumpHidDesc(pDesc);
                break;
+            }
 
             default:
                LOG_RAW("  Skipping descriptor type 0x%x\n",p[1]);
+               break;
          }
          BytesLeft -= *p;
          p += *p;
@@ -1295,7 +1296,6 @@ int _DoTransfer(u32 *ptd,const char *Func,int Line)
    mem_writes8(ATL_PTD_OFFSET,ptd,4);
 
 // Set ATL Skip Map register
-//   isp1760_write32(HC_ATL_PTD_SKIPMAP_REG,0xffffffe);
    isp1760_write32(HC_ATL_PTD_LASTPTD_REG,0x80000000);
    isp1760_write32(HC_ATL_PTD_SKIPMAP_REG,0);
 
@@ -1309,9 +1309,7 @@ int _DoTransfer(u32 *ptd,const char *Func,int Line)
    {
 #if 1
       for( ; ; ) {
-         Value = isp1760_read32(HC_INTERRUPT_REG) & ~INT_REG_RESERVED_BITS;
-         isp1760_write32(HC_INTERRUPT_REG,Value);
-         if(Value & HC_ATL_INT) {
+         if((Value = PollUsbInt()) & HC_ATL_INT) {
          // Read the Done bit map to clear the bits
             u32 Done = isp1760_read32(HC_ATL_PTD_DONEMAP_REG);
             if(Done == 0) {
@@ -1684,7 +1682,6 @@ int OpenControlInPipe(uint8_t Adr,uint8_t Endpoint,ControlCB *Funct,uint8_t *Buf
       }
 
       Bits = isp1760_read32(HC_BUFFER_STATUS_REG);
-
       if((Bits & INT_BUF_FILL) == 0) { 
          Bits |= INT_BUF_FILL;
          isp1760_write32(HC_BUFFER_STATUS_REG,Bits);
@@ -1703,7 +1700,7 @@ int OpenControlInPipe(uint8_t Adr,uint8_t Endpoint,ControlCB *Funct,uint8_t *Buf
    return Ret;
 }
 
-void PollUsbInt()
+u32 PollUsbInt()
 {
    u32 Value;
    u32 Done;
@@ -1713,7 +1710,7 @@ void PollUsbInt()
    isp1760_write32(HC_INTERRUPT_REG,Value);
    if(Value & HC_ATL_INT) {
    // Read the Done bit map to clear the bits
-      Done = isp1760_read32(HC_ATL_PTD_DONEMAP_REG);
+//      Done = isp1760_read32(HC_ATL_PTD_DONEMAP_REG);
 //    LOG("Int reg: 0x%x, ATL done: 0x%x!\n",Value,Done);
    }
 
@@ -1775,6 +1772,7 @@ void PollUsbInt()
          }
       }
    }
+   return Value;
 }
 
 void TransformPtd2Int(u32 *Ptd,uint8_t Adr,uint8_t EndPoint)
@@ -1878,7 +1876,8 @@ void ConfigureDev(uint8_t Adr)
    int Err;
 
    do {
-      if((Len = GetDesc(USB_DESCRIPTOR_DEVICE,0,pBuf,BytesLeft)) < 0) {
+      Len = GetDesc(bmREQ_GET_DESCR,USB_DESCRIPTOR_DEVICE,0,pBuf,BytesLeft);
+      if(Len < 0) {
          break;
       }
       if(Len != DescBuf[0]) {
@@ -1893,7 +1892,8 @@ void ConfigureDev(uint8_t Adr)
          break;
       }
       LOG("Get configuration descriptor for device @ %d\n",Adr);
-      if((Len = GetDesc(USB_DESCRIPTOR_CONFIGURATION,Adr,pBuf,BytesLeft)) < 0) {
+      Len = GetDesc(bmREQ_GET_DESCR,USB_DESCRIPTOR_CONFIGURATION,Adr,pBuf,BytesLeft);
+      if(Len < 0) {
          break;
       }
       LOG("Get configuration descriptor len %d, requested: %d\n",Len,BytesLeft);
@@ -1911,7 +1911,7 @@ void ConfigureDev(uint8_t Adr)
          SetConfiguration(Adr,1);
       }
       while(pDriverIf != NULL) {
-         Err = pDriverIf->ClaimDevice(Adr,DescBuf);
+         Err = pDriverIf->ClaimDevice(Adr,DescBuf,sizeof(DescBuf));
          PRINTF("Device %sclaimed by %s driver\n",Err == 0 ? "" : "not ",
                 pDriverIf->DriverName);
 
@@ -1955,7 +1955,6 @@ void UsbRegisterDriver(UsbDriverIf *pDriverIf)
       gDriverHead->pNext = pDriverIf;
    }
 }
-
 
 #ifdef USB_VERBOSE_PRINT
 void DumpPortStatus(uint16_t Port,uint32_t Status)
@@ -2219,30 +2218,29 @@ void DumpStringDesc(const char *Label,uint8_t Index,uint8_t Adr)
       print_1cr(Label,Index);
    }
    else do {
-      uint8_t Buf[48];
+      uint8_t Buf[64];
       int i;
-      int Err;
+      int Len;
 
       PanoUsbDevice *pDev = &gUsbDevice[Adr];
 
       if(pDev->LangID == 0) {
       // Get LangID
-         if((Err = GetStringDesc(Adr,0,0,Buf,sizeof(Buf))) < 4) {
+         if((Len = GetStringDesc(Adr,0,0,Buf,sizeof(Buf))) < 4) {
             break;
          }
          pDev->LangID = (Buf[3] << 8) + Buf[2];
       }
 
-      if((Err = GetStringDesc(Adr,pDev->LangID,Index,Buf,sizeof(Buf))) < 0) {
+      if((Len = GetStringDesc(Adr,pDev->LangID,Index,Buf,sizeof(Buf))) < 0) {
          break;
       }
-      if(Buf[0] > sizeof(Buf)) {
-         LOG_RAW("String truncated, %d > %d\n",Buf[0],sizeof(Buf));
-         Buf[0] = sizeof(Buf);
-      }
       LOG_RAW("%s: ",Label);
-      for(i = 2; i < Buf[0]; i += 2) {
+      for(i = 2; i < Len; i += 2) {
          LOG_RAW("%c",Buf[i]);
+      }
+      if(Buf[0] > sizeof(Buf)) {
+         LOG_RAW(" (truncated %d > %d)",Buf[0],sizeof(Buf));
       }
       LOG_RAW("\n");
    } while(false);
@@ -2286,6 +2284,17 @@ void DumpHubDesc(uint8_t Adr,struct HubDescriptor *pHubDesc)
    print_1cr("  wHubCharacteristics",pHubDesc->wHubCharacteristics);
    print_1cr("  bPwrOn2PwrGood",pHubDesc->bPwrOn2PwrGood);
    print_1cr("  bHubContrCurrent",pHubDesc->bHubContrCurrent);
+}
+
+void DumpHidDesc(USB_HID_DESCRIPTOR *pDesc)
+{
+   LOG_RAW("\n  HID descriptor:\n");
+   print_1cr("  Length",pDesc->bLength);
+   print_1cr("  bDescriptorType",pDesc->bDescriptorType);
+   print_1cr("  bcdHID",pDesc->bcdHID);
+   print_1cr("  bCountryCode",pDesc->bCountryCode);
+   print_1cr("  bDescrType",pDesc->bDescrType);
+   print_1cr("  wDescriptorLength",pDesc->wDescriptorLength);
 }
 
 #endif
