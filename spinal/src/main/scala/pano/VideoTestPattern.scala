@@ -2,6 +2,7 @@
 package pano
 
 import spinal.core._
+import spinal.lib._
 import spinal.lib.bus.misc.BusSlaveFactory
 import spinal.lib.bus.amba3.apb._
 
@@ -61,10 +62,10 @@ class VideoTestPattern extends Component {
     val v3 = line_cntr < (v_active_div4*3)
     val v4 = line_cntr < (v_active_div4*4)
 
-    switch(io.pattern_nr){
+    switch(BufferCC(io.pattern_nr)){
         is(0){
             // Const color
-            io.pixel_out.pixel      := io.const_color
+            io.pixel_out.pixel      := BufferCC(io.const_color)
         }
         is(1){
             // Red gradient
@@ -142,8 +143,8 @@ class VideoTestPattern extends Component {
         val pattern_nr  = busCtrl.createReadAndWrite(io.pattern_nr, 0x0000) init(0)
         val const_color = busCtrl.createReadAndWrite(io.const_color, 0x0004)
 
-        io.pattern_nr  := pattern_nr.addTag(crossClockDomain)
-        io.const_color := const_color.addTag(crossClockDomain)
+        io.pattern_nr  := pattern_nr //pattern_nr.addTag(crossClockDomain)
+        io.const_color := const_color //const_color.addTag(crossClockDomain)
     }
 
 }

@@ -37,7 +37,7 @@ class DCM_CLKGEN(
         val RST          = in(Bool)
         val FREEZEDCM    = in(Bool)
         val LOCKED       = out(Bool)
-        //val STATUS       = out(Bits(2 downto 1))
+        val STATUS       = out(Bits(2 bits))
 
         val PROGCLK      = in(Bool)
         val PROGDATA     = in(Bool)

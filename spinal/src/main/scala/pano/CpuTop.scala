@@ -7,6 +7,8 @@ import spinal.lib.io._
 import spinal.lib.bus.amba3.apb._
 import spinal.lib.bus.misc.SizeMapping
 
+import spartan6._
+
 import vexriscv.demo.MuraxApb3Timer
 
 import scala.collection.mutable.ArrayBuffer
@@ -36,6 +38,8 @@ case class CpuTop(panoConfig: PanoConfig) extends Component {
     val u_cpu = CpuComplex(CpuComplexConfig.default)
     u_cpu.io.externalInterrupt <> False
 
+    val jtagUart = new Apb3JtagUart()
+
     val apbMapping = ArrayBuffer[(Apb3, SizeMapping)]()
 
     apbMapping += io.led_ctrl_apb       -> (0x00000, 256 Byte)
@@ -51,6 +55,8 @@ case class CpuTop(panoConfig: PanoConfig) extends Component {
     if (panoConfig.includeUart){
         apbMapping += io.uart_ctrl_apb      -> (0x00500, 256 Byte)
     }
+    apbMapping += jtagUart.io.apb           -> (0x00600, 16 Byte)
+
     if (panoConfig.includeGmii){
         apbMapping += io.gmii_ctrl_apb      -> (0x10000, 4 kB)
     }
