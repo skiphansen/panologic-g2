@@ -11,4 +11,6 @@
 !*.cdc
 !*.cpj
 !.gitignore
-
+!*.xco
+!*.prj
+!*MIG/

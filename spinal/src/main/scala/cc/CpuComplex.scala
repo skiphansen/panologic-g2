@@ -4,8 +4,11 @@ package cc
 import spinal.core._
 import spinal.lib._
 import spinal.lib.bus.amba3.apb._
+import spinal.lib.bus.amba4.axi._
 import spinal.lib.bus.misc.SizeMapping
 import spinal.lib.bus.simple._
+import spinal.lib.com.jtag.Jtag
+import spinal.lib.system.debugger.{JtagAxi4SharedDebugger, JtagBridge, SystemDebugger, SystemDebuggerConfig}
 
 import scala.collection.mutable.ArrayBuffer
 import vexriscv.plugin.{NONE, _}
@@ -19,6 +22,7 @@ case class CpuComplexConfig(
                        pipelineMainBus    : Boolean,
                        pipelineApbBridge  : Boolean,
                        apb3Config         : Apb3Config,
+		       axi4Config         : Axi4Config,
                        cpuPlugins         : ArrayBuffer[Plugin[VexRiscv]]){
 
   require(pipelineApbBridge || pipelineMainBus, "At least pipelineMainBus or pipelineApbBridge should be enable to avoid wipe transactions")
@@ -73,12 +77,18 @@ object CpuComplexConfig{
                 earlyBranch = false,
                 catchAddressMisaligned = false
             ),
+            new DebugPlugin(ClockDomain.current.clone(reset = Bool(false))), //Bool().setName("debugReset"))),
             new YamlPlugin("cpu0.yaml")
         ),
         apb3Config = Apb3Config(
             addressWidth = 20,
             dataWidth = 32
-        )
+        ),
+        axi4Config = Axi4Config(
+            addressWidth = 32,
+            dataWidth = 32,
+	    idWidth = 4
+	)
   )
 
   def fast = {
@@ -104,73 +114,112 @@ case class CpuComplex(config : CpuComplexConfig) extends Component
 
     val io = new Bundle {
         val apb                     = master(Apb3(config.apb3Config))
+	val axiMem1                 = master(Axi4Shared(config.axi4Config))
+	val axiMem2                 = master(Axi4Shared(config.axi4Config))
         val externalInterrupt       = in(Bool)
         val timerInterrupt          = in(Bool)
+	val jtag                    = slave(Jtag())
     }
 
-    val pipelinedMemoryBusConfig = PipelinedMemoryBusConfig(
-        addressWidth = 32,
-        dataWidth = 32
-    )
-
-    // Arbiter of the cpu dBus/iBus to drive the mainBus
-    // Priority to dBus, !! cmd transactions can change on the fly !!
-    val mainBusArbiter = new MuraxMasterArbiter(pipelinedMemoryBusConfig)
-
-    //Instanciate the CPU
-    val cpu = new VexRiscv(
-        config = VexRiscvConfig(
-            plugins = cpuPlugins
+    val core = new Area {
+        // Instantiate the CPU
+        val cpu = new VexRiscv(
+            config = VexRiscvConfig(
+                plugins = cpuPlugins
+            )
         )
-    )
 
-    // Checkout plugins used to instanciate the CPU to connect them to the SoC
-    for(plugin <- cpu.plugins) plugin match{
-        case plugin : IBusSimplePlugin => mainBusArbiter.io.iBus <> plugin.iBus
-        case plugin : DBusSimplePlugin => {
-            if(!pipelineDBus)
-                mainBusArbiter.io.dBus <> plugin.dBus
-            else {
-                mainBusArbiter.io.dBus.cmd << plugin.dBus.cmd.halfPipe()
-                mainBusArbiter.io.dBus.rsp <> plugin.dBus.rsp
+        var iBus : Axi4ReadOnly = null
+        var dBus : Axi4Shared = null
+        for(plugin <- config.cpuPlugins) plugin match{
+            case plugin : IBusSimplePlugin => iBus = plugin.iBus.toAxi4ReadOnly()
+            case plugin : IBusCachedPlugin => iBus = plugin.iBus.toAxi4ReadOnly()
+            case plugin : DBusSimplePlugin => dBus = plugin.dBus.toAxi4Shared()
+            case plugin : DBusCachedPlugin => dBus = plugin.dBus.toAxi4Shared(true)
+            case plugin : CsrPlugin        => {
+                plugin.externalInterrupt    := io.externalInterrupt
+                plugin.timerInterrupt       := io.timerInterrupt
             }
+            case plugin : DebugPlugin      => {
+                //resetCtrl.axiReset setWhen(RegNext(plugin.io.resetOut))
+                io.jtag <> plugin.io.bus.fromJtag()
+            }
+            case _ =>
         }
-        case plugin : CsrPlugin        => {
-            plugin.externalInterrupt    := io.externalInterrupt
-            plugin.timerInterrupt       := io.timerInterrupt
-        }
-        case _ =>
     }
 
     //****** MainBus slaves ********
     val mainBusMapping = ArrayBuffer[(PipelinedMemoryBus,SizeMapping)]()
-    val ram = new MuraxPipelinedMemoryBusRam(
-        onChipRamSize = onChipRamSize,
-        onChipRamHexFile = onChipRamHexFile,
-        pipelinedMemoryBusConfig = pipelinedMemoryBusConfig
-    )
 
-    mainBusMapping += ram.io.bus -> (0x00000000l, onChipRamSize)
-
-    val apbBridge = new PipelinedMemoryBusToApbBridge(
-        apb3Config = Apb3Config(
-            addressWidth = 20,
-            dataWidth = 32
-        ),
-        pipelineBridge = pipelineApbBridge,
-        pipelinedMemoryBusConfig = pipelinedMemoryBusConfig
+    val ram = Axi4SharedOnChipRam(
+      dataWidth = 32,
+      byteCount = onChipRamSize,
+      idWidth = 4
     )
-    mainBusMapping += apbBridge.io.pipelinedMemoryBus -> (0x80000000l, 1 MB)
+    //val ram = new MuraxPipelinedMemoryBusRam(
+    //    onChipRamSize = onChipRamSize,
+    //    onChipRamHexFile = onChipRamHexFile,
+    //    pipelinedMemoryBusConfig = pipelinedMemoryBusConfig
+    //)
+
+    //mainBusMapping += ram.io.bus -> (0x00000000l, onChipRamSize)
+
+    val apbBridge = Axi4SharedToApb3Bridge(
+      addressWidth = 20,
+      dataWidth    = 32,
+      idWidth      = 4
+    )
 
     io.apb <> apbBridge.io.apb
 
-    val mainBusDecoder = new Area {
-        val logic = new MuraxPipelinedMemoryBusDecoder(
-            master = mainBusArbiter.io.masterBus,
-            specification = mainBusMapping,
-            pipelineMaster = pipelineMainBus
-        )
-    }
-    
+    val axiCrossbar = Axi4CrossbarFactory()
+
+    axiCrossbar.addSlaves(
+        ram.io.axi       -> (0x00000000L,   onChipRamSize),
+        io.axiMem1       -> (0x40000000L,   64 MB),
+        io.axiMem2       -> (0x44000000L,   64 MB),
+        apbBridge.io.axi -> (0x80000000L,   1 MB)
+    )
+
+    axiCrossbar.addConnections(
+        core.iBus       -> List(ram.io.axi, io.axiMem1, io.axiMem2),
+        core.dBus       -> List(ram.io.axi, io.axiMem1, io.axiMem2, apbBridge.io.axi)
+    )
+
+    axiCrossbar.addPipelining(apbBridge.io.axi)((crossbar,bridge) => {
+      crossbar.sharedCmd.halfPipe() >> bridge.sharedCmd
+      crossbar.writeData.halfPipe() >> bridge.writeData
+      crossbar.writeRsp             << bridge.writeRsp
+      crossbar.readRsp              << bridge.readRsp
+    })
+
+    axiCrossbar.addPipelining(io.axiMem1)((crossbar,ctrl) => {
+      crossbar.sharedCmd.halfPipe()  >>  ctrl.sharedCmd
+      crossbar.writeData            >/-> ctrl.writeData
+      crossbar.writeRsp              <<  ctrl.writeRsp
+      crossbar.readRsp               <<  ctrl.readRsp
+    })
+
+    axiCrossbar.addPipelining(io.axiMem2)((crossbar,ctrl) => {
+      crossbar.sharedCmd.halfPipe()  >>  ctrl.sharedCmd
+      crossbar.writeData            >/-> ctrl.writeData
+      crossbar.writeRsp              <<  ctrl.writeRsp
+      crossbar.readRsp               <<  ctrl.readRsp
+    })
+
+    axiCrossbar.addPipelining(ram.io.axi)((crossbar,ctrl) => {
+      crossbar.sharedCmd.halfPipe()  >>  ctrl.sharedCmd
+      crossbar.writeData            >/-> ctrl.writeData
+      crossbar.writeRsp              <<  ctrl.writeRsp
+      crossbar.readRsp               <<  ctrl.readRsp
+    })
+    axiCrossbar.addPipelining(core.dBus)((cpu,crossbar) => {
+      cpu.sharedCmd             >>  crossbar.sharedCmd
+      cpu.writeData             >>  crossbar.writeData
+      cpu.writeRsp              <<  crossbar.writeRsp
+      cpu.readRsp               <-< crossbar.readRsp //Data cache directly use read responses without buffering, so pipeline it for FMax
+    })
+
+    axiCrossbar.build()
 }
 

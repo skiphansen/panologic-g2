@@ -5,6 +5,7 @@ import spinal.core._
 import spinal.lib._
 import spinal.lib.io._
 import spinal.lib.bus.amba3.apb._
+import spinal.lib.bus.amba4.axi._
 import spinal.lib.bus.misc.SizeMapping
 import scala.collection.mutable.ArrayBuffer
 import spinal.lib.com.uart._
@@ -30,6 +31,9 @@ class PanoCore(voClkDomain: ClockDomain, panoConfig: PanoConfig) extends Compone
         val ulpi                = if (panoConfig.includeUlpi)   slave(Ulpi())          else null
 
         val vo                  = out(VgaData())
+
+	val axi1 = master(Axi4(Axi4Config(addressWidth = 32, dataWidth = 32, idWidth = 4)))
+	val axi2 = master(Axi4(Axi4Config(addressWidth = 32, dataWidth = 32, idWidth = 4)))
     }
 
 
@@ -48,6 +52,8 @@ class PanoCore(voClkDomain: ClockDomain, panoConfig: PanoConfig) extends Compone
 
     val u_cpu_top = CpuTop(panoConfig)
     u_cpu_top.io.switch_                <> io.switch_
+    io.axi1 << u_cpu_top.io.axi1
+    io.axi2 << u_cpu_top.io.axi2
 
     var cpuDomain = ClockDomain.current
 

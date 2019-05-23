@@ -54,6 +54,9 @@ class Pano(config : PanoConfig) extends Component {
 
         // ULPI Interface
         val ulpi                = if (config.includeUlpi) slave(Ulpi()) else null
+
+	val ddr2a = master(DDRIntfc())
+	val ddr2b = master(DDRIntfc())
     }
 
     noIoPrefix()
@@ -309,6 +312,12 @@ class Pano(config : PanoConfig) extends Component {
             u_hdmi.io.b               <> vo.b
         }
 
+        val mem = new MemoryController()
+        mem.io.clk := main_clk
+        io.ddr2a <> mem.io.ddr2a
+        io.ddr2b <> mem.io.ddr2b
+        mem.io.axi1 << u_pano_core.io.axi1
+        mem.io.axi2 << u_pano_core.io.axi2
     }
 
 }

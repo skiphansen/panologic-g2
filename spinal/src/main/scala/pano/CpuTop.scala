@@ -5,6 +5,7 @@ import spinal.core._
 import spinal.lib._
 import spinal.lib.io._
 import spinal.lib.bus.amba3.apb._
+import spinal.lib.bus.amba4.axi._
 import spinal.lib.bus.misc.SizeMapping
 
 import spartan6._
@@ -32,6 +33,9 @@ case class CpuTop(panoConfig: PanoConfig) extends Component {
         val usb_host_apb        = if (panoConfig.includeUlpi)   master(Apb3(UsbHost.getApb3Config()))     else null
 
         val switch_             = in(Bool)
+
+	val axi1 = master(Axi4(Axi4Config(addressWidth = 32, dataWidth = 32, idWidth = 4)))
+	val axi2 = master(Axi4(Axi4Config(addressWidth = 32, dataWidth = 32, idWidth = 4)))
     }
 
 //    val u_cpu = CpuComplex(CpuComplexConfig.default.copy(onChipRamSize = 8 kB, onChipRamHexFile = "sw/progmem.hex"))
@@ -71,6 +75,9 @@ case class CpuTop(panoConfig: PanoConfig) extends Component {
     u_timer.io.interrupt        <> u_cpu.io.timerInterrupt
     apbMapping += u_timer.io.apb -> (0x30000, 4 kB)
 
+    io.axi1 << u_cpu.io.axiMem1.toAxi4
+    io.axi2 << u_cpu.io.axiMem2.toAxi4
+
     //============================================================
     // Local APB decoder
     //============================================================
@@ -79,5 +86,10 @@ case class CpuTop(panoConfig: PanoConfig) extends Component {
       slaves = apbMapping
     )
 
-}
+    val jtag = new BSCAN_SPARTAN6()
+    u_cpu.io.jtag.tdi <> jtag.io.TDI
+    u_cpu.io.jtag.tms <> jtag.io.TMS
+    u_cpu.io.jtag.tck <> jtag.io.TCK
+    u_cpu.io.jtag.tdo <> jtag.io.TDO
 
+}
