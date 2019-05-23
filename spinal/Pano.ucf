@@ -248,3 +248,6 @@ INST "core_u_pano_core/u_cpu_top/u_cpu/ram/Mram_ram_symbol0" LOC = RAMB16_X3Y86;
 INST "core_u_pano_core/u_cpu_top/u_cpu/ram/Mram_ram_symbol1" LOC = RAMB16_X3Y84;
 INST "core_u_pano_core/u_cpu_top/u_cpu/ram/Mram_ram_symbol2" LOC = RAMB16_X3Y82;
 INST "core_u_pano_core/u_cpu_top/u_cpu/ram/Mram_ram_symbol3" LOC = RAMB16_X3Y80;
+
+NET "core_u_pano_core/vo_area_test_patt_ctrl_apb_regs_pattern_nr[*]" TIG;
+NET "core_u_pano_core/vo_area_test_patt_ctrl_apb_regs_const_color*" TIG;
