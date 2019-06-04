@@ -13,6 +13,7 @@ import vexriscv.demo.MuraxApb3Timer
 
 import scala.collection.mutable.ArrayBuffer
 import spinal.lib.com.uart._
+import spinal.lib.com.spi._
 
 import cc._
 import gmii._
@@ -30,6 +31,7 @@ case class CpuTop(panoConfig: PanoConfig) extends Component {
         val txt_gen_apb         = master(Apb3(VideoTxtGen.getApb3Config()))
         val ulpi_apb            = if (panoConfig.includeUlpi)   master(Apb3(UlpiCtrl.getApb3Config()))    else null
         val usb_host_apb        = if (panoConfig.includeUlpi)   master(Apb3(UsbHost.getApb3Config()))     else null
+        val spi_flash_ctrl_apb  = master(Apb3(Apb3SpiMasterCtrl.getApb3Config))
 
         val switch_             = in(Bool)
     }
@@ -56,6 +58,7 @@ case class CpuTop(panoConfig: PanoConfig) extends Component {
         apbMapping += io.uart_ctrl_apb      -> (0x00500, 256 Byte)
     }
     apbMapping += jtagUart.io.apb           -> (0x00600, 16 Byte)
+    apbMapping += io.spi_flash_ctrl_apb     -> (0x00700, 256 Byte)
 
     if (panoConfig.includeGmii){
         apbMapping += io.gmii_ctrl_apb      -> (0x10000, 4 kB)
