@@ -1,5 +1,5 @@
 // Generator : SpinalHDL v1.3.2    git head : 41815ceafff4e72c2e3a3e1ff7e9ada5202a0d26
-// Date      : 17/03/2019, 22:15:04
+// Date      : 05/06/2019, 19:10:52
 // Component : Pano
 
 
@@ -30,21 +30,20 @@
 `define HostXferResult_defaultEncoding_TIMEOUT 4'b1110
 `define HostXferResult_defaultEncoding_BABBLE 4'b1111
 
-`define AluBitwiseCtrlEnum_defaultEncoding_type [1:0]
-`define AluBitwiseCtrlEnum_defaultEncoding_XOR_1 2'b00
-`define AluBitwiseCtrlEnum_defaultEncoding_OR_1 2'b01
-`define AluBitwiseCtrlEnum_defaultEncoding_AND_1 2'b10
-`define AluBitwiseCtrlEnum_defaultEncoding_SRC1 2'b11
-
-`define EnvCtrlEnum_defaultEncoding_type [0:0]
-`define EnvCtrlEnum_defaultEncoding_NONE 1'b0
-`define EnvCtrlEnum_defaultEncoding_XRET 1'b1
-
 `define ShiftCtrlEnum_defaultEncoding_type [1:0]
 `define ShiftCtrlEnum_defaultEncoding_DISABLE_1 2'b00
 `define ShiftCtrlEnum_defaultEncoding_SLL_1 2'b01
 `define ShiftCtrlEnum_defaultEncoding_SRL_1 2'b10
 `define ShiftCtrlEnum_defaultEncoding_SRA_1 2'b11
+
+`define EnvCtrlEnum_defaultEncoding_type [0:0]
+`define EnvCtrlEnum_defaultEncoding_NONE 1'b0
+`define EnvCtrlEnum_defaultEncoding_XRET 1'b1
+
+`define AluCtrlEnum_defaultEncoding_type [1:0]
+`define AluCtrlEnum_defaultEncoding_ADD_SUB 2'b00
+`define AluCtrlEnum_defaultEncoding_SLT_SLTU 2'b01
+`define AluCtrlEnum_defaultEncoding_BITWISE 2'b10
 
 `define BranchCtrlEnum_defaultEncoding_type [1:0]
 `define BranchCtrlEnum_defaultEncoding_INC 2'b00
@@ -52,10 +51,11 @@
 `define BranchCtrlEnum_defaultEncoding_JAL 2'b10
 `define BranchCtrlEnum_defaultEncoding_JALR 2'b11
 
-`define AluCtrlEnum_defaultEncoding_type [1:0]
-`define AluCtrlEnum_defaultEncoding_ADD_SUB 2'b00
-`define AluCtrlEnum_defaultEncoding_SLT_SLTU 2'b01
-`define AluCtrlEnum_defaultEncoding_BITWISE 2'b10
+`define AluBitwiseCtrlEnum_defaultEncoding_type [1:0]
+`define AluBitwiseCtrlEnum_defaultEncoding_XOR_1 2'b00
+`define AluBitwiseCtrlEnum_defaultEncoding_OR_1 2'b01
+`define AluBitwiseCtrlEnum_defaultEncoding_AND_1 2'b10
+`define AluBitwiseCtrlEnum_defaultEncoding_SRC1 2'b11
 
 `define Src2CtrlEnum_defaultEncoding_type [1:0]
 `define Src2CtrlEnum_defaultEncoding_RS 2'b00
@@ -116,6 +116,94 @@
 `define TopState_defaultEncoding_SetupSendToken 2'b01
 `define TopState_defaultEncoding_SetupSendData0 2'b10
 `define TopState_defaultEncoding_SetupWaitHandshake 2'b11
+
+`define SpiMasterCtrlCmdMode_defaultEncoding_type [0:0]
+`define SpiMasterCtrlCmdMode_defaultEncoding_DATA 1'b0
+`define SpiMasterCtrlCmdMode_defaultEncoding_SS 1'b1
+
+module BufferCC (
+      input  [8:0] io_initial,
+      input  [8:0] io_dataIn,
+      output [8:0] io_dataOut,
+      input   toplevel_main_clk,
+      input   toplevel_main_reset_);
+  reg [8:0] buffers_0;
+  reg [8:0] buffers_1;
+  assign io_dataOut = buffers_1;
+  always @ (posedge toplevel_main_clk) begin
+    if(!toplevel_main_reset_) begin
+      buffers_0 <= io_initial;
+      buffers_1 <= io_initial;
+    end else begin
+      buffers_0 <= io_dataIn;
+      buffers_1 <= buffers_0;
+    end
+  end
+
+endmodule
+
+module BufferCC_1_ (
+      input  [8:0] io_initial,
+      input  [8:0] io_dataIn,
+      output [8:0] io_dataOut,
+      input   jtag_TCK,
+      input   jtag_RESET);
+  reg [8:0] buffers_0;
+  reg [8:0] buffers_1;
+  assign io_dataOut = buffers_1;
+  always @ (posedge jtag_TCK or posedge jtag_RESET) begin
+    if (jtag_RESET) begin
+      buffers_0 <= io_initial;
+      buffers_1 <= io_initial;
+    end else begin
+      buffers_0 <= io_dataIn;
+      buffers_1 <= buffers_0;
+    end
+  end
+
+endmodule
+
+module BufferCC_2_ (
+      input  [5:0] io_initial,
+      input  [5:0] io_dataIn,
+      output [5:0] io_dataOut,
+      input   jtag_TCK,
+      input   jtag_RESET);
+  reg [5:0] buffers_0;
+  reg [5:0] buffers_1;
+  assign io_dataOut = buffers_1;
+  always @ (posedge jtag_TCK or posedge jtag_RESET) begin
+    if (jtag_RESET) begin
+      buffers_0 <= io_initial;
+      buffers_1 <= io_initial;
+    end else begin
+      buffers_0 <= io_dataIn;
+      buffers_1 <= buffers_0;
+    end
+  end
+
+endmodule
+
+module BufferCC_3_ (
+      input  [5:0] io_initial,
+      input  [5:0] io_dataIn,
+      output [5:0] io_dataOut,
+      input   toplevel_main_clk,
+      input   toplevel_main_reset_);
+  reg [5:0] buffers_0;
+  reg [5:0] buffers_1;
+  assign io_dataOut = buffers_1;
+  always @ (posedge toplevel_main_clk) begin
+    if(!toplevel_main_reset_) begin
+      buffers_0 <= io_initial;
+      buffers_1 <= io_initial;
+    end else begin
+      buffers_0 <= io_dataIn;
+      buffers_1 <= buffers_0;
+    end
+  end
+
+endmodule
 
 module StreamFifoLowLatency (
       input   io_push_valid,
@@ -221,7 +309,379 @@ module StreamFifoLowLatency (
 
 endmodule
 
-module BufferCC (
+module StreamFifoCC (
+      input   io_push_valid,
+      output  io_push_ready,
+      input  [7:0] io_push_payload,
+      output  io_pop_valid,
+      input   io_pop_ready,
+      output [7:0] io_pop_payload,
+      output [8:0] io_pushOccupancy,
+      output [8:0] io_popOccupancy,
+      input   toplevel_main_clk,
+      input   toplevel_main_reset_,
+      input   jtag_TCK,
+      input   jtag_RESET);
+  wire [8:0] _zz_StreamFifoCC_19_;
+  wire [8:0] _zz_StreamFifoCC_20_;
+  reg [7:0] _zz_StreamFifoCC_21_;
+  wire [8:0] bufferCC_18__io_dataOut;
+  wire [8:0] bufferCC_19__io_dataOut;
+  wire [0:0] _zz_StreamFifoCC_22_;
+  wire [8:0] _zz_StreamFifoCC_23_;
+  wire [8:0] _zz_StreamFifoCC_24_;
+  wire [7:0] _zz_StreamFifoCC_25_;
+  wire [0:0] _zz_StreamFifoCC_26_;
+  wire [8:0] _zz_StreamFifoCC_27_;
+  wire [8:0] _zz_StreamFifoCC_28_;
+  wire [7:0] _zz_StreamFifoCC_29_;
+  wire  _zz_StreamFifoCC_30_;
+  reg  _zz_StreamFifoCC_1_;
+  wire [8:0] popToPushGray;
+  wire [8:0] pushToPopGray;
+  reg  pushCC_pushPtr_willIncrement;
+  wire  pushCC_pushPtr_willClear;
+  reg [8:0] pushCC_pushPtr_valueNext;
+  reg [8:0] pushCC_pushPtr_value;
+  wire  pushCC_pushPtr_willOverflowIfInc;
+  wire  pushCC_pushPtr_willOverflow;
+  reg [8:0] pushCC_pushPtrGray;
+  wire [8:0] pushCC_popPtrGray;
+  wire  pushCC_full;
+  wire  _zz_StreamFifoCC_2_;
+  wire  _zz_StreamFifoCC_3_;
+  wire  _zz_StreamFifoCC_4_;
+  wire  _zz_StreamFifoCC_5_;
+  wire  _zz_StreamFifoCC_6_;
+  wire  _zz_StreamFifoCC_7_;
+  wire  _zz_StreamFifoCC_8_;
+  wire  _zz_StreamFifoCC_9_;
+  reg  popCC_popPtr_willIncrement;
+  wire  popCC_popPtr_willClear;
+  reg [8:0] popCC_popPtr_valueNext;
+  reg [8:0] popCC_popPtr_value;
+  wire  popCC_popPtr_willOverflowIfInc;
+  wire  popCC_popPtr_willOverflow;
+  reg [8:0] popCC_popPtrGray;
+  wire [8:0] popCC_pushPtrGray;
+  wire  popCC_empty;
+  wire [8:0] _zz_StreamFifoCC_10_;
+  wire  _zz_StreamFifoCC_11_;
+  wire  _zz_StreamFifoCC_12_;
+  wire  _zz_StreamFifoCC_13_;
+  wire  _zz_StreamFifoCC_14_;
+  wire  _zz_StreamFifoCC_15_;
+  wire  _zz_StreamFifoCC_16_;
+  wire  _zz_StreamFifoCC_17_;
+  wire  _zz_StreamFifoCC_18_;
+  reg [7:0] ram [0:255];
+  assign _zz_StreamFifoCC_22_ = pushCC_pushPtr_willIncrement;
+  assign _zz_StreamFifoCC_23_ = {8'd0, _zz_StreamFifoCC_22_};
+  assign _zz_StreamFifoCC_24_ = (pushCC_pushPtr_valueNext >>> (1'b1));
+  assign _zz_StreamFifoCC_25_ = pushCC_pushPtr_value[7:0];
+  assign _zz_StreamFifoCC_26_ = popCC_popPtr_willIncrement;
+  assign _zz_StreamFifoCC_27_ = {8'd0, _zz_StreamFifoCC_26_};
+  assign _zz_StreamFifoCC_28_ = (popCC_popPtr_valueNext >>> (1'b1));
+  assign _zz_StreamFifoCC_29_ = _zz_StreamFifoCC_10_[7:0];
+  assign _zz_StreamFifoCC_30_ = 1'b1;
+  always @ (posedge toplevel_main_clk) begin
+    if(_zz_StreamFifoCC_1_) begin
+      ram[_zz_StreamFifoCC_25_] <= io_push_payload;
+    end
+  end
+
+  always @ (posedge jtag_TCK) begin
+  end
+
+  always @ (posedge jtag_TCK) begin
+    if(_zz_StreamFifoCC_30_) begin
+      _zz_StreamFifoCC_21_ <= ram[_zz_StreamFifoCC_29_];
+    end
+  end
+
+  BufferCC bufferCC_18_ ( 
+    .io_initial(_zz_StreamFifoCC_19_),
+    .io_dataIn(popToPushGray),
+    .io_dataOut(bufferCC_18__io_dataOut),
+    .toplevel_main_clk(toplevel_main_clk),
+    .toplevel_main_reset_(toplevel_main_reset_) 
+  );
+  BufferCC_1_ bufferCC_19_ ( 
+    .io_initial(_zz_StreamFifoCC_20_),
+    .io_dataIn(pushToPopGray),
+    .io_dataOut(bufferCC_19__io_dataOut),
+    .jtag_TCK(jtag_TCK),
+    .jtag_RESET(jtag_RESET) 
+  );
+  always @ (*) begin
+    _zz_StreamFifoCC_1_ = 1'b0;
+    pushCC_pushPtr_willIncrement = 1'b0;
+    if((io_push_valid && io_push_ready))begin
+      _zz_StreamFifoCC_1_ = 1'b1;
+      pushCC_pushPtr_willIncrement = 1'b1;
+    end
+  end
+
+  assign pushCC_pushPtr_willClear = 1'b0;
+  assign pushCC_pushPtr_willOverflowIfInc = (pushCC_pushPtr_value == (9'b111111111));
+  assign pushCC_pushPtr_willOverflow = (pushCC_pushPtr_willOverflowIfInc && pushCC_pushPtr_willIncrement);
+  always @ (*) begin
+    pushCC_pushPtr_valueNext = (pushCC_pushPtr_value + _zz_StreamFifoCC_23_);
+    if(pushCC_pushPtr_willClear)begin
+      pushCC_pushPtr_valueNext = (9'b000000000);
+    end
+  end
+
+  assign _zz_StreamFifoCC_19_ = (9'b000000000);
+  assign pushCC_popPtrGray = bufferCC_18__io_dataOut;
+  assign pushCC_full = ((pushCC_pushPtrGray[8 : 7] == (~ pushCC_popPtrGray[8 : 7])) && (pushCC_pushPtrGray[6 : 0] == pushCC_popPtrGray[6 : 0]));
+  assign io_push_ready = (! pushCC_full);
+  assign _zz_StreamFifoCC_2_ = (pushCC_popPtrGray[1] ^ _zz_StreamFifoCC_3_);
+  assign _zz_StreamFifoCC_3_ = (pushCC_popPtrGray[2] ^ _zz_StreamFifoCC_4_);
+  assign _zz_StreamFifoCC_4_ = (pushCC_popPtrGray[3] ^ _zz_StreamFifoCC_5_);
+  assign _zz_StreamFifoCC_5_ = (pushCC_popPtrGray[4] ^ _zz_StreamFifoCC_6_);
+  assign _zz_StreamFifoCC_6_ = (pushCC_popPtrGray[5] ^ _zz_StreamFifoCC_7_);
+  assign _zz_StreamFifoCC_7_ = (pushCC_popPtrGray[6] ^ _zz_StreamFifoCC_8_);
+  assign _zz_StreamFifoCC_8_ = (pushCC_popPtrGray[7] ^ _zz_StreamFifoCC_9_);
+  assign _zz_StreamFifoCC_9_ = pushCC_popPtrGray[8];
+  assign io_pushOccupancy = (pushCC_pushPtr_value - {_zz_StreamFifoCC_9_,{_zz_StreamFifoCC_8_,{_zz_StreamFifoCC_7_,{_zz_StreamFifoCC_6_,{_zz_StreamFifoCC_5_,{_zz_StreamFifoCC_4_,{_zz_StreamFifoCC_3_,{_zz_StreamFifoCC_2_,(pushCC_popPtrGray[0] ^ _zz_StreamFifoCC_2_)}}}}}}}});
+  always @ (*) begin
+    popCC_popPtr_willIncrement = 1'b0;
+    if((io_pop_valid && io_pop_ready))begin
+      popCC_popPtr_willIncrement = 1'b1;
+    end
+  end
+
+  assign popCC_popPtr_willClear = 1'b0;
+  assign popCC_popPtr_willOverflowIfInc = (popCC_popPtr_value == (9'b111111111));
+  assign popCC_popPtr_willOverflow = (popCC_popPtr_willOverflowIfInc && popCC_popPtr_willIncrement);
+  always @ (*) begin
+    popCC_popPtr_valueNext = (popCC_popPtr_value + _zz_StreamFifoCC_27_);
+    if(popCC_popPtr_willClear)begin
+      popCC_popPtr_valueNext = (9'b000000000);
+    end
+  end
+
+  assign _zz_StreamFifoCC_20_ = (9'b000000000);
+  assign popCC_pushPtrGray = bufferCC_19__io_dataOut;
+  assign popCC_empty = (popCC_popPtrGray == popCC_pushPtrGray);
+  assign io_pop_valid = (! popCC_empty);
+  assign _zz_StreamFifoCC_10_ = popCC_popPtr_valueNext;
+  assign io_pop_payload = _zz_StreamFifoCC_21_;
+  assign _zz_StreamFifoCC_11_ = (popCC_pushPtrGray[1] ^ _zz_StreamFifoCC_12_);
+  assign _zz_StreamFifoCC_12_ = (popCC_pushPtrGray[2] ^ _zz_StreamFifoCC_13_);
+  assign _zz_StreamFifoCC_13_ = (popCC_pushPtrGray[3] ^ _zz_StreamFifoCC_14_);
+  assign _zz_StreamFifoCC_14_ = (popCC_pushPtrGray[4] ^ _zz_StreamFifoCC_15_);
+  assign _zz_StreamFifoCC_15_ = (popCC_pushPtrGray[5] ^ _zz_StreamFifoCC_16_);
+  assign _zz_StreamFifoCC_16_ = (popCC_pushPtrGray[6] ^ _zz_StreamFifoCC_17_);
+  assign _zz_StreamFifoCC_17_ = (popCC_pushPtrGray[7] ^ _zz_StreamFifoCC_18_);
+  assign _zz_StreamFifoCC_18_ = popCC_pushPtrGray[8];
+  assign io_popOccupancy = ({_zz_StreamFifoCC_18_,{_zz_StreamFifoCC_17_,{_zz_StreamFifoCC_16_,{_zz_StreamFifoCC_15_,{_zz_StreamFifoCC_14_,{_zz_StreamFifoCC_13_,{_zz_StreamFifoCC_12_,{_zz_StreamFifoCC_11_,(popCC_pushPtrGray[0] ^ _zz_StreamFifoCC_11_)}}}}}}}} - popCC_popPtr_value);
+  assign pushToPopGray = pushCC_pushPtrGray;
+  assign popToPushGray = popCC_popPtrGray;
+  always @ (posedge toplevel_main_clk) begin
+    if(!toplevel_main_reset_) begin
+      pushCC_pushPtr_value <= (9'b000000000);
+      pushCC_pushPtrGray <= (9'b000000000);
+    end else begin
+      pushCC_pushPtr_value <= pushCC_pushPtr_valueNext;
+      pushCC_pushPtrGray <= (_zz_StreamFifoCC_24_ ^ pushCC_pushPtr_valueNext);
+    end
+  end
+
+  always @ (posedge jtag_TCK or posedge jtag_RESET) begin
+    if (jtag_RESET) begin
+      popCC_popPtr_value <= (9'b000000000);
+      popCC_popPtrGray <= (9'b000000000);
+    end else begin
+      popCC_popPtr_value <= popCC_popPtr_valueNext;
+      popCC_popPtrGray <= (_zz_StreamFifoCC_28_ ^ popCC_popPtr_valueNext);
+    end
+  end
+
+endmodule
+
+module StreamFifoCC_1_ (
+      input   io_push_valid,
+      output  io_push_ready,
+      input  [7:0] io_push_payload,
+      output  io_pop_valid,
+      input   io_pop_ready,
+      output [7:0] io_pop_payload,
+      output [5:0] io_pushOccupancy,
+      output [5:0] io_popOccupancy,
+      input   jtag_TCK,
+      input   jtag_RESET,
+      input   toplevel_main_clk,
+      input   toplevel_main_reset_);
+  wire [5:0] _zz_StreamFifoCC_1__13_;
+  wire [5:0] _zz_StreamFifoCC_1__14_;
+  reg [7:0] _zz_StreamFifoCC_1__15_;
+  wire [5:0] bufferCC_18__io_dataOut;
+  wire [5:0] bufferCC_19__io_dataOut;
+  wire [0:0] _zz_StreamFifoCC_1__16_;
+  wire [5:0] _zz_StreamFifoCC_1__17_;
+  wire [5:0] _zz_StreamFifoCC_1__18_;
+  wire [4:0] _zz_StreamFifoCC_1__19_;
+  wire [0:0] _zz_StreamFifoCC_1__20_;
+  wire [5:0] _zz_StreamFifoCC_1__21_;
+  wire [5:0] _zz_StreamFifoCC_1__22_;
+  wire [4:0] _zz_StreamFifoCC_1__23_;
+  wire  _zz_StreamFifoCC_1__24_;
+  reg  _zz_StreamFifoCC_1__1_;
+  wire [5:0] popToPushGray;
+  wire [5:0] pushToPopGray;
+  reg  pushCC_pushPtr_willIncrement;
+  wire  pushCC_pushPtr_willClear;
+  reg [5:0] pushCC_pushPtr_valueNext;
+  reg [5:0] pushCC_pushPtr_value;
+  wire  pushCC_pushPtr_willOverflowIfInc;
+  wire  pushCC_pushPtr_willOverflow;
+  reg [5:0] pushCC_pushPtrGray;
+  wire [5:0] pushCC_popPtrGray;
+  wire  pushCC_full;
+  wire  _zz_StreamFifoCC_1__2_;
+  wire  _zz_StreamFifoCC_1__3_;
+  wire  _zz_StreamFifoCC_1__4_;
+  wire  _zz_StreamFifoCC_1__5_;
+  wire  _zz_StreamFifoCC_1__6_;
+  reg  popCC_popPtr_willIncrement;
+  wire  popCC_popPtr_willClear;
+  reg [5:0] popCC_popPtr_valueNext;
+  reg [5:0] popCC_popPtr_value;
+  wire  popCC_popPtr_willOverflowIfInc;
+  wire  popCC_popPtr_willOverflow;
+  reg [5:0] popCC_popPtrGray;
+  wire [5:0] popCC_pushPtrGray;
+  wire  popCC_empty;
+  wire [5:0] _zz_StreamFifoCC_1__7_;
+  wire  _zz_StreamFifoCC_1__8_;
+  wire  _zz_StreamFifoCC_1__9_;
+  wire  _zz_StreamFifoCC_1__10_;
+  wire  _zz_StreamFifoCC_1__11_;
+  wire  _zz_StreamFifoCC_1__12_;
+  reg [7:0] ram [0:31];
+  assign _zz_StreamFifoCC_1__16_ = pushCC_pushPtr_willIncrement;
+  assign _zz_StreamFifoCC_1__17_ = {5'd0, _zz_StreamFifoCC_1__16_};
+  assign _zz_StreamFifoCC_1__18_ = (pushCC_pushPtr_valueNext >>> (1'b1));
+  assign _zz_StreamFifoCC_1__19_ = pushCC_pushPtr_value[4:0];
+  assign _zz_StreamFifoCC_1__20_ = popCC_popPtr_willIncrement;
+  assign _zz_StreamFifoCC_1__21_ = {5'd0, _zz_StreamFifoCC_1__20_};
+  assign _zz_StreamFifoCC_1__22_ = (popCC_popPtr_valueNext >>> (1'b1));
+  assign _zz_StreamFifoCC_1__23_ = _zz_StreamFifoCC_1__7_[4:0];
+  assign _zz_StreamFifoCC_1__24_ = 1'b1;
+  always @ (posedge jtag_TCK) begin
+    if(_zz_StreamFifoCC_1__1_) begin
+      ram[_zz_StreamFifoCC_1__19_] <= io_push_payload;
+    end
+  end
+
+  always @ (posedge toplevel_main_clk) begin
+  end
+
+  always @ (posedge toplevel_main_clk) begin
+    if(_zz_StreamFifoCC_1__24_) begin
+      _zz_StreamFifoCC_1__15_ <= ram[_zz_StreamFifoCC_1__23_];
+    end
+  end
+
+  BufferCC_2_ bufferCC_18_ ( 
+    .io_initial(_zz_StreamFifoCC_1__13_),
+    .io_dataIn(popToPushGray),
+    .io_dataOut(bufferCC_18__io_dataOut),
+    .jtag_TCK(jtag_TCK),
+    .jtag_RESET(jtag_RESET) 
+  );
+  BufferCC_3_ bufferCC_19_ ( 
+    .io_initial(_zz_StreamFifoCC_1__14_),
+    .io_dataIn(pushToPopGray),
+    .io_dataOut(bufferCC_19__io_dataOut),
+    .toplevel_main_clk(toplevel_main_clk),
+    .toplevel_main_reset_(toplevel_main_reset_) 
+  );
+  always @ (*) begin
+    _zz_StreamFifoCC_1__1_ = 1'b0;
+    pushCC_pushPtr_willIncrement = 1'b0;
+    if((io_push_valid && io_push_ready))begin
+      _zz_StreamFifoCC_1__1_ = 1'b1;
+      pushCC_pushPtr_willIncrement = 1'b1;
+    end
+  end
+
+  assign pushCC_pushPtr_willClear = 1'b0;
+  assign pushCC_pushPtr_willOverflowIfInc = (pushCC_pushPtr_value == (6'b111111));
+  assign pushCC_pushPtr_willOverflow = (pushCC_pushPtr_willOverflowIfInc && pushCC_pushPtr_willIncrement);
+  always @ (*) begin
+    pushCC_pushPtr_valueNext = (pushCC_pushPtr_value + _zz_StreamFifoCC_1__17_);
+    if(pushCC_pushPtr_willClear)begin
+      pushCC_pushPtr_valueNext = (6'b000000);
+    end
+  end
+
+  assign _zz_StreamFifoCC_1__13_ = (6'b000000);
+  assign pushCC_popPtrGray = bufferCC_18__io_dataOut;
+  assign pushCC_full = ((pushCC_pushPtrGray[5 : 4] == (~ pushCC_popPtrGray[5 : 4])) && (pushCC_pushPtrGray[3 : 0] == pushCC_popPtrGray[3 : 0]));
+  assign io_push_ready = (! pushCC_full);
+  assign _zz_StreamFifoCC_1__2_ = (pushCC_popPtrGray[1] ^ _zz_StreamFifoCC_1__3_);
+  assign _zz_StreamFifoCC_1__3_ = (pushCC_popPtrGray[2] ^ _zz_StreamFifoCC_1__4_);
+  assign _zz_StreamFifoCC_1__4_ = (pushCC_popPtrGray[3] ^ _zz_StreamFifoCC_1__5_);
+  assign _zz_StreamFifoCC_1__5_ = (pushCC_popPtrGray[4] ^ _zz_StreamFifoCC_1__6_);
+  assign _zz_StreamFifoCC_1__6_ = pushCC_popPtrGray[5];
+  assign io_pushOccupancy = (pushCC_pushPtr_value - {_zz_StreamFifoCC_1__6_,{_zz_StreamFifoCC_1__5_,{_zz_StreamFifoCC_1__4_,{_zz_StreamFifoCC_1__3_,{_zz_StreamFifoCC_1__2_,(pushCC_popPtrGray[0] ^ _zz_StreamFifoCC_1__2_)}}}}});
+  always @ (*) begin
+    popCC_popPtr_willIncrement = 1'b0;
+    if((io_pop_valid && io_pop_ready))begin
+      popCC_popPtr_willIncrement = 1'b1;
+    end
+  end
+
+  assign popCC_popPtr_willClear = 1'b0;
+  assign popCC_popPtr_willOverflowIfInc = (popCC_popPtr_value == (6'b111111));
+  assign popCC_popPtr_willOverflow = (popCC_popPtr_willOverflowIfInc && popCC_popPtr_willIncrement);
+  always @ (*) begin
+    popCC_popPtr_valueNext = (popCC_popPtr_value + _zz_StreamFifoCC_1__21_);
+    if(popCC_popPtr_willClear)begin
+      popCC_popPtr_valueNext = (6'b000000);
+    end
+  end
+
+  assign _zz_StreamFifoCC_1__14_ = (6'b000000);
+  assign popCC_pushPtrGray = bufferCC_19__io_dataOut;
+  assign popCC_empty = (popCC_popPtrGray == popCC_pushPtrGray);
+  assign io_pop_valid = (! popCC_empty);
+  assign _zz_StreamFifoCC_1__7_ = popCC_popPtr_valueNext;
+  assign io_pop_payload = _zz_StreamFifoCC_1__15_;
+  assign _zz_StreamFifoCC_1__8_ = (popCC_pushPtrGray[1] ^ _zz_StreamFifoCC_1__9_);
+  assign _zz_StreamFifoCC_1__9_ = (popCC_pushPtrGray[2] ^ _zz_StreamFifoCC_1__10_);
+  assign _zz_StreamFifoCC_1__10_ = (popCC_pushPtrGray[3] ^ _zz_StreamFifoCC_1__11_);
+  assign _zz_StreamFifoCC_1__11_ = (popCC_pushPtrGray[4] ^ _zz_StreamFifoCC_1__12_);
+  assign _zz_StreamFifoCC_1__12_ = popCC_pushPtrGray[5];
+  assign io_popOccupancy = ({_zz_StreamFifoCC_1__12_,{_zz_StreamFifoCC_1__11_,{_zz_StreamFifoCC_1__10_,{_zz_StreamFifoCC_1__9_,{_zz_StreamFifoCC_1__8_,(popCC_pushPtrGray[0] ^ _zz_StreamFifoCC_1__8_)}}}}} - popCC_popPtr_value);
+  assign pushToPopGray = pushCC_pushPtrGray;
+  assign popToPushGray = popCC_popPtrGray;
+  always @ (posedge jtag_TCK or posedge jtag_RESET) begin
+    if (jtag_RESET) begin
+      pushCC_pushPtr_value <= (6'b000000);
+      pushCC_pushPtrGray <= (6'b000000);
+    end else begin
+      pushCC_pushPtr_value <= pushCC_pushPtr_valueNext;
+      pushCC_pushPtrGray <= (_zz_StreamFifoCC_1__18_ ^ pushCC_pushPtr_valueNext);
+    end
+  end
+
+  always @ (posedge toplevel_main_clk) begin
+    if(!toplevel_main_reset_) begin
+      popCC_popPtr_value <= (6'b000000);
+      popCC_popPtrGray <= (6'b000000);
+    end else begin
+      popCC_popPtr_value <= popCC_popPtr_valueNext;
+      popCC_popPtrGray <= (_zz_StreamFifoCC_1__22_ ^ popCC_popPtr_valueNext);
+    end
+  end
+
+endmodule
+
+module BufferCC_4_ (
       input  [11:0] io_initial,
       input  [11:0] io_dataIn,
       output [11:0] io_dataOut,
@@ -236,7 +696,7 @@ module BufferCC (
 
 endmodule
 
-module BufferCC_1_ (
+module BufferCC_5_ (
       input  [11:0] io_initial,
       input  [11:0] io_dataIn,
       output [11:0] io_dataOut,
@@ -422,96 +882,105 @@ module VexRiscv (
   wire  _zz_VexRiscv_198_;
   wire [31:0] _zz_VexRiscv_199_;
   wire [31:0] _zz_VexRiscv_200_;
-  wire [0:0] _zz_VexRiscv_201_;
-  wire [0:0] _zz_VexRiscv_202_;
-  wire  _zz_VexRiscv_203_;
-  wire [0:0] _zz_VexRiscv_204_;
+  wire [31:0] _zz_VexRiscv_201_;
+  wire [31:0] _zz_VexRiscv_202_;
+  wire [0:0] _zz_VexRiscv_203_;
+  wire [2:0] _zz_VexRiscv_204_;
   wire [0:0] _zz_VexRiscv_205_;
-  wire  _zz_VexRiscv_206_;
-  wire [0:0] _zz_VexRiscv_207_;
-  wire [16:0] _zz_VexRiscv_208_;
-  wire [31:0] _zz_VexRiscv_209_;
-  wire [31:0] _zz_VexRiscv_210_;
-  wire [31:0] _zz_VexRiscv_211_;
-  wire  _zz_VexRiscv_212_;
-  wire  _zz_VexRiscv_213_;
-  wire [0:0] _zz_VexRiscv_214_;
-  wire [0:0] _zz_VexRiscv_215_;
-  wire  _zz_VexRiscv_216_;
-  wire [0:0] _zz_VexRiscv_217_;
-  wire [13:0] _zz_VexRiscv_218_;
-  wire [31:0] _zz_VexRiscv_219_;
-  wire  _zz_VexRiscv_220_;
-  wire  _zz_VexRiscv_221_;
-  wire [0:0] _zz_VexRiscv_222_;
+  wire [0:0] _zz_VexRiscv_206_;
+  wire [3:0] _zz_VexRiscv_207_;
+  wire [3:0] _zz_VexRiscv_208_;
+  wire  _zz_VexRiscv_209_;
+  wire [0:0] _zz_VexRiscv_210_;
+  wire [16:0] _zz_VexRiscv_211_;
+  wire [31:0] _zz_VexRiscv_212_;
+  wire [31:0] _zz_VexRiscv_213_;
+  wire  _zz_VexRiscv_214_;
+  wire [31:0] _zz_VexRiscv_215_;
+  wire [31:0] _zz_VexRiscv_216_;
+  wire [31:0] _zz_VexRiscv_217_;
+  wire [31:0] _zz_VexRiscv_218_;
+  wire  _zz_VexRiscv_219_;
+  wire [0:0] _zz_VexRiscv_220_;
+  wire [0:0] _zz_VexRiscv_221_;
+  wire  _zz_VexRiscv_222_;
   wire [0:0] _zz_VexRiscv_223_;
   wire [1:0] _zz_VexRiscv_224_;
   wire [1:0] _zz_VexRiscv_225_;
-  wire  _zz_VexRiscv_226_;
-  wire [0:0] _zz_VexRiscv_227_;
-  wire [9:0] _zz_VexRiscv_228_;
-  wire [31:0] _zz_VexRiscv_229_;
+  wire [1:0] _zz_VexRiscv_226_;
+  wire  _zz_VexRiscv_227_;
+  wire [0:0] _zz_VexRiscv_228_;
+  wire [13:0] _zz_VexRiscv_229_;
   wire [31:0] _zz_VexRiscv_230_;
-  wire  _zz_VexRiscv_231_;
-  wire [0:0] _zz_VexRiscv_232_;
-  wire [1:0] _zz_VexRiscv_233_;
-  wire [0:0] _zz_VexRiscv_234_;
-  wire [1:0] _zz_VexRiscv_235_;
-  wire [1:0] _zz_VexRiscv_236_;
-  wire [1:0] _zz_VexRiscv_237_;
+  wire [31:0] _zz_VexRiscv_231_;
+  wire [31:0] _zz_VexRiscv_232_;
+  wire [31:0] _zz_VexRiscv_233_;
+  wire [31:0] _zz_VexRiscv_234_;
+  wire  _zz_VexRiscv_235_;
+  wire  _zz_VexRiscv_236_;
+  wire  _zz_VexRiscv_237_;
   wire  _zz_VexRiscv_238_;
   wire [0:0] _zz_VexRiscv_239_;
-  wire [6:0] _zz_VexRiscv_240_;
-  wire [31:0] _zz_VexRiscv_241_;
-  wire [31:0] _zz_VexRiscv_242_;
-  wire [31:0] _zz_VexRiscv_243_;
-  wire  _zz_VexRiscv_244_;
-  wire [31:0] _zz_VexRiscv_245_;
+  wire [1:0] _zz_VexRiscv_240_;
+  wire [0:0] _zz_VexRiscv_241_;
+  wire [0:0] _zz_VexRiscv_242_;
+  wire  _zz_VexRiscv_243_;
+  wire [0:0] _zz_VexRiscv_244_;
+  wire [11:0] _zz_VexRiscv_245_;
   wire [31:0] _zz_VexRiscv_246_;
-  wire  _zz_VexRiscv_247_;
-  wire  _zz_VexRiscv_248_;
-  wire  _zz_VexRiscv_249_;
-  wire  _zz_VexRiscv_250_;
-  wire [0:0] _zz_VexRiscv_251_;
-  wire [3:0] _zz_VexRiscv_252_;
-  wire [2:0] _zz_VexRiscv_253_;
-  wire [2:0] _zz_VexRiscv_254_;
-  wire  _zz_VexRiscv_255_;
-  wire [0:0] _zz_VexRiscv_256_;
-  wire [4:0] _zz_VexRiscv_257_;
-  wire [31:0] _zz_VexRiscv_258_;
-  wire [31:0] _zz_VexRiscv_259_;
-  wire [31:0] _zz_VexRiscv_260_;
+  wire [31:0] _zz_VexRiscv_247_;
+  wire [31:0] _zz_VexRiscv_248_;
+  wire [31:0] _zz_VexRiscv_249_;
+  wire [31:0] _zz_VexRiscv_250_;
+  wire [31:0] _zz_VexRiscv_251_;
+  wire  _zz_VexRiscv_252_;
+  wire  _zz_VexRiscv_253_;
+  wire [0:0] _zz_VexRiscv_254_;
+  wire [0:0] _zz_VexRiscv_255_;
+  wire [1:0] _zz_VexRiscv_256_;
+  wire [1:0] _zz_VexRiscv_257_;
+  wire  _zz_VexRiscv_258_;
+  wire [0:0] _zz_VexRiscv_259_;
+  wire [9:0] _zz_VexRiscv_260_;
   wire [31:0] _zz_VexRiscv_261_;
-  wire [31:0] _zz_VexRiscv_262_;
+  wire [0:0] _zz_VexRiscv_262_;
   wire [0:0] _zz_VexRiscv_263_;
-  wire [1:0] _zz_VexRiscv_264_;
-  wire  _zz_VexRiscv_265_;
-  wire [0:0] _zz_VexRiscv_266_;
+  wire [0:0] _zz_VexRiscv_264_;
+  wire [0:0] _zz_VexRiscv_265_;
+  wire  _zz_VexRiscv_266_;
   wire [0:0] _zz_VexRiscv_267_;
-  wire [1:0] _zz_VexRiscv_268_;
-  wire [1:0] _zz_VexRiscv_269_;
+  wire [6:0] _zz_VexRiscv_268_;
+  wire [31:0] _zz_VexRiscv_269_;
   wire  _zz_VexRiscv_270_;
   wire [0:0] _zz_VexRiscv_271_;
-  wire [2:0] _zz_VexRiscv_272_;
-  wire [31:0] _zz_VexRiscv_273_;
-  wire [31:0] _zz_VexRiscv_274_;
-  wire [31:0] _zz_VexRiscv_275_;
-  wire [31:0] _zz_VexRiscv_276_;
-  wire [31:0] _zz_VexRiscv_277_;
-  wire [31:0] _zz_VexRiscv_278_;
+  wire [0:0] _zz_VexRiscv_272_;
+  wire  _zz_VexRiscv_273_;
+  wire [0:0] _zz_VexRiscv_274_;
+  wire [0:0] _zz_VexRiscv_275_;
+  wire  _zz_VexRiscv_276_;
+  wire [0:0] _zz_VexRiscv_277_;
+  wire [2:0] _zz_VexRiscv_278_;
   wire [31:0] _zz_VexRiscv_279_;
-  wire [0:0] _zz_VexRiscv_280_;
-  wire [0:0] _zz_VexRiscv_281_;
+  wire [31:0] _zz_VexRiscv_280_;
+  wire [31:0] _zz_VexRiscv_281_;
   wire  _zz_VexRiscv_282_;
   wire  _zz_VexRiscv_283_;
-  wire `AluBitwiseCtrlEnum_defaultEncoding_type decode_ALU_BITWISE_CTRL;
-  wire `AluBitwiseCtrlEnum_defaultEncoding_type _zz_VexRiscv_1_;
-  wire `AluBitwiseCtrlEnum_defaultEncoding_type _zz_VexRiscv_2_;
-  wire `AluBitwiseCtrlEnum_defaultEncoding_type _zz_VexRiscv_3_;
-  wire  execute_BYPASSABLE_MEMORY_STAGE;
-  wire  decode_BYPASSABLE_MEMORY_STAGE;
-  wire [31:0] decode_SRC1;
+  wire [0:0] _zz_VexRiscv_284_;
+  wire [0:0] _zz_VexRiscv_285_;
+  wire  _zz_VexRiscv_286_;
+  wire  _zz_VexRiscv_287_;
+  wire [31:0] memory_PC;
+  wire [31:0] memory_MEMORY_READ_DATA;
+  wire `ShiftCtrlEnum_defaultEncoding_type decode_SHIFT_CTRL;
+  wire `ShiftCtrlEnum_defaultEncoding_type _zz_VexRiscv_1_;
+  wire `ShiftCtrlEnum_defaultEncoding_type _zz_VexRiscv_2_;
+  wire `ShiftCtrlEnum_defaultEncoding_type _zz_VexRiscv_3_;
+  wire  decode_MEMORY_ENABLE;
+  wire  decode_CSR_READ_OPCODE;
+  wire  decode_SRC_USE_SUB_LESS;
+  wire [31:0] decode_SRC2;
+  wire [31:0] execute_BRANCH_CALC;
+  wire [31:0] decode_RS1;
   wire `EnvCtrlEnum_defaultEncoding_type _zz_VexRiscv_4_;
   wire `EnvCtrlEnum_defaultEncoding_type _zz_VexRiscv_5_;
   wire `EnvCtrlEnum_defaultEncoding_type _zz_VexRiscv_6_;
@@ -520,40 +989,35 @@ module VexRiscv (
   wire `EnvCtrlEnum_defaultEncoding_type _zz_VexRiscv_8_;
   wire `EnvCtrlEnum_defaultEncoding_type _zz_VexRiscv_9_;
   wire `EnvCtrlEnum_defaultEncoding_type _zz_VexRiscv_10_;
-  wire [31:0] memory_PC;
+  wire  decode_SRC_LESS_UNSIGNED;
+  wire `AluCtrlEnum_defaultEncoding_type decode_ALU_CTRL;
+  wire `AluCtrlEnum_defaultEncoding_type _zz_VexRiscv_11_;
+  wire `AluCtrlEnum_defaultEncoding_type _zz_VexRiscv_12_;
+  wire `AluCtrlEnum_defaultEncoding_type _zz_VexRiscv_13_;
+  wire [1:0] memory_MEMORY_ADDRESS_LOW;
+  wire [1:0] execute_MEMORY_ADDRESS_LOW;
   wire [31:0] writeBack_FORMAL_PC_NEXT;
   wire [31:0] memory_FORMAL_PC_NEXT;
   wire [31:0] execute_FORMAL_PC_NEXT;
   wire [31:0] decode_FORMAL_PC_NEXT;
-  wire [31:0] decode_RS1;
-  wire [31:0] execute_BRANCH_CALC;
-  wire  decode_MEMORY_ENABLE;
-  wire [31:0] decode_RS2;
-  wire `ShiftCtrlEnum_defaultEncoding_type decode_SHIFT_CTRL;
-  wire `ShiftCtrlEnum_defaultEncoding_type _zz_VexRiscv_11_;
-  wire `ShiftCtrlEnum_defaultEncoding_type _zz_VexRiscv_12_;
-  wire `ShiftCtrlEnum_defaultEncoding_type _zz_VexRiscv_13_;
-  wire  decode_SRC_LESS_UNSIGNED;
-  wire [31:0] memory_MEMORY_READ_DATA;
-  wire  decode_CSR_READ_OPCODE;
-  wire  decode_CSR_WRITE_OPCODE;
   wire `BranchCtrlEnum_defaultEncoding_type decode_BRANCH_CTRL;
   wire `BranchCtrlEnum_defaultEncoding_type _zz_VexRiscv_14_;
   wire `BranchCtrlEnum_defaultEncoding_type _zz_VexRiscv_15_;
   wire `BranchCtrlEnum_defaultEncoding_type _zz_VexRiscv_16_;
-  wire [1:0] memory_MEMORY_ADDRESS_LOW;
-  wire [1:0] execute_MEMORY_ADDRESS_LOW;
-  wire  execute_BRANCH_DO;
-  wire `AluCtrlEnum_defaultEncoding_type decode_ALU_CTRL;
-  wire `AluCtrlEnum_defaultEncoding_type _zz_VexRiscv_17_;
-  wire `AluCtrlEnum_defaultEncoding_type _zz_VexRiscv_18_;
-  wire `AluCtrlEnum_defaultEncoding_type _zz_VexRiscv_19_;
-  wire  decode_SRC_USE_SUB_LESS;
-  wire  decode_BYPASSABLE_EXECUTE_STAGE;
+  wire [31:0] decode_SRC1;
+  wire `AluBitwiseCtrlEnum_defaultEncoding_type decode_ALU_BITWISE_CTRL;
+  wire `AluBitwiseCtrlEnum_defaultEncoding_type _zz_VexRiscv_17_;
+  wire `AluBitwiseCtrlEnum_defaultEncoding_type _zz_VexRiscv_18_;
+  wire `AluBitwiseCtrlEnum_defaultEncoding_type _zz_VexRiscv_19_;
   wire [31:0] writeBack_REGFILE_WRITE_DATA;
   wire [31:0] execute_REGFILE_WRITE_DATA;
   wire  decode_IS_CSR;
-  wire [31:0] decode_SRC2;
+  wire [31:0] decode_RS2;
+  wire  execute_BRANCH_DO;
+  wire  decode_CSR_WRITE_OPCODE;
+  wire  decode_BYPASSABLE_EXECUTE_STAGE;
+  wire  execute_BYPASSABLE_MEMORY_STAGE;
+  wire  decode_BYPASSABLE_MEMORY_STAGE;
   wire [31:0] memory_BRANCH_CALC;
   wire  memory_BRANCH_DO;
   wire [31:0] _zz_VexRiscv_20_;
@@ -601,21 +1065,21 @@ module VexRiscv (
   wire [31:0] _zz_VexRiscv_41_;
   wire [31:0] decode_INSTRUCTION_ANTICIPATED;
   reg  decode_REGFILE_WRITE_VALID;
-  wire `AluBitwiseCtrlEnum_defaultEncoding_type _zz_VexRiscv_42_;
-  wire `EnvCtrlEnum_defaultEncoding_type _zz_VexRiscv_43_;
-  wire `ShiftCtrlEnum_defaultEncoding_type _zz_VexRiscv_44_;
+  wire  _zz_VexRiscv_42_;
+  wire  _zz_VexRiscv_43_;
+  wire  _zz_VexRiscv_44_;
   wire  _zz_VexRiscv_45_;
-  wire  _zz_VexRiscv_46_;
-  wire  _zz_VexRiscv_47_;
-  wire  _zz_VexRiscv_48_;
+  wire `AluBitwiseCtrlEnum_defaultEncoding_type _zz_VexRiscv_46_;
+  wire `AluCtrlEnum_defaultEncoding_type _zz_VexRiscv_47_;
+  wire `Src2CtrlEnum_defaultEncoding_type _zz_VexRiscv_48_;
   wire `Src1CtrlEnum_defaultEncoding_type _zz_VexRiscv_49_;
   wire  _zz_VexRiscv_50_;
   wire  _zz_VexRiscv_51_;
   wire  _zz_VexRiscv_52_;
-  wire  _zz_VexRiscv_53_;
-  wire `AluCtrlEnum_defaultEncoding_type _zz_VexRiscv_54_;
-  wire `Src2CtrlEnum_defaultEncoding_type _zz_VexRiscv_55_;
-  wire `BranchCtrlEnum_defaultEncoding_type _zz_VexRiscv_56_;
+  wire `EnvCtrlEnum_defaultEncoding_type _zz_VexRiscv_53_;
+  wire `ShiftCtrlEnum_defaultEncoding_type _zz_VexRiscv_54_;
+  wire `BranchCtrlEnum_defaultEncoding_type _zz_VexRiscv_55_;
+  wire  _zz_VexRiscv_56_;
   wire  _zz_VexRiscv_57_;
   reg [31:0] _zz_VexRiscv_58_;
   wire [31:0] execute_SRC1;
@@ -865,11 +1329,11 @@ module VexRiscv (
   wire  _zz_VexRiscv_109_;
   wire  _zz_VexRiscv_110_;
   wire `BranchCtrlEnum_defaultEncoding_type _zz_VexRiscv_111_;
-  wire `Src2CtrlEnum_defaultEncoding_type _zz_VexRiscv_112_;
-  wire `AluCtrlEnum_defaultEncoding_type _zz_VexRiscv_113_;
+  wire `ShiftCtrlEnum_defaultEncoding_type _zz_VexRiscv_112_;
+  wire `EnvCtrlEnum_defaultEncoding_type _zz_VexRiscv_113_;
   wire `Src1CtrlEnum_defaultEncoding_type _zz_VexRiscv_114_;
-  wire `ShiftCtrlEnum_defaultEncoding_type _zz_VexRiscv_115_;
-  wire `EnvCtrlEnum_defaultEncoding_type _zz_VexRiscv_116_;
+  wire `Src2CtrlEnum_defaultEncoding_type _zz_VexRiscv_115_;
+  wire `AluCtrlEnum_defaultEncoding_type _zz_VexRiscv_116_;
   wire `AluBitwiseCtrlEnum_defaultEncoding_type _zz_VexRiscv_117_;
   wire [4:0] decode_RegFilePlugin_regFileReadAddress1;
   wire [4:0] decode_RegFilePlugin_regFileReadAddress2;
@@ -915,52 +1379,52 @@ module VexRiscv (
   reg [31:0] _zz_VexRiscv_141_;
   wire [31:0] execute_BranchPlugin_branch_src2;
   wire [31:0] execute_BranchPlugin_branchAdder;
-  reg [31:0] decode_to_execute_SRC2;
-  reg  decode_to_execute_IS_CSR;
-  reg [31:0] execute_to_memory_REGFILE_WRITE_DATA;
-  reg [31:0] memory_to_writeBack_REGFILE_WRITE_DATA;
-  reg  decode_to_execute_BYPASSABLE_EXECUTE_STAGE;
-  reg  decode_to_execute_SRC_USE_SUB_LESS;
-  reg `AluCtrlEnum_defaultEncoding_type decode_to_execute_ALU_CTRL;
-  reg  execute_to_memory_BRANCH_DO;
-  reg [1:0] execute_to_memory_MEMORY_ADDRESS_LOW;
-  reg [1:0] memory_to_writeBack_MEMORY_ADDRESS_LOW;
-  reg `BranchCtrlEnum_defaultEncoding_type decode_to_execute_BRANCH_CTRL;
-  reg  decode_to_execute_CSR_WRITE_OPCODE;
-  reg  decode_to_execute_CSR_READ_OPCODE;
-  reg [31:0] memory_to_writeBack_MEMORY_READ_DATA;
+  reg  decode_to_execute_BYPASSABLE_MEMORY_STAGE;
+  reg  execute_to_memory_BYPASSABLE_MEMORY_STAGE;
   reg [31:0] decode_to_execute_INSTRUCTION;
   reg [31:0] execute_to_memory_INSTRUCTION;
   reg [31:0] memory_to_writeBack_INSTRUCTION;
-  reg  decode_to_execute_SRC_LESS_UNSIGNED;
+  reg  decode_to_execute_BYPASSABLE_EXECUTE_STAGE;
+  reg  decode_to_execute_CSR_WRITE_OPCODE;
+  reg  execute_to_memory_BRANCH_DO;
   reg  decode_to_execute_REGFILE_WRITE_VALID;
   reg  execute_to_memory_REGFILE_WRITE_VALID;
   reg  memory_to_writeBack_REGFILE_WRITE_VALID;
-  reg `ShiftCtrlEnum_defaultEncoding_type decode_to_execute_SHIFT_CTRL;
   reg [31:0] decode_to_execute_RS2;
-  reg  decode_to_execute_MEMORY_ENABLE;
-  reg  execute_to_memory_MEMORY_ENABLE;
-  reg  memory_to_writeBack_MEMORY_ENABLE;
-  reg [31:0] execute_to_memory_BRANCH_CALC;
-  reg [31:0] decode_to_execute_RS1;
+  reg  decode_to_execute_IS_CSR;
+  reg [31:0] execute_to_memory_REGFILE_WRITE_DATA;
+  reg [31:0] memory_to_writeBack_REGFILE_WRITE_DATA;
+  reg `AluBitwiseCtrlEnum_defaultEncoding_type decode_to_execute_ALU_BITWISE_CTRL;
+  reg [31:0] decode_to_execute_SRC1;
+  reg `BranchCtrlEnum_defaultEncoding_type decode_to_execute_BRANCH_CTRL;
   reg [31:0] decode_to_execute_FORMAL_PC_NEXT;
   reg [31:0] execute_to_memory_FORMAL_PC_NEXT;
   reg [31:0] memory_to_writeBack_FORMAL_PC_NEXT;
-  reg [31:0] decode_to_execute_PC;
-  reg [31:0] execute_to_memory_PC;
-  reg [31:0] memory_to_writeBack_PC;
+  reg [1:0] execute_to_memory_MEMORY_ADDRESS_LOW;
+  reg [1:0] memory_to_writeBack_MEMORY_ADDRESS_LOW;
+  reg `AluCtrlEnum_defaultEncoding_type decode_to_execute_ALU_CTRL;
+  reg  decode_to_execute_SRC_LESS_UNSIGNED;
   reg `EnvCtrlEnum_defaultEncoding_type decode_to_execute_ENV_CTRL;
   reg `EnvCtrlEnum_defaultEncoding_type execute_to_memory_ENV_CTRL;
   reg `EnvCtrlEnum_defaultEncoding_type memory_to_writeBack_ENV_CTRL;
-  reg [31:0] decode_to_execute_SRC1;
-  reg  decode_to_execute_BYPASSABLE_MEMORY_STAGE;
-  reg  execute_to_memory_BYPASSABLE_MEMORY_STAGE;
-  reg `AluBitwiseCtrlEnum_defaultEncoding_type decode_to_execute_ALU_BITWISE_CTRL;
+  reg [31:0] decode_to_execute_RS1;
+  reg [31:0] execute_to_memory_BRANCH_CALC;
+  reg [31:0] decode_to_execute_SRC2;
+  reg  decode_to_execute_SRC_USE_SUB_LESS;
+  reg  decode_to_execute_CSR_READ_OPCODE;
+  reg  decode_to_execute_MEMORY_ENABLE;
+  reg  execute_to_memory_MEMORY_ENABLE;
+  reg  memory_to_writeBack_MEMORY_ENABLE;
+  reg `ShiftCtrlEnum_defaultEncoding_type decode_to_execute_SHIFT_CTRL;
+  reg [31:0] memory_to_writeBack_MEMORY_READ_DATA;
+  reg [31:0] decode_to_execute_PC;
+  reg [31:0] execute_to_memory_PC;
+  reg [31:0] memory_to_writeBack_PC;
   `ifndef SYNTHESIS
-  reg [39:0] decode_ALU_BITWISE_CTRL_string;
-  reg [39:0] _zz_VexRiscv_1__string;
-  reg [39:0] _zz_VexRiscv_2__string;
-  reg [39:0] _zz_VexRiscv_3__string;
+  reg [71:0] decode_SHIFT_CTRL_string;
+  reg [71:0] _zz_VexRiscv_1__string;
+  reg [71:0] _zz_VexRiscv_2__string;
+  reg [71:0] _zz_VexRiscv_3__string;
   reg [31:0] _zz_VexRiscv_4__string;
   reg [31:0] _zz_VexRiscv_5__string;
   reg [31:0] _zz_VexRiscv_6__string;
@@ -969,18 +1433,18 @@ module VexRiscv (
   reg [31:0] _zz_VexRiscv_8__string;
   reg [31:0] _zz_VexRiscv_9__string;
   reg [31:0] _zz_VexRiscv_10__string;
-  reg [71:0] decode_SHIFT_CTRL_string;
-  reg [71:0] _zz_VexRiscv_11__string;
-  reg [71:0] _zz_VexRiscv_12__string;
-  reg [71:0] _zz_VexRiscv_13__string;
+  reg [63:0] decode_ALU_CTRL_string;
+  reg [63:0] _zz_VexRiscv_11__string;
+  reg [63:0] _zz_VexRiscv_12__string;
+  reg [63:0] _zz_VexRiscv_13__string;
   reg [31:0] decode_BRANCH_CTRL_string;
   reg [31:0] _zz_VexRiscv_14__string;
   reg [31:0] _zz_VexRiscv_15__string;
   reg [31:0] _zz_VexRiscv_16__string;
-  reg [63:0] decode_ALU_CTRL_string;
-  reg [63:0] _zz_VexRiscv_17__string;
-  reg [63:0] _zz_VexRiscv_18__string;
-  reg [63:0] _zz_VexRiscv_19__string;
+  reg [39:0] decode_ALU_BITWISE_CTRL_string;
+  reg [39:0] _zz_VexRiscv_17__string;
+  reg [39:0] _zz_VexRiscv_18__string;
+  reg [39:0] _zz_VexRiscv_19__string;
   reg [31:0] execute_BRANCH_CTRL_string;
   reg [31:0] _zz_VexRiscv_21__string;
   reg [71:0] execute_SHIFT_CTRL_string;
@@ -993,13 +1457,13 @@ module VexRiscv (
   reg [63:0] _zz_VexRiscv_34__string;
   reg [39:0] execute_ALU_BITWISE_CTRL_string;
   reg [39:0] _zz_VexRiscv_36__string;
-  reg [39:0] _zz_VexRiscv_42__string;
-  reg [31:0] _zz_VexRiscv_43__string;
-  reg [71:0] _zz_VexRiscv_44__string;
+  reg [39:0] _zz_VexRiscv_46__string;
+  reg [63:0] _zz_VexRiscv_47__string;
+  reg [23:0] _zz_VexRiscv_48__string;
   reg [95:0] _zz_VexRiscv_49__string;
-  reg [63:0] _zz_VexRiscv_54__string;
-  reg [23:0] _zz_VexRiscv_55__string;
-  reg [31:0] _zz_VexRiscv_56__string;
+  reg [31:0] _zz_VexRiscv_53__string;
+  reg [71:0] _zz_VexRiscv_54__string;
+  reg [31:0] _zz_VexRiscv_55__string;
   reg [31:0] memory_ENV_CTRL_string;
   reg [31:0] _zz_VexRiscv_59__string;
   reg [31:0] execute_ENV_CTRL_string;
@@ -1007,19 +1471,19 @@ module VexRiscv (
   reg [31:0] writeBack_ENV_CTRL_string;
   reg [31:0] _zz_VexRiscv_63__string;
   reg [31:0] _zz_VexRiscv_111__string;
-  reg [23:0] _zz_VexRiscv_112__string;
-  reg [63:0] _zz_VexRiscv_113__string;
+  reg [71:0] _zz_VexRiscv_112__string;
+  reg [31:0] _zz_VexRiscv_113__string;
   reg [95:0] _zz_VexRiscv_114__string;
-  reg [71:0] _zz_VexRiscv_115__string;
-  reg [31:0] _zz_VexRiscv_116__string;
+  reg [23:0] _zz_VexRiscv_115__string;
+  reg [63:0] _zz_VexRiscv_116__string;
   reg [39:0] _zz_VexRiscv_117__string;
-  reg [63:0] decode_to_execute_ALU_CTRL_string;
+  reg [39:0] decode_to_execute_ALU_BITWISE_CTRL_string;
   reg [31:0] decode_to_execute_BRANCH_CTRL_string;
-  reg [71:0] decode_to_execute_SHIFT_CTRL_string;
+  reg [63:0] decode_to_execute_ALU_CTRL_string;
   reg [31:0] decode_to_execute_ENV_CTRL_string;
   reg [31:0] execute_to_memory_ENV_CTRL_string;
   reg [31:0] memory_to_writeBack_ENV_CTRL_string;
-  reg [39:0] decode_to_execute_ALU_BITWISE_CTRL_string;
+  reg [71:0] decode_to_execute_SHIFT_CTRL_string;
   `endif
 
   reg [31:0] RegFilePlugin_regFile [0:31] /* verilator public */ ;
@@ -1042,15 +1506,15 @@ module VexRiscv (
   assign _zz_VexRiscv_161_ = {2'd0, _zz_VexRiscv_160_};
   assign _zz_VexRiscv_162_ = (iBus_rsp_valid && (IBusSimplePlugin_rspJoin_discardCounter != (3'b000)));
   assign _zz_VexRiscv_163_ = {2'd0, _zz_VexRiscv_162_};
-  assign _zz_VexRiscv_164_ = _zz_VexRiscv_104_[1 : 1];
-  assign _zz_VexRiscv_165_ = _zz_VexRiscv_104_[8 : 8];
-  assign _zz_VexRiscv_166_ = _zz_VexRiscv_104_[9 : 9];
-  assign _zz_VexRiscv_167_ = _zz_VexRiscv_104_[10 : 10];
-  assign _zz_VexRiscv_168_ = _zz_VexRiscv_104_[11 : 11];
-  assign _zz_VexRiscv_169_ = _zz_VexRiscv_104_[14 : 14];
-  assign _zz_VexRiscv_170_ = _zz_VexRiscv_104_[15 : 15];
-  assign _zz_VexRiscv_171_ = _zz_VexRiscv_104_[16 : 16];
-  assign _zz_VexRiscv_172_ = _zz_VexRiscv_104_[17 : 17];
+  assign _zz_VexRiscv_164_ = _zz_VexRiscv_104_[0 : 0];
+  assign _zz_VexRiscv_165_ = _zz_VexRiscv_104_[1 : 1];
+  assign _zz_VexRiscv_166_ = _zz_VexRiscv_104_[7 : 7];
+  assign _zz_VexRiscv_167_ = _zz_VexRiscv_104_[8 : 8];
+  assign _zz_VexRiscv_168_ = _zz_VexRiscv_104_[9 : 9];
+  assign _zz_VexRiscv_169_ = _zz_VexRiscv_104_[19 : 19];
+  assign _zz_VexRiscv_170_ = _zz_VexRiscv_104_[20 : 20];
+  assign _zz_VexRiscv_171_ = _zz_VexRiscv_104_[21 : 21];
+  assign _zz_VexRiscv_172_ = _zz_VexRiscv_104_[22 : 22];
   assign _zz_VexRiscv_173_ = execute_SRC_LESS;
   assign _zz_VexRiscv_174_ = (3'b100);
   assign _zz_VexRiscv_175_ = decode_INSTRUCTION[19 : 15];
@@ -1077,91 +1541,95 @@ module VexRiscv (
   assign _zz_VexRiscv_196_ = execute_CsrPlugin_writeData[3 : 3];
   assign _zz_VexRiscv_197_ = 1'b1;
   assign _zz_VexRiscv_198_ = 1'b1;
-  assign _zz_VexRiscv_199_ = (decode_INSTRUCTION & (32'b00000000000000000001000000000000));
-  assign _zz_VexRiscv_200_ = (32'b00000000000000000001000000000000);
-  assign _zz_VexRiscv_201_ = ((decode_INSTRUCTION & _zz_VexRiscv_209_) == (32'b00000000000000000001000000000000));
-  assign _zz_VexRiscv_202_ = ((decode_INSTRUCTION & _zz_VexRiscv_210_) == (32'b00000000000000000010000000000000));
-  assign _zz_VexRiscv_203_ = ((decode_INSTRUCTION & (32'b00000000000000000011000001010000)) == (32'b00000000000000000000000001010000));
-  assign _zz_VexRiscv_204_ = ((decode_INSTRUCTION & _zz_VexRiscv_211_) == (32'b00000000000000000101000000010000));
-  assign _zz_VexRiscv_205_ = (1'b0);
-  assign _zz_VexRiscv_206_ = ({_zz_VexRiscv_212_,_zz_VexRiscv_213_} != (2'b00));
-  assign _zz_VexRiscv_207_ = (_zz_VexRiscv_109_ != (1'b0));
-  assign _zz_VexRiscv_208_ = {(_zz_VexRiscv_214_ != _zz_VexRiscv_215_),{_zz_VexRiscv_216_,{_zz_VexRiscv_217_,_zz_VexRiscv_218_}}};
-  assign _zz_VexRiscv_209_ = (32'b00000000000000000011000000000000);
-  assign _zz_VexRiscv_210_ = (32'b00000000000000000011000000000000);
-  assign _zz_VexRiscv_211_ = (32'b00000000000000000111000001010100);
-  assign _zz_VexRiscv_212_ = ((decode_INSTRUCTION & (32'b01000000000000000011000001010100)) == (32'b01000000000000000001000000010000));
-  assign _zz_VexRiscv_213_ = ((decode_INSTRUCTION & (32'b00000000000000000111000001010100)) == (32'b00000000000000000001000000010000));
-  assign _zz_VexRiscv_214_ = ((decode_INSTRUCTION & (32'b00000000000000000000000001010000)) == (32'b00000000000000000000000000000000));
-  assign _zz_VexRiscv_215_ = (1'b0);
-  assign _zz_VexRiscv_216_ = (((decode_INSTRUCTION & _zz_VexRiscv_219_) == (32'b00000000000000000000000000010000)) != (1'b0));
-  assign _zz_VexRiscv_217_ = ({_zz_VexRiscv_220_,_zz_VexRiscv_221_} != (2'b00));
-  assign _zz_VexRiscv_218_ = {({_zz_VexRiscv_222_,_zz_VexRiscv_223_} != (2'b00)),{(_zz_VexRiscv_224_ != _zz_VexRiscv_225_),{_zz_VexRiscv_226_,{_zz_VexRiscv_227_,_zz_VexRiscv_228_}}}};
-  assign _zz_VexRiscv_219_ = (32'b00000000000000000000000000010000);
-  assign _zz_VexRiscv_220_ = ((decode_INSTRUCTION & (32'b00000000000000000000000000110100)) == (32'b00000000000000000000000000100000));
-  assign _zz_VexRiscv_221_ = ((decode_INSTRUCTION & (32'b00000000000000000000000001100100)) == (32'b00000000000000000000000000100000));
-  assign _zz_VexRiscv_222_ = _zz_VexRiscv_105_;
-  assign _zz_VexRiscv_223_ = _zz_VexRiscv_110_;
-  assign _zz_VexRiscv_224_ = {(_zz_VexRiscv_229_ == _zz_VexRiscv_230_),_zz_VexRiscv_110_};
-  assign _zz_VexRiscv_225_ = (2'b00);
-  assign _zz_VexRiscv_226_ = ({_zz_VexRiscv_231_,{_zz_VexRiscv_232_,_zz_VexRiscv_233_}} != (4'b0000));
-  assign _zz_VexRiscv_227_ = ({_zz_VexRiscv_234_,_zz_VexRiscv_235_} != (3'b000));
-  assign _zz_VexRiscv_228_ = {(_zz_VexRiscv_236_ != _zz_VexRiscv_237_),{_zz_VexRiscv_238_,{_zz_VexRiscv_239_,_zz_VexRiscv_240_}}};
-  assign _zz_VexRiscv_229_ = (decode_INSTRUCTION & (32'b00000000000000000000000001000100));
-  assign _zz_VexRiscv_230_ = (32'b00000000000000000000000000000100);
-  assign _zz_VexRiscv_231_ = ((decode_INSTRUCTION & _zz_VexRiscv_241_) == (32'b00000000000000000000000000000000));
-  assign _zz_VexRiscv_232_ = (_zz_VexRiscv_242_ == _zz_VexRiscv_243_);
-  assign _zz_VexRiscv_233_ = {_zz_VexRiscv_108_,_zz_VexRiscv_244_};
-  assign _zz_VexRiscv_234_ = (_zz_VexRiscv_245_ == _zz_VexRiscv_246_);
-  assign _zz_VexRiscv_235_ = {_zz_VexRiscv_247_,_zz_VexRiscv_248_};
-  assign _zz_VexRiscv_236_ = {_zz_VexRiscv_249_,_zz_VexRiscv_250_};
-  assign _zz_VexRiscv_237_ = (2'b00);
-  assign _zz_VexRiscv_238_ = ({_zz_VexRiscv_251_,_zz_VexRiscv_252_} != (5'b00000));
-  assign _zz_VexRiscv_239_ = (_zz_VexRiscv_253_ != _zz_VexRiscv_254_);
-  assign _zz_VexRiscv_240_ = {_zz_VexRiscv_255_,{_zz_VexRiscv_256_,_zz_VexRiscv_257_}};
-  assign _zz_VexRiscv_241_ = (32'b00000000000000000000000001000100);
-  assign _zz_VexRiscv_242_ = (decode_INSTRUCTION & (32'b00000000000000000000000000011000));
-  assign _zz_VexRiscv_243_ = (32'b00000000000000000000000000000000);
-  assign _zz_VexRiscv_244_ = ((decode_INSTRUCTION & _zz_VexRiscv_258_) == (32'b00000000000000000001000000000000));
-  assign _zz_VexRiscv_245_ = (decode_INSTRUCTION & (32'b00000000000000000000000001000100));
-  assign _zz_VexRiscv_246_ = (32'b00000000000000000000000001000000);
-  assign _zz_VexRiscv_247_ = ((decode_INSTRUCTION & _zz_VexRiscv_259_) == (32'b01000000000000000000000000110000));
-  assign _zz_VexRiscv_248_ = ((decode_INSTRUCTION & _zz_VexRiscv_260_) == (32'b00000000000000000010000000010000));
-  assign _zz_VexRiscv_249_ = ((decode_INSTRUCTION & _zz_VexRiscv_261_) == (32'b00000000000000000001000001010000));
-  assign _zz_VexRiscv_250_ = ((decode_INSTRUCTION & _zz_VexRiscv_262_) == (32'b00000000000000000010000001010000));
-  assign _zz_VexRiscv_251_ = _zz_VexRiscv_107_;
-  assign _zz_VexRiscv_252_ = {_zz_VexRiscv_106_,{_zz_VexRiscv_263_,_zz_VexRiscv_264_}};
-  assign _zz_VexRiscv_253_ = {_zz_VexRiscv_265_,{_zz_VexRiscv_266_,_zz_VexRiscv_267_}};
-  assign _zz_VexRiscv_254_ = (3'b000);
-  assign _zz_VexRiscv_255_ = (_zz_VexRiscv_108_ != (1'b0));
-  assign _zz_VexRiscv_256_ = (_zz_VexRiscv_268_ != _zz_VexRiscv_269_);
-  assign _zz_VexRiscv_257_ = {_zz_VexRiscv_270_,{_zz_VexRiscv_271_,_zz_VexRiscv_272_}};
-  assign _zz_VexRiscv_258_ = (32'b00000000000000000101000000000100);
-  assign _zz_VexRiscv_259_ = (32'b01000000000000000000000000110000);
-  assign _zz_VexRiscv_260_ = (32'b00000000000000000010000000010100);
-  assign _zz_VexRiscv_261_ = (32'b00000000000000000001000001010000);
-  assign _zz_VexRiscv_262_ = (32'b00000000000000000010000001010000);
-  assign _zz_VexRiscv_263_ = ((decode_INSTRUCTION & _zz_VexRiscv_273_) == (32'b00000000000000000001000000010000));
-  assign _zz_VexRiscv_264_ = {(_zz_VexRiscv_274_ == _zz_VexRiscv_275_),_zz_VexRiscv_109_};
-  assign _zz_VexRiscv_265_ = ((decode_INSTRUCTION & (32'b00000000000000000100000000000100)) == (32'b00000000000000000100000000000000));
-  assign _zz_VexRiscv_266_ = ((decode_INSTRUCTION & _zz_VexRiscv_276_) == (32'b00000000000000000000000000100100));
-  assign _zz_VexRiscv_267_ = ((decode_INSTRUCTION & _zz_VexRiscv_277_) == (32'b00000000000000000001000000000000));
-  assign _zz_VexRiscv_268_ = {_zz_VexRiscv_107_,(_zz_VexRiscv_278_ == _zz_VexRiscv_279_)};
-  assign _zz_VexRiscv_269_ = (2'b00);
-  assign _zz_VexRiscv_270_ = ({_zz_VexRiscv_107_,_zz_VexRiscv_106_} != (2'b00));
-  assign _zz_VexRiscv_271_ = (_zz_VexRiscv_105_ != (1'b0));
-  assign _zz_VexRiscv_272_ = {(_zz_VexRiscv_280_ != _zz_VexRiscv_281_),{_zz_VexRiscv_282_,_zz_VexRiscv_283_}};
-  assign _zz_VexRiscv_273_ = (32'b00000000000000000001000000010000);
-  assign _zz_VexRiscv_274_ = (decode_INSTRUCTION & (32'b00000000000000000010000000010000));
-  assign _zz_VexRiscv_275_ = (32'b00000000000000000010000000010000);
-  assign _zz_VexRiscv_276_ = (32'b00000000000000000000000001100100);
-  assign _zz_VexRiscv_277_ = (32'b00000000000000000011000000000100);
-  assign _zz_VexRiscv_278_ = (decode_INSTRUCTION & (32'b00000000000000000000000001110000));
-  assign _zz_VexRiscv_279_ = (32'b00000000000000000000000000100000);
-  assign _zz_VexRiscv_280_ = ((decode_INSTRUCTION & (32'b00000000000000000000000001011000)) == (32'b00000000000000000000000001000000));
-  assign _zz_VexRiscv_281_ = (1'b0);
-  assign _zz_VexRiscv_282_ = ({((decode_INSTRUCTION & (32'b00000000000000000010000000010000)) == (32'b00000000000000000010000000000000)),((decode_INSTRUCTION & (32'b00000000000000000101000000000000)) == (32'b00000000000000000001000000000000))} != (2'b00));
-  assign _zz_VexRiscv_283_ = ({((decode_INSTRUCTION & (32'b00000000000000000000000001010000)) == (32'b00000000000000000000000001000000)),((decode_INSTRUCTION & (32'b00000000000000000011000001000000)) == (32'b00000000000000000000000001000000))} != (2'b00));
+  assign _zz_VexRiscv_199_ = (decode_INSTRUCTION & (32'b00000000000000000001000001010000));
+  assign _zz_VexRiscv_200_ = (32'b00000000000000000001000001010000);
+  assign _zz_VexRiscv_201_ = (decode_INSTRUCTION & (32'b00000000000000000010000001010000));
+  assign _zz_VexRiscv_202_ = (32'b00000000000000000010000001010000);
+  assign _zz_VexRiscv_203_ = _zz_VexRiscv_108_;
+  assign _zz_VexRiscv_204_ = {(_zz_VexRiscv_212_ == _zz_VexRiscv_213_),{_zz_VexRiscv_214_,_zz_VexRiscv_105_}};
+  assign _zz_VexRiscv_205_ = ((decode_INSTRUCTION & _zz_VexRiscv_215_) == (32'b00000000000000000010000000000000));
+  assign _zz_VexRiscv_206_ = ((decode_INSTRUCTION & _zz_VexRiscv_216_) == (32'b00000000000000000001000000000000));
+  assign _zz_VexRiscv_207_ = {(_zz_VexRiscv_217_ == _zz_VexRiscv_218_),{_zz_VexRiscv_219_,{_zz_VexRiscv_220_,_zz_VexRiscv_221_}}};
+  assign _zz_VexRiscv_208_ = (4'b0000);
+  assign _zz_VexRiscv_209_ = ({_zz_VexRiscv_222_,_zz_VexRiscv_109_} != (2'b00));
+  assign _zz_VexRiscv_210_ = ({_zz_VexRiscv_223_,_zz_VexRiscv_224_} != (3'b000));
+  assign _zz_VexRiscv_211_ = {(_zz_VexRiscv_225_ != _zz_VexRiscv_226_),{_zz_VexRiscv_227_,{_zz_VexRiscv_228_,_zz_VexRiscv_229_}}};
+  assign _zz_VexRiscv_212_ = (decode_INSTRUCTION & (32'b00000000000000000001000000010000));
+  assign _zz_VexRiscv_213_ = (32'b00000000000000000001000000010000);
+  assign _zz_VexRiscv_214_ = ((decode_INSTRUCTION & _zz_VexRiscv_230_) == (32'b00000000000000000010000000010000));
+  assign _zz_VexRiscv_215_ = (32'b00000000000000000010000000010000);
+  assign _zz_VexRiscv_216_ = (32'b00000000000000000101000000000000);
+  assign _zz_VexRiscv_217_ = (decode_INSTRUCTION & (32'b00000000000000000000000001000100));
+  assign _zz_VexRiscv_218_ = (32'b00000000000000000000000000000000);
+  assign _zz_VexRiscv_219_ = ((decode_INSTRUCTION & _zz_VexRiscv_231_) == (32'b00000000000000000000000000000000));
+  assign _zz_VexRiscv_220_ = _zz_VexRiscv_110_;
+  assign _zz_VexRiscv_221_ = (_zz_VexRiscv_232_ == _zz_VexRiscv_233_);
+  assign _zz_VexRiscv_222_ = ((decode_INSTRUCTION & _zz_VexRiscv_234_) == (32'b00000000000000000001000000000000));
+  assign _zz_VexRiscv_223_ = _zz_VexRiscv_109_;
+  assign _zz_VexRiscv_224_ = {_zz_VexRiscv_235_,_zz_VexRiscv_236_};
+  assign _zz_VexRiscv_225_ = {_zz_VexRiscv_237_,_zz_VexRiscv_238_};
+  assign _zz_VexRiscv_226_ = (2'b00);
+  assign _zz_VexRiscv_227_ = ({_zz_VexRiscv_239_,_zz_VexRiscv_240_} != (3'b000));
+  assign _zz_VexRiscv_228_ = (_zz_VexRiscv_241_ != _zz_VexRiscv_242_);
+  assign _zz_VexRiscv_229_ = {_zz_VexRiscv_243_,{_zz_VexRiscv_244_,_zz_VexRiscv_245_}};
+  assign _zz_VexRiscv_230_ = (32'b00000000000000000010000000010000);
+  assign _zz_VexRiscv_231_ = (32'b00000000000000000000000000011000);
+  assign _zz_VexRiscv_232_ = (decode_INSTRUCTION & (32'b00000000000000000101000000000100));
+  assign _zz_VexRiscv_233_ = (32'b00000000000000000001000000000000);
+  assign _zz_VexRiscv_234_ = (32'b00000000000000000001000000000000);
+  assign _zz_VexRiscv_235_ = ((decode_INSTRUCTION & _zz_VexRiscv_246_) == (32'b00000000000000000001000000000000));
+  assign _zz_VexRiscv_236_ = ((decode_INSTRUCTION & _zz_VexRiscv_247_) == (32'b00000000000000000010000000000000));
+  assign _zz_VexRiscv_237_ = ((decode_INSTRUCTION & _zz_VexRiscv_248_) == (32'b00000000000000000000000001000000));
+  assign _zz_VexRiscv_238_ = ((decode_INSTRUCTION & _zz_VexRiscv_249_) == (32'b00000000000000000000000001000000));
+  assign _zz_VexRiscv_239_ = (_zz_VexRiscv_250_ == _zz_VexRiscv_251_);
+  assign _zz_VexRiscv_240_ = {_zz_VexRiscv_252_,_zz_VexRiscv_253_};
+  assign _zz_VexRiscv_241_ = _zz_VexRiscv_110_;
+  assign _zz_VexRiscv_242_ = (1'b0);
+  assign _zz_VexRiscv_243_ = ({_zz_VexRiscv_254_,_zz_VexRiscv_255_} != (2'b00));
+  assign _zz_VexRiscv_244_ = (_zz_VexRiscv_256_ != _zz_VexRiscv_257_);
+  assign _zz_VexRiscv_245_ = {_zz_VexRiscv_258_,{_zz_VexRiscv_259_,_zz_VexRiscv_260_}};
+  assign _zz_VexRiscv_246_ = (32'b00000000000000000011000000000000);
+  assign _zz_VexRiscv_247_ = (32'b00000000000000000011000000000000);
+  assign _zz_VexRiscv_248_ = (32'b00000000000000000000000001010000);
+  assign _zz_VexRiscv_249_ = (32'b00000000000000000011000001000000);
+  assign _zz_VexRiscv_250_ = (decode_INSTRUCTION & (32'b00000000000000000100000000000100));
+  assign _zz_VexRiscv_251_ = (32'b00000000000000000100000000000000);
+  assign _zz_VexRiscv_252_ = ((decode_INSTRUCTION & (32'b00000000000000000000000001100100)) == (32'b00000000000000000000000000100100));
+  assign _zz_VexRiscv_253_ = ((decode_INSTRUCTION & (32'b00000000000000000011000000000100)) == (32'b00000000000000000001000000000000));
+  assign _zz_VexRiscv_254_ = _zz_VexRiscv_109_;
+  assign _zz_VexRiscv_255_ = ((decode_INSTRUCTION & _zz_VexRiscv_261_) == (32'b00000000000000000000000000100000));
+  assign _zz_VexRiscv_256_ = {_zz_VexRiscv_109_,_zz_VexRiscv_108_};
+  assign _zz_VexRiscv_257_ = (2'b00);
+  assign _zz_VexRiscv_258_ = ({_zz_VexRiscv_106_,_zz_VexRiscv_107_} != (2'b00));
+  assign _zz_VexRiscv_259_ = ({_zz_VexRiscv_262_,_zz_VexRiscv_263_} != (2'b00));
+  assign _zz_VexRiscv_260_ = {(_zz_VexRiscv_264_ != _zz_VexRiscv_265_),{_zz_VexRiscv_266_,{_zz_VexRiscv_267_,_zz_VexRiscv_268_}}};
+  assign _zz_VexRiscv_261_ = (32'b00000000000000000000000001110000);
+  assign _zz_VexRiscv_262_ = ((decode_INSTRUCTION & (32'b00000000000000000000000001000100)) == (32'b00000000000000000000000000000100));
+  assign _zz_VexRiscv_263_ = _zz_VexRiscv_107_;
+  assign _zz_VexRiscv_264_ = ((decode_INSTRUCTION & (32'b00000000000000000000000001010000)) == (32'b00000000000000000000000000000000));
+  assign _zz_VexRiscv_265_ = (1'b0);
+  assign _zz_VexRiscv_266_ = (((decode_INSTRUCTION & _zz_VexRiscv_269_) == (32'b00000000000000000000000000010000)) != (1'b0));
+  assign _zz_VexRiscv_267_ = ({_zz_VexRiscv_270_,{_zz_VexRiscv_271_,_zz_VexRiscv_272_}} != (3'b000));
+  assign _zz_VexRiscv_268_ = {(_zz_VexRiscv_273_ != (1'b0)),{(_zz_VexRiscv_274_ != _zz_VexRiscv_275_),{_zz_VexRiscv_276_,{_zz_VexRiscv_277_,_zz_VexRiscv_278_}}}};
+  assign _zz_VexRiscv_269_ = (32'b00000000000000000000000000010000);
+  assign _zz_VexRiscv_270_ = ((decode_INSTRUCTION & (32'b00000000000000000000000001000100)) == (32'b00000000000000000000000001000000));
+  assign _zz_VexRiscv_271_ = ((decode_INSTRUCTION & _zz_VexRiscv_279_) == (32'b01000000000000000000000000110000));
+  assign _zz_VexRiscv_272_ = ((decode_INSTRUCTION & _zz_VexRiscv_280_) == (32'b00000000000000000010000000010000));
+  assign _zz_VexRiscv_273_ = ((decode_INSTRUCTION & (32'b00000000000000000011000001010000)) == (32'b00000000000000000000000001010000));
+  assign _zz_VexRiscv_274_ = ((decode_INSTRUCTION & _zz_VexRiscv_281_) == (32'b00000000000000000101000000010000));
+  assign _zz_VexRiscv_275_ = (1'b0);
+  assign _zz_VexRiscv_276_ = ({_zz_VexRiscv_282_,_zz_VexRiscv_283_} != (2'b00));
+  assign _zz_VexRiscv_277_ = (_zz_VexRiscv_106_ != (1'b0));
+  assign _zz_VexRiscv_278_ = {(_zz_VexRiscv_284_ != _zz_VexRiscv_285_),{_zz_VexRiscv_286_,_zz_VexRiscv_287_}};
+  assign _zz_VexRiscv_279_ = (32'b01000000000000000000000000110000);
+  assign _zz_VexRiscv_280_ = (32'b00000000000000000010000000010100);
+  assign _zz_VexRiscv_281_ = (32'b00000000000000000111000001010100);
+  assign _zz_VexRiscv_282_ = ((decode_INSTRUCTION & (32'b01000000000000000011000001010100)) == (32'b01000000000000000001000000010000));
+  assign _zz_VexRiscv_283_ = ((decode_INSTRUCTION & (32'b00000000000000000111000001010100)) == (32'b00000000000000000001000000010000));
+  assign _zz_VexRiscv_284_ = ((decode_INSTRUCTION & (32'b00000000000000000000000001011000)) == (32'b00000000000000000000000001000000));
+  assign _zz_VexRiscv_285_ = (1'b0);
+  assign _zz_VexRiscv_286_ = (_zz_VexRiscv_105_ != (1'b0));
+  assign _zz_VexRiscv_287_ = ({((decode_INSTRUCTION & (32'b00000000000000000000000000110100)) == (32'b00000000000000000000000000100000)),((decode_INSTRUCTION & (32'b00000000000000000000000001100100)) == (32'b00000000000000000000000000100000))} != (2'b00));
   always @ (posedge toplevel_main_clk) begin
     if(_zz_VexRiscv_39_) begin
       RegFilePlugin_regFile[writeBack_RegFilePlugin_regFileWrite_payload_address] <= writeBack_RegFilePlugin_regFileWrite_payload_data;
@@ -1196,39 +1664,39 @@ module VexRiscv (
   );
   `ifndef SYNTHESIS
   always @(*) begin
-    case(decode_ALU_BITWISE_CTRL)
-      `AluBitwiseCtrlEnum_defaultEncoding_XOR_1 : decode_ALU_BITWISE_CTRL_string = "XOR_1";
-      `AluBitwiseCtrlEnum_defaultEncoding_OR_1 : decode_ALU_BITWISE_CTRL_string = "OR_1 ";
-      `AluBitwiseCtrlEnum_defaultEncoding_AND_1 : decode_ALU_BITWISE_CTRL_string = "AND_1";
-      `AluBitwiseCtrlEnum_defaultEncoding_SRC1 : decode_ALU_BITWISE_CTRL_string = "SRC1 ";
-      default : decode_ALU_BITWISE_CTRL_string = "?????";
+    case(decode_SHIFT_CTRL)
+      `ShiftCtrlEnum_defaultEncoding_DISABLE_1 : decode_SHIFT_CTRL_string = "DISABLE_1";
+      `ShiftCtrlEnum_defaultEncoding_SLL_1 : decode_SHIFT_CTRL_string = "SLL_1    ";
+      `ShiftCtrlEnum_defaultEncoding_SRL_1 : decode_SHIFT_CTRL_string = "SRL_1    ";
+      `ShiftCtrlEnum_defaultEncoding_SRA_1 : decode_SHIFT_CTRL_string = "SRA_1    ";
+      default : decode_SHIFT_CTRL_string = "?????????";
     endcase
   end
   always @(*) begin
     case(_zz_VexRiscv_1_)
-      `AluBitwiseCtrlEnum_defaultEncoding_XOR_1 : _zz_VexRiscv_1__string = "XOR_1";
-      `AluBitwiseCtrlEnum_defaultEncoding_OR_1 : _zz_VexRiscv_1__string = "OR_1 ";
-      `AluBitwiseCtrlEnum_defaultEncoding_AND_1 : _zz_VexRiscv_1__string = "AND_1";
-      `AluBitwiseCtrlEnum_defaultEncoding_SRC1 : _zz_VexRiscv_1__string = "SRC1 ";
-      default : _zz_VexRiscv_1__string = "?????";
+      `ShiftCtrlEnum_defaultEncoding_DISABLE_1 : _zz_VexRiscv_1__string = "DISABLE_1";
+      `ShiftCtrlEnum_defaultEncoding_SLL_1 : _zz_VexRiscv_1__string = "SLL_1    ";
+      `ShiftCtrlEnum_defaultEncoding_SRL_1 : _zz_VexRiscv_1__string = "SRL_1    ";
+      `ShiftCtrlEnum_defaultEncoding_SRA_1 : _zz_VexRiscv_1__string = "SRA_1    ";
+      default : _zz_VexRiscv_1__string = "?????????";
     endcase
   end
   always @(*) begin
     case(_zz_VexRiscv_2_)
-      `AluBitwiseCtrlEnum_defaultEncoding_XOR_1 : _zz_VexRiscv_2__string = "XOR_1";
-      `AluBitwiseCtrlEnum_defaultEncoding_OR_1 : _zz_VexRiscv_2__string = "OR_1 ";
-      `AluBitwiseCtrlEnum_defaultEncoding_AND_1 : _zz_VexRiscv_2__string = "AND_1";
-      `AluBitwiseCtrlEnum_defaultEncoding_SRC1 : _zz_VexRiscv_2__string = "SRC1 ";
-      default : _zz_VexRiscv_2__string = "?????";
+      `ShiftCtrlEnum_defaultEncoding_DISABLE_1 : _zz_VexRiscv_2__string = "DISABLE_1";
+      `ShiftCtrlEnum_defaultEncoding_SLL_1 : _zz_VexRiscv_2__string = "SLL_1    ";
+      `ShiftCtrlEnum_defaultEncoding_SRL_1 : _zz_VexRiscv_2__string = "SRL_1    ";
+      `ShiftCtrlEnum_defaultEncoding_SRA_1 : _zz_VexRiscv_2__string = "SRA_1    ";
+      default : _zz_VexRiscv_2__string = "?????????";
     endcase
   end
   always @(*) begin
     case(_zz_VexRiscv_3_)
-      `AluBitwiseCtrlEnum_defaultEncoding_XOR_1 : _zz_VexRiscv_3__string = "XOR_1";
-      `AluBitwiseCtrlEnum_defaultEncoding_OR_1 : _zz_VexRiscv_3__string = "OR_1 ";
-      `AluBitwiseCtrlEnum_defaultEncoding_AND_1 : _zz_VexRiscv_3__string = "AND_1";
-      `AluBitwiseCtrlEnum_defaultEncoding_SRC1 : _zz_VexRiscv_3__string = "SRC1 ";
-      default : _zz_VexRiscv_3__string = "?????";
+      `ShiftCtrlEnum_defaultEncoding_DISABLE_1 : _zz_VexRiscv_3__string = "DISABLE_1";
+      `ShiftCtrlEnum_defaultEncoding_SLL_1 : _zz_VexRiscv_3__string = "SLL_1    ";
+      `ShiftCtrlEnum_defaultEncoding_SRL_1 : _zz_VexRiscv_3__string = "SRL_1    ";
+      `ShiftCtrlEnum_defaultEncoding_SRA_1 : _zz_VexRiscv_3__string = "SRA_1    ";
+      default : _zz_VexRiscv_3__string = "?????????";
     endcase
   end
   always @(*) begin
@@ -1288,39 +1756,35 @@ module VexRiscv (
     endcase
   end
   always @(*) begin
-    case(decode_SHIFT_CTRL)
-      `ShiftCtrlEnum_defaultEncoding_DISABLE_1 : decode_SHIFT_CTRL_string = "DISABLE_1";
-      `ShiftCtrlEnum_defaultEncoding_SLL_1 : decode_SHIFT_CTRL_string = "SLL_1    ";
-      `ShiftCtrlEnum_defaultEncoding_SRL_1 : decode_SHIFT_CTRL_string = "SRL_1    ";
-      `ShiftCtrlEnum_defaultEncoding_SRA_1 : decode_SHIFT_CTRL_string = "SRA_1    ";
-      default : decode_SHIFT_CTRL_string = "?????????";
+    case(decode_ALU_CTRL)
+      `AluCtrlEnum_defaultEncoding_ADD_SUB : decode_ALU_CTRL_string = "ADD_SUB ";
+      `AluCtrlEnum_defaultEncoding_SLT_SLTU : decode_ALU_CTRL_string = "SLT_SLTU";
+      `AluCtrlEnum_defaultEncoding_BITWISE : decode_ALU_CTRL_string = "BITWISE ";
+      default : decode_ALU_CTRL_string = "????????";
     endcase
   end
   always @(*) begin
     case(_zz_VexRiscv_11_)
-      `ShiftCtrlEnum_defaultEncoding_DISABLE_1 : _zz_VexRiscv_11__string = "DISABLE_1";
-      `ShiftCtrlEnum_defaultEncoding_SLL_1 : _zz_VexRiscv_11__string = "SLL_1    ";
-      `ShiftCtrlEnum_defaultEncoding_SRL_1 : _zz_VexRiscv_11__string = "SRL_1    ";
-      `ShiftCtrlEnum_defaultEncoding_SRA_1 : _zz_VexRiscv_11__string = "SRA_1    ";
-      default : _zz_VexRiscv_11__string = "?????????";
+      `AluCtrlEnum_defaultEncoding_ADD_SUB : _zz_VexRiscv_11__string = "ADD_SUB ";
+      `AluCtrlEnum_defaultEncoding_SLT_SLTU : _zz_VexRiscv_11__string = "SLT_SLTU";
+      `AluCtrlEnum_defaultEncoding_BITWISE : _zz_VexRiscv_11__string = "BITWISE ";
+      default : _zz_VexRiscv_11__string = "????????";
     endcase
   end
   always @(*) begin
     case(_zz_VexRiscv_12_)
-      `ShiftCtrlEnum_defaultEncoding_DISABLE_1 : _zz_VexRiscv_12__string = "DISABLE_1";
-      `ShiftCtrlEnum_defaultEncoding_SLL_1 : _zz_VexRiscv_12__string = "SLL_1    ";
-      `ShiftCtrlEnum_defaultEncoding_SRL_1 : _zz_VexRiscv_12__string = "SRL_1    ";
-      `ShiftCtrlEnum_defaultEncoding_SRA_1 : _zz_VexRiscv_12__string = "SRA_1    ";
-      default : _zz_VexRiscv_12__string = "?????????";
+      `AluCtrlEnum_defaultEncoding_ADD_SUB : _zz_VexRiscv_12__string = "ADD_SUB ";
+      `AluCtrlEnum_defaultEncoding_SLT_SLTU : _zz_VexRiscv_12__string = "SLT_SLTU";
+      `AluCtrlEnum_defaultEncoding_BITWISE : _zz_VexRiscv_12__string = "BITWISE ";
+      default : _zz_VexRiscv_12__string = "????????";
     endcase
   end
   always @(*) begin
     case(_zz_VexRiscv_13_)
-      `ShiftCtrlEnum_defaultEncoding_DISABLE_1 : _zz_VexRiscv_13__string = "DISABLE_1";
-      `ShiftCtrlEnum_defaultEncoding_SLL_1 : _zz_VexRiscv_13__string = "SLL_1    ";
-      `ShiftCtrlEnum_defaultEncoding_SRL_1 : _zz_VexRiscv_13__string = "SRL_1    ";
-      `ShiftCtrlEnum_defaultEncoding_SRA_1 : _zz_VexRiscv_13__string = "SRA_1    ";
-      default : _zz_VexRiscv_13__string = "?????????";
+      `AluCtrlEnum_defaultEncoding_ADD_SUB : _zz_VexRiscv_13__string = "ADD_SUB ";
+      `AluCtrlEnum_defaultEncoding_SLT_SLTU : _zz_VexRiscv_13__string = "SLT_SLTU";
+      `AluCtrlEnum_defaultEncoding_BITWISE : _zz_VexRiscv_13__string = "BITWISE ";
+      default : _zz_VexRiscv_13__string = "????????";
     endcase
   end
   always @(*) begin
@@ -1360,35 +1824,39 @@ module VexRiscv (
     endcase
   end
   always @(*) begin
-    case(decode_ALU_CTRL)
-      `AluCtrlEnum_defaultEncoding_ADD_SUB : decode_ALU_CTRL_string = "ADD_SUB ";
-      `AluCtrlEnum_defaultEncoding_SLT_SLTU : decode_ALU_CTRL_string = "SLT_SLTU";
-      `AluCtrlEnum_defaultEncoding_BITWISE : decode_ALU_CTRL_string = "BITWISE ";
-      default : decode_ALU_CTRL_string = "????????";
+    case(decode_ALU_BITWISE_CTRL)
+      `AluBitwiseCtrlEnum_defaultEncoding_XOR_1 : decode_ALU_BITWISE_CTRL_string = "XOR_1";
+      `AluBitwiseCtrlEnum_defaultEncoding_OR_1 : decode_ALU_BITWISE_CTRL_string = "OR_1 ";
+      `AluBitwiseCtrlEnum_defaultEncoding_AND_1 : decode_ALU_BITWISE_CTRL_string = "AND_1";
+      `AluBitwiseCtrlEnum_defaultEncoding_SRC1 : decode_ALU_BITWISE_CTRL_string = "SRC1 ";
+      default : decode_ALU_BITWISE_CTRL_string = "?????";
     endcase
   end
   always @(*) begin
     case(_zz_VexRiscv_17_)
-      `AluCtrlEnum_defaultEncoding_ADD_SUB : _zz_VexRiscv_17__string = "ADD_SUB ";
-      `AluCtrlEnum_defaultEncoding_SLT_SLTU : _zz_VexRiscv_17__string = "SLT_SLTU";
-      `AluCtrlEnum_defaultEncoding_BITWISE : _zz_VexRiscv_17__string = "BITWISE ";
-      default : _zz_VexRiscv_17__string = "????????";
+      `AluBitwiseCtrlEnum_defaultEncoding_XOR_1 : _zz_VexRiscv_17__string = "XOR_1";
+      `AluBitwiseCtrlEnum_defaultEncoding_OR_1 : _zz_VexRiscv_17__string = "OR_1 ";
+      `AluBitwiseCtrlEnum_defaultEncoding_AND_1 : _zz_VexRiscv_17__string = "AND_1";
+      `AluBitwiseCtrlEnum_defaultEncoding_SRC1 : _zz_VexRiscv_17__string = "SRC1 ";
+      default : _zz_VexRiscv_17__string = "?????";
     endcase
   end
   always @(*) begin
     case(_zz_VexRiscv_18_)
-      `AluCtrlEnum_defaultEncoding_ADD_SUB : _zz_VexRiscv_18__string = "ADD_SUB ";
-      `AluCtrlEnum_defaultEncoding_SLT_SLTU : _zz_VexRiscv_18__string = "SLT_SLTU";
-      `AluCtrlEnum_defaultEncoding_BITWISE : _zz_VexRiscv_18__string = "BITWISE ";
-      default : _zz_VexRiscv_18__string = "????????";
+      `AluBitwiseCtrlEnum_defaultEncoding_XOR_1 : _zz_VexRiscv_18__string = "XOR_1";
+      `AluBitwiseCtrlEnum_defaultEncoding_OR_1 : _zz_VexRiscv_18__string = "OR_1 ";
+      `AluBitwiseCtrlEnum_defaultEncoding_AND_1 : _zz_VexRiscv_18__string = "AND_1";
+      `AluBitwiseCtrlEnum_defaultEncoding_SRC1 : _zz_VexRiscv_18__string = "SRC1 ";
+      default : _zz_VexRiscv_18__string = "?????";
     endcase
   end
   always @(*) begin
     case(_zz_VexRiscv_19_)
-      `AluCtrlEnum_defaultEncoding_ADD_SUB : _zz_VexRiscv_19__string = "ADD_SUB ";
-      `AluCtrlEnum_defaultEncoding_SLT_SLTU : _zz_VexRiscv_19__string = "SLT_SLTU";
-      `AluCtrlEnum_defaultEncoding_BITWISE : _zz_VexRiscv_19__string = "BITWISE ";
-      default : _zz_VexRiscv_19__string = "????????";
+      `AluBitwiseCtrlEnum_defaultEncoding_XOR_1 : _zz_VexRiscv_19__string = "XOR_1";
+      `AluBitwiseCtrlEnum_defaultEncoding_OR_1 : _zz_VexRiscv_19__string = "OR_1 ";
+      `AluBitwiseCtrlEnum_defaultEncoding_AND_1 : _zz_VexRiscv_19__string = "AND_1";
+      `AluBitwiseCtrlEnum_defaultEncoding_SRC1 : _zz_VexRiscv_19__string = "SRC1 ";
+      default : _zz_VexRiscv_19__string = "?????";
     endcase
   end
   always @(*) begin
@@ -1498,28 +1966,29 @@ module VexRiscv (
     endcase
   end
   always @(*) begin
-    case(_zz_VexRiscv_42_)
-      `AluBitwiseCtrlEnum_defaultEncoding_XOR_1 : _zz_VexRiscv_42__string = "XOR_1";
-      `AluBitwiseCtrlEnum_defaultEncoding_OR_1 : _zz_VexRiscv_42__string = "OR_1 ";
-      `AluBitwiseCtrlEnum_defaultEncoding_AND_1 : _zz_VexRiscv_42__string = "AND_1";
-      `AluBitwiseCtrlEnum_defaultEncoding_SRC1 : _zz_VexRiscv_42__string = "SRC1 ";
-      default : _zz_VexRiscv_42__string = "?????";
+    case(_zz_VexRiscv_46_)
+      `AluBitwiseCtrlEnum_defaultEncoding_XOR_1 : _zz_VexRiscv_46__string = "XOR_1";
+      `AluBitwiseCtrlEnum_defaultEncoding_OR_1 : _zz_VexRiscv_46__string = "OR_1 ";
+      `AluBitwiseCtrlEnum_defaultEncoding_AND_1 : _zz_VexRiscv_46__string = "AND_1";
+      `AluBitwiseCtrlEnum_defaultEncoding_SRC1 : _zz_VexRiscv_46__string = "SRC1 ";
+      default : _zz_VexRiscv_46__string = "?????";
     endcase
   end
   always @(*) begin
-    case(_zz_VexRiscv_43_)
-      `EnvCtrlEnum_defaultEncoding_NONE : _zz_VexRiscv_43__string = "NONE";
-      `EnvCtrlEnum_defaultEncoding_XRET : _zz_VexRiscv_43__string = "XRET";
-      default : _zz_VexRiscv_43__string = "????";
+    case(_zz_VexRiscv_47_)
+      `AluCtrlEnum_defaultEncoding_ADD_SUB : _zz_VexRiscv_47__string = "ADD_SUB ";
+      `AluCtrlEnum_defaultEncoding_SLT_SLTU : _zz_VexRiscv_47__string = "SLT_SLTU";
+      `AluCtrlEnum_defaultEncoding_BITWISE : _zz_VexRiscv_47__string = "BITWISE ";
+      default : _zz_VexRiscv_47__string = "????????";
     endcase
   end
   always @(*) begin
-    case(_zz_VexRiscv_44_)
-      `ShiftCtrlEnum_defaultEncoding_DISABLE_1 : _zz_VexRiscv_44__string = "DISABLE_1";
-      `ShiftCtrlEnum_defaultEncoding_SLL_1 : _zz_VexRiscv_44__string = "SLL_1    ";
-      `ShiftCtrlEnum_defaultEncoding_SRL_1 : _zz_VexRiscv_44__string = "SRL_1    ";
-      `ShiftCtrlEnum_defaultEncoding_SRA_1 : _zz_VexRiscv_44__string = "SRA_1    ";
-      default : _zz_VexRiscv_44__string = "?????????";
+    case(_zz_VexRiscv_48_)
+      `Src2CtrlEnum_defaultEncoding_RS : _zz_VexRiscv_48__string = "RS ";
+      `Src2CtrlEnum_defaultEncoding_IMI : _zz_VexRiscv_48__string = "IMI";
+      `Src2CtrlEnum_defaultEncoding_IMS : _zz_VexRiscv_48__string = "IMS";
+      `Src2CtrlEnum_defaultEncoding_PC : _zz_VexRiscv_48__string = "PC ";
+      default : _zz_VexRiscv_48__string = "???";
     endcase
   end
   always @(*) begin
@@ -1532,29 +2001,28 @@ module VexRiscv (
     endcase
   end
   always @(*) begin
+    case(_zz_VexRiscv_53_)
+      `EnvCtrlEnum_defaultEncoding_NONE : _zz_VexRiscv_53__string = "NONE";
+      `EnvCtrlEnum_defaultEncoding_XRET : _zz_VexRiscv_53__string = "XRET";
+      default : _zz_VexRiscv_53__string = "????";
+    endcase
+  end
+  always @(*) begin
     case(_zz_VexRiscv_54_)
-      `AluCtrlEnum_defaultEncoding_ADD_SUB : _zz_VexRiscv_54__string = "ADD_SUB ";
-      `AluCtrlEnum_defaultEncoding_SLT_SLTU : _zz_VexRiscv_54__string = "SLT_SLTU";
-      `AluCtrlEnum_defaultEncoding_BITWISE : _zz_VexRiscv_54__string = "BITWISE ";
-      default : _zz_VexRiscv_54__string = "????????";
+      `ShiftCtrlEnum_defaultEncoding_DISABLE_1 : _zz_VexRiscv_54__string = "DISABLE_1";
+      `ShiftCtrlEnum_defaultEncoding_SLL_1 : _zz_VexRiscv_54__string = "SLL_1    ";
+      `ShiftCtrlEnum_defaultEncoding_SRL_1 : _zz_VexRiscv_54__string = "SRL_1    ";
+      `ShiftCtrlEnum_defaultEncoding_SRA_1 : _zz_VexRiscv_54__string = "SRA_1    ";
+      default : _zz_VexRiscv_54__string = "?????????";
     endcase
   end
   always @(*) begin
     case(_zz_VexRiscv_55_)
-      `Src2CtrlEnum_defaultEncoding_RS : _zz_VexRiscv_55__string = "RS ";
-      `Src2CtrlEnum_defaultEncoding_IMI : _zz_VexRiscv_55__string = "IMI";
-      `Src2CtrlEnum_defaultEncoding_IMS : _zz_VexRiscv_55__string = "IMS";
-      `Src2CtrlEnum_defaultEncoding_PC : _zz_VexRiscv_55__string = "PC ";
-      default : _zz_VexRiscv_55__string = "???";
-    endcase
-  end
-  always @(*) begin
-    case(_zz_VexRiscv_56_)
-      `BranchCtrlEnum_defaultEncoding_INC : _zz_VexRiscv_56__string = "INC ";
-      `BranchCtrlEnum_defaultEncoding_B : _zz_VexRiscv_56__string = "B   ";
-      `BranchCtrlEnum_defaultEncoding_JAL : _zz_VexRiscv_56__string = "JAL ";
-      `BranchCtrlEnum_defaultEncoding_JALR : _zz_VexRiscv_56__string = "JALR";
-      default : _zz_VexRiscv_56__string = "????";
+      `BranchCtrlEnum_defaultEncoding_INC : _zz_VexRiscv_55__string = "INC ";
+      `BranchCtrlEnum_defaultEncoding_B : _zz_VexRiscv_55__string = "B   ";
+      `BranchCtrlEnum_defaultEncoding_JAL : _zz_VexRiscv_55__string = "JAL ";
+      `BranchCtrlEnum_defaultEncoding_JALR : _zz_VexRiscv_55__string = "JALR";
+      default : _zz_VexRiscv_55__string = "????";
     endcase
   end
   always @(*) begin
@@ -1610,19 +2078,18 @@ module VexRiscv (
   end
   always @(*) begin
     case(_zz_VexRiscv_112_)
-      `Src2CtrlEnum_defaultEncoding_RS : _zz_VexRiscv_112__string = "RS ";
-      `Src2CtrlEnum_defaultEncoding_IMI : _zz_VexRiscv_112__string = "IMI";
-      `Src2CtrlEnum_defaultEncoding_IMS : _zz_VexRiscv_112__string = "IMS";
-      `Src2CtrlEnum_defaultEncoding_PC : _zz_VexRiscv_112__string = "PC ";
-      default : _zz_VexRiscv_112__string = "???";
+      `ShiftCtrlEnum_defaultEncoding_DISABLE_1 : _zz_VexRiscv_112__string = "DISABLE_1";
+      `ShiftCtrlEnum_defaultEncoding_SLL_1 : _zz_VexRiscv_112__string = "SLL_1    ";
+      `ShiftCtrlEnum_defaultEncoding_SRL_1 : _zz_VexRiscv_112__string = "SRL_1    ";
+      `ShiftCtrlEnum_defaultEncoding_SRA_1 : _zz_VexRiscv_112__string = "SRA_1    ";
+      default : _zz_VexRiscv_112__string = "?????????";
     endcase
   end
   always @(*) begin
     case(_zz_VexRiscv_113_)
-      `AluCtrlEnum_defaultEncoding_ADD_SUB : _zz_VexRiscv_113__string = "ADD_SUB ";
-      `AluCtrlEnum_defaultEncoding_SLT_SLTU : _zz_VexRiscv_113__string = "SLT_SLTU";
-      `AluCtrlEnum_defaultEncoding_BITWISE : _zz_VexRiscv_113__string = "BITWISE ";
-      default : _zz_VexRiscv_113__string = "????????";
+      `EnvCtrlEnum_defaultEncoding_NONE : _zz_VexRiscv_113__string = "NONE";
+      `EnvCtrlEnum_defaultEncoding_XRET : _zz_VexRiscv_113__string = "XRET";
+      default : _zz_VexRiscv_113__string = "????";
     endcase
   end
   always @(*) begin
@@ -1636,18 +2103,19 @@ module VexRiscv (
   end
   always @(*) begin
     case(_zz_VexRiscv_115_)
-      `ShiftCtrlEnum_defaultEncoding_DISABLE_1 : _zz_VexRiscv_115__string = "DISABLE_1";
-      `ShiftCtrlEnum_defaultEncoding_SLL_1 : _zz_VexRiscv_115__string = "SLL_1    ";
-      `ShiftCtrlEnum_defaultEncoding_SRL_1 : _zz_VexRiscv_115__string = "SRL_1    ";
-      `ShiftCtrlEnum_defaultEncoding_SRA_1 : _zz_VexRiscv_115__string = "SRA_1    ";
-      default : _zz_VexRiscv_115__string = "?????????";
+      `Src2CtrlEnum_defaultEncoding_RS : _zz_VexRiscv_115__string = "RS ";
+      `Src2CtrlEnum_defaultEncoding_IMI : _zz_VexRiscv_115__string = "IMI";
+      `Src2CtrlEnum_defaultEncoding_IMS : _zz_VexRiscv_115__string = "IMS";
+      `Src2CtrlEnum_defaultEncoding_PC : _zz_VexRiscv_115__string = "PC ";
+      default : _zz_VexRiscv_115__string = "???";
     endcase
   end
   always @(*) begin
     case(_zz_VexRiscv_116_)
-      `EnvCtrlEnum_defaultEncoding_NONE : _zz_VexRiscv_116__string = "NONE";
-      `EnvCtrlEnum_defaultEncoding_XRET : _zz_VexRiscv_116__string = "XRET";
-      default : _zz_VexRiscv_116__string = "????";
+      `AluCtrlEnum_defaultEncoding_ADD_SUB : _zz_VexRiscv_116__string = "ADD_SUB ";
+      `AluCtrlEnum_defaultEncoding_SLT_SLTU : _zz_VexRiscv_116__string = "SLT_SLTU";
+      `AluCtrlEnum_defaultEncoding_BITWISE : _zz_VexRiscv_116__string = "BITWISE ";
+      default : _zz_VexRiscv_116__string = "????????";
     endcase
   end
   always @(*) begin
@@ -1660,11 +2128,12 @@ module VexRiscv (
     endcase
   end
   always @(*) begin
-    case(decode_to_execute_ALU_CTRL)
-      `AluCtrlEnum_defaultEncoding_ADD_SUB : decode_to_execute_ALU_CTRL_string = "ADD_SUB ";
-      `AluCtrlEnum_defaultEncoding_SLT_SLTU : decode_to_execute_ALU_CTRL_string = "SLT_SLTU";
-      `AluCtrlEnum_defaultEncoding_BITWISE : decode_to_execute_ALU_CTRL_string = "BITWISE ";
-      default : decode_to_execute_ALU_CTRL_string = "????????";
+    case(decode_to_execute_ALU_BITWISE_CTRL)
+      `AluBitwiseCtrlEnum_defaultEncoding_XOR_1 : decode_to_execute_ALU_BITWISE_CTRL_string = "XOR_1";
+      `AluBitwiseCtrlEnum_defaultEncoding_OR_1 : decode_to_execute_ALU_BITWISE_CTRL_string = "OR_1 ";
+      `AluBitwiseCtrlEnum_defaultEncoding_AND_1 : decode_to_execute_ALU_BITWISE_CTRL_string = "AND_1";
+      `AluBitwiseCtrlEnum_defaultEncoding_SRC1 : decode_to_execute_ALU_BITWISE_CTRL_string = "SRC1 ";
+      default : decode_to_execute_ALU_BITWISE_CTRL_string = "?????";
     endcase
   end
   always @(*) begin
@@ -1677,12 +2146,11 @@ module VexRiscv (
     endcase
   end
   always @(*) begin
-    case(decode_to_execute_SHIFT_CTRL)
-      `ShiftCtrlEnum_defaultEncoding_DISABLE_1 : decode_to_execute_SHIFT_CTRL_string = "DISABLE_1";
-      `ShiftCtrlEnum_defaultEncoding_SLL_1 : decode_to_execute_SHIFT_CTRL_string = "SLL_1    ";
-      `ShiftCtrlEnum_defaultEncoding_SRL_1 : decode_to_execute_SHIFT_CTRL_string = "SRL_1    ";
-      `ShiftCtrlEnum_defaultEncoding_SRA_1 : decode_to_execute_SHIFT_CTRL_string = "SRA_1    ";
-      default : decode_to_execute_SHIFT_CTRL_string = "?????????";
+    case(decode_to_execute_ALU_CTRL)
+      `AluCtrlEnum_defaultEncoding_ADD_SUB : decode_to_execute_ALU_CTRL_string = "ADD_SUB ";
+      `AluCtrlEnum_defaultEncoding_SLT_SLTU : decode_to_execute_ALU_CTRL_string = "SLT_SLTU";
+      `AluCtrlEnum_defaultEncoding_BITWISE : decode_to_execute_ALU_CTRL_string = "BITWISE ";
+      default : decode_to_execute_ALU_CTRL_string = "????????";
     endcase
   end
   always @(*) begin
@@ -1707,60 +2175,60 @@ module VexRiscv (
     endcase
   end
   always @(*) begin
-    case(decode_to_execute_ALU_BITWISE_CTRL)
-      `AluBitwiseCtrlEnum_defaultEncoding_XOR_1 : decode_to_execute_ALU_BITWISE_CTRL_string = "XOR_1";
-      `AluBitwiseCtrlEnum_defaultEncoding_OR_1 : decode_to_execute_ALU_BITWISE_CTRL_string = "OR_1 ";
-      `AluBitwiseCtrlEnum_defaultEncoding_AND_1 : decode_to_execute_ALU_BITWISE_CTRL_string = "AND_1";
-      `AluBitwiseCtrlEnum_defaultEncoding_SRC1 : decode_to_execute_ALU_BITWISE_CTRL_string = "SRC1 ";
-      default : decode_to_execute_ALU_BITWISE_CTRL_string = "?????";
+    case(decode_to_execute_SHIFT_CTRL)
+      `ShiftCtrlEnum_defaultEncoding_DISABLE_1 : decode_to_execute_SHIFT_CTRL_string = "DISABLE_1";
+      `ShiftCtrlEnum_defaultEncoding_SLL_1 : decode_to_execute_SHIFT_CTRL_string = "SLL_1    ";
+      `ShiftCtrlEnum_defaultEncoding_SRL_1 : decode_to_execute_SHIFT_CTRL_string = "SRL_1    ";
+      `ShiftCtrlEnum_defaultEncoding_SRA_1 : decode_to_execute_SHIFT_CTRL_string = "SRA_1    ";
+      default : decode_to_execute_SHIFT_CTRL_string = "?????????";
     endcase
   end
   `endif
 
-  assign decode_ALU_BITWISE_CTRL = _zz_VexRiscv_1_;
+  assign memory_PC = execute_to_memory_PC;
+  assign memory_MEMORY_READ_DATA = _zz_VexRiscv_65_;
+  assign decode_SHIFT_CTRL = _zz_VexRiscv_1_;
   assign _zz_VexRiscv_2_ = _zz_VexRiscv_3_;
-  assign execute_BYPASSABLE_MEMORY_STAGE = decode_to_execute_BYPASSABLE_MEMORY_STAGE;
-  assign decode_BYPASSABLE_MEMORY_STAGE = _zz_VexRiscv_47_;
-  assign decode_SRC1 = _zz_VexRiscv_33_;
+  assign decode_MEMORY_ENABLE = _zz_VexRiscv_50_;
+  assign decode_CSR_READ_OPCODE = _zz_VexRiscv_61_;
+  assign decode_SRC_USE_SUB_LESS = _zz_VexRiscv_52_;
+  assign decode_SRC2 = _zz_VexRiscv_30_;
+  assign execute_BRANCH_CALC = _zz_VexRiscv_20_;
+  assign decode_RS1 = _zz_VexRiscv_41_;
   assign _zz_VexRiscv_4_ = _zz_VexRiscv_5_;
   assign _zz_VexRiscv_6_ = _zz_VexRiscv_7_;
   assign decode_ENV_CTRL = _zz_VexRiscv_8_;
   assign _zz_VexRiscv_9_ = _zz_VexRiscv_10_;
-  assign memory_PC = execute_to_memory_PC;
+  assign decode_SRC_LESS_UNSIGNED = _zz_VexRiscv_44_;
+  assign decode_ALU_CTRL = _zz_VexRiscv_11_;
+  assign _zz_VexRiscv_12_ = _zz_VexRiscv_13_;
+  assign memory_MEMORY_ADDRESS_LOW = execute_to_memory_MEMORY_ADDRESS_LOW;
+  assign execute_MEMORY_ADDRESS_LOW = _zz_VexRiscv_66_;
   assign writeBack_FORMAL_PC_NEXT = memory_to_writeBack_FORMAL_PC_NEXT;
   assign memory_FORMAL_PC_NEXT = execute_to_memory_FORMAL_PC_NEXT;
   assign execute_FORMAL_PC_NEXT = decode_to_execute_FORMAL_PC_NEXT;
   assign decode_FORMAL_PC_NEXT = _zz_VexRiscv_68_;
-  assign decode_RS1 = _zz_VexRiscv_41_;
-  assign execute_BRANCH_CALC = _zz_VexRiscv_20_;
-  assign decode_MEMORY_ENABLE = _zz_VexRiscv_46_;
-  assign decode_RS2 = _zz_VexRiscv_40_;
-  assign decode_SHIFT_CTRL = _zz_VexRiscv_11_;
-  assign _zz_VexRiscv_12_ = _zz_VexRiscv_13_;
-  assign decode_SRC_LESS_UNSIGNED = _zz_VexRiscv_57_;
-  assign memory_MEMORY_READ_DATA = _zz_VexRiscv_65_;
-  assign decode_CSR_READ_OPCODE = _zz_VexRiscv_61_;
-  assign decode_CSR_WRITE_OPCODE = _zz_VexRiscv_62_;
   assign decode_BRANCH_CTRL = _zz_VexRiscv_14_;
   assign _zz_VexRiscv_15_ = _zz_VexRiscv_16_;
-  assign memory_MEMORY_ADDRESS_LOW = execute_to_memory_MEMORY_ADDRESS_LOW;
-  assign execute_MEMORY_ADDRESS_LOW = _zz_VexRiscv_66_;
-  assign execute_BRANCH_DO = _zz_VexRiscv_22_;
-  assign decode_ALU_CTRL = _zz_VexRiscv_17_;
+  assign decode_SRC1 = _zz_VexRiscv_33_;
+  assign decode_ALU_BITWISE_CTRL = _zz_VexRiscv_17_;
   assign _zz_VexRiscv_18_ = _zz_VexRiscv_19_;
-  assign decode_SRC_USE_SUB_LESS = _zz_VexRiscv_51_;
-  assign decode_BYPASSABLE_EXECUTE_STAGE = _zz_VexRiscv_45_;
   assign writeBack_REGFILE_WRITE_DATA = memory_to_writeBack_REGFILE_WRITE_DATA;
   assign execute_REGFILE_WRITE_DATA = _zz_VexRiscv_35_;
-  assign decode_IS_CSR = _zz_VexRiscv_52_;
-  assign decode_SRC2 = _zz_VexRiscv_30_;
+  assign decode_IS_CSR = _zz_VexRiscv_42_;
+  assign decode_RS2 = _zz_VexRiscv_40_;
+  assign execute_BRANCH_DO = _zz_VexRiscv_22_;
+  assign decode_CSR_WRITE_OPCODE = _zz_VexRiscv_62_;
+  assign decode_BYPASSABLE_EXECUTE_STAGE = _zz_VexRiscv_56_;
+  assign execute_BYPASSABLE_MEMORY_STAGE = decode_to_execute_BYPASSABLE_MEMORY_STAGE;
+  assign decode_BYPASSABLE_MEMORY_STAGE = _zz_VexRiscv_51_;
   assign memory_BRANCH_CALC = execute_to_memory_BRANCH_CALC;
   assign memory_BRANCH_DO = execute_to_memory_BRANCH_DO;
   assign execute_PC = decode_to_execute_PC;
   assign execute_RS1 = decode_to_execute_RS1;
   assign execute_BRANCH_CTRL = _zz_VexRiscv_21_;
-  assign decode_RS2_USE = _zz_VexRiscv_48_;
-  assign decode_RS1_USE = _zz_VexRiscv_50_;
+  assign decode_RS2_USE = _zz_VexRiscv_57_;
+  assign decode_RS1_USE = _zz_VexRiscv_45_;
   assign execute_REGFILE_WRITE_VALID = decode_to_execute_REGFILE_WRITE_VALID;
   assign execute_BYPASSABLE_EXECUTE_STAGE = decode_to_execute_BYPASSABLE_EXECUTE_STAGE;
   assign memory_REGFILE_WRITE_VALID = execute_to_memory_REGFILE_WRITE_VALID;
@@ -1791,7 +2259,7 @@ module VexRiscv (
 
   assign decode_INSTRUCTION_ANTICIPATED = _zz_VexRiscv_71_;
   always @ (*) begin
-    decode_REGFILE_WRITE_VALID = _zz_VexRiscv_53_;
+    decode_REGFILE_WRITE_VALID = _zz_VexRiscv_43_;
     if((decode_INSTRUCTION[11 : 7] == (5'b00000)))begin
       decode_REGFILE_WRITE_VALID = 1'b0;
     end
@@ -2291,36 +2759,36 @@ module VexRiscv (
   end
 
   assign execute_CsrPlugin_csrAddress = execute_INSTRUCTION[31 : 20];
-  assign _zz_VexRiscv_105_ = ((decode_INSTRUCTION & (32'b00000000000000000000000000010100)) == (32'b00000000000000000000000000000100));
-  assign _zz_VexRiscv_106_ = ((decode_INSTRUCTION & (32'b00000000000000000000000000100000)) == (32'b00000000000000000000000000000000));
-  assign _zz_VexRiscv_107_ = ((decode_INSTRUCTION & (32'b00000000000000000000000000000100)) == (32'b00000000000000000000000000000100));
-  assign _zz_VexRiscv_108_ = ((decode_INSTRUCTION & (32'b00000000000000000110000000000100)) == (32'b00000000000000000010000000000000));
-  assign _zz_VexRiscv_109_ = ((decode_INSTRUCTION & (32'b00000000000000000000000001010000)) == (32'b00000000000000000000000000010000));
-  assign _zz_VexRiscv_110_ = ((decode_INSTRUCTION & (32'b00000000000000000100000001010000)) == (32'b00000000000000000100000001010000));
-  assign _zz_VexRiscv_104_ = {({(_zz_VexRiscv_199_ == _zz_VexRiscv_200_),_zz_VexRiscv_107_} != (2'b00)),{({_zz_VexRiscv_107_,{_zz_VexRiscv_201_,_zz_VexRiscv_202_}} != (3'b000)),{(_zz_VexRiscv_203_ != (1'b0)),{(_zz_VexRiscv_204_ != _zz_VexRiscv_205_),{_zz_VexRiscv_206_,{_zz_VexRiscv_207_,_zz_VexRiscv_208_}}}}}};
+  assign _zz_VexRiscv_105_ = ((decode_INSTRUCTION & (32'b00000000000000000000000001010000)) == (32'b00000000000000000000000000010000));
+  assign _zz_VexRiscv_106_ = ((decode_INSTRUCTION & (32'b00000000000000000000000000010100)) == (32'b00000000000000000000000000000100));
+  assign _zz_VexRiscv_107_ = ((decode_INSTRUCTION & (32'b00000000000000000100000001010000)) == (32'b00000000000000000100000001010000));
+  assign _zz_VexRiscv_108_ = ((decode_INSTRUCTION & (32'b00000000000000000000000000100000)) == (32'b00000000000000000000000000000000));
+  assign _zz_VexRiscv_109_ = ((decode_INSTRUCTION & (32'b00000000000000000000000000000100)) == (32'b00000000000000000000000000000100));
+  assign _zz_VexRiscv_110_ = ((decode_INSTRUCTION & (32'b00000000000000000110000000000100)) == (32'b00000000000000000010000000000000));
+  assign _zz_VexRiscv_104_ = {({(_zz_VexRiscv_199_ == _zz_VexRiscv_200_),(_zz_VexRiscv_201_ == _zz_VexRiscv_202_)} != (2'b00)),{({_zz_VexRiscv_109_,{_zz_VexRiscv_203_,_zz_VexRiscv_204_}} != (5'b00000)),{({_zz_VexRiscv_205_,_zz_VexRiscv_206_} != (2'b00)),{(_zz_VexRiscv_207_ != _zz_VexRiscv_208_),{_zz_VexRiscv_209_,{_zz_VexRiscv_210_,_zz_VexRiscv_211_}}}}}};
   assign _zz_VexRiscv_57_ = _zz_VexRiscv_164_[0];
+  assign _zz_VexRiscv_56_ = _zz_VexRiscv_165_[0];
   assign _zz_VexRiscv_111_ = _zz_VexRiscv_104_[3 : 2];
-  assign _zz_VexRiscv_56_ = _zz_VexRiscv_111_;
+  assign _zz_VexRiscv_55_ = _zz_VexRiscv_111_;
   assign _zz_VexRiscv_112_ = _zz_VexRiscv_104_[5 : 4];
-  assign _zz_VexRiscv_55_ = _zz_VexRiscv_112_;
-  assign _zz_VexRiscv_113_ = _zz_VexRiscv_104_[7 : 6];
-  assign _zz_VexRiscv_54_ = _zz_VexRiscv_113_;
-  assign _zz_VexRiscv_53_ = _zz_VexRiscv_165_[0];
+  assign _zz_VexRiscv_54_ = _zz_VexRiscv_112_;
+  assign _zz_VexRiscv_113_ = _zz_VexRiscv_104_[6 : 6];
+  assign _zz_VexRiscv_53_ = _zz_VexRiscv_113_;
   assign _zz_VexRiscv_52_ = _zz_VexRiscv_166_[0];
   assign _zz_VexRiscv_51_ = _zz_VexRiscv_167_[0];
   assign _zz_VexRiscv_50_ = _zz_VexRiscv_168_[0];
-  assign _zz_VexRiscv_114_ = _zz_VexRiscv_104_[13 : 12];
+  assign _zz_VexRiscv_114_ = _zz_VexRiscv_104_[11 : 10];
   assign _zz_VexRiscv_49_ = _zz_VexRiscv_114_;
-  assign _zz_VexRiscv_48_ = _zz_VexRiscv_169_[0];
-  assign _zz_VexRiscv_47_ = _zz_VexRiscv_170_[0];
-  assign _zz_VexRiscv_46_ = _zz_VexRiscv_171_[0];
-  assign _zz_VexRiscv_45_ = _zz_VexRiscv_172_[0];
-  assign _zz_VexRiscv_115_ = _zz_VexRiscv_104_[19 : 18];
-  assign _zz_VexRiscv_44_ = _zz_VexRiscv_115_;
-  assign _zz_VexRiscv_116_ = _zz_VexRiscv_104_[20 : 20];
-  assign _zz_VexRiscv_43_ = _zz_VexRiscv_116_;
-  assign _zz_VexRiscv_117_ = _zz_VexRiscv_104_[22 : 21];
-  assign _zz_VexRiscv_42_ = _zz_VexRiscv_117_;
+  assign _zz_VexRiscv_115_ = _zz_VexRiscv_104_[13 : 12];
+  assign _zz_VexRiscv_48_ = _zz_VexRiscv_115_;
+  assign _zz_VexRiscv_116_ = _zz_VexRiscv_104_[15 : 14];
+  assign _zz_VexRiscv_47_ = _zz_VexRiscv_116_;
+  assign _zz_VexRiscv_117_ = _zz_VexRiscv_104_[18 : 17];
+  assign _zz_VexRiscv_46_ = _zz_VexRiscv_117_;
+  assign _zz_VexRiscv_45_ = _zz_VexRiscv_169_[0];
+  assign _zz_VexRiscv_44_ = _zz_VexRiscv_170_[0];
+  assign _zz_VexRiscv_43_ = _zz_VexRiscv_171_[0];
+  assign _zz_VexRiscv_42_ = _zz_VexRiscv_172_[0];
   assign decode_RegFilePlugin_regFileReadAddress1 = decode_INSTRUCTION_ANTICIPATED[19 : 15];
   assign decode_RegFilePlugin_regFileReadAddress2 = decode_INSTRUCTION_ANTICIPATED[24 : 20];
   assign decode_RegFilePlugin_rs1Data = _zz_VexRiscv_143_;
@@ -2636,27 +3104,27 @@ module VexRiscv (
   assign _zz_VexRiscv_20_ = {execute_BranchPlugin_branchAdder[31 : 1],(1'b0)};
   assign _zz_VexRiscv_75_ = ((memory_arbitration_isValid && (! memory_arbitration_isStuckByOthers)) && memory_BRANCH_DO);
   assign _zz_VexRiscv_76_ = memory_BRANCH_CALC;
-  assign _zz_VexRiscv_19_ = decode_ALU_CTRL;
-  assign _zz_VexRiscv_17_ = _zz_VexRiscv_54_;
-  assign _zz_VexRiscv_34_ = decode_to_execute_ALU_CTRL;
+  assign _zz_VexRiscv_19_ = decode_ALU_BITWISE_CTRL;
+  assign _zz_VexRiscv_17_ = _zz_VexRiscv_46_;
+  assign _zz_VexRiscv_36_ = decode_to_execute_ALU_BITWISE_CTRL;
   assign _zz_VexRiscv_16_ = decode_BRANCH_CTRL;
-  assign _zz_VexRiscv_14_ = _zz_VexRiscv_56_;
+  assign _zz_VexRiscv_14_ = _zz_VexRiscv_55_;
   assign _zz_VexRiscv_21_ = decode_to_execute_BRANCH_CTRL;
   assign _zz_VexRiscv_32_ = _zz_VexRiscv_49_;
-  assign _zz_VexRiscv_29_ = _zz_VexRiscv_55_;
-  assign _zz_VexRiscv_13_ = decode_SHIFT_CTRL;
-  assign _zz_VexRiscv_11_ = _zz_VexRiscv_44_;
-  assign _zz_VexRiscv_23_ = decode_to_execute_SHIFT_CTRL;
+  assign _zz_VexRiscv_29_ = _zz_VexRiscv_48_;
+  assign _zz_VexRiscv_13_ = decode_ALU_CTRL;
+  assign _zz_VexRiscv_11_ = _zz_VexRiscv_47_;
+  assign _zz_VexRiscv_34_ = decode_to_execute_ALU_CTRL;
   assign _zz_VexRiscv_10_ = decode_ENV_CTRL;
   assign _zz_VexRiscv_7_ = execute_ENV_CTRL;
   assign _zz_VexRiscv_5_ = memory_ENV_CTRL;
-  assign _zz_VexRiscv_8_ = _zz_VexRiscv_43_;
+  assign _zz_VexRiscv_8_ = _zz_VexRiscv_53_;
   assign _zz_VexRiscv_60_ = decode_to_execute_ENV_CTRL;
   assign _zz_VexRiscv_59_ = execute_to_memory_ENV_CTRL;
   assign _zz_VexRiscv_63_ = memory_to_writeBack_ENV_CTRL;
-  assign _zz_VexRiscv_3_ = decode_ALU_BITWISE_CTRL;
-  assign _zz_VexRiscv_1_ = _zz_VexRiscv_42_;
-  assign _zz_VexRiscv_36_ = decode_to_execute_ALU_BITWISE_CTRL;
+  assign _zz_VexRiscv_3_ = decode_SHIFT_CTRL;
+  assign _zz_VexRiscv_1_ = _zz_VexRiscv_54_;
+  assign _zz_VexRiscv_23_ = decode_to_execute_SHIFT_CTRL;
   assign decode_arbitration_isFlushed = ({writeBack_arbitration_flushAll,{memory_arbitration_flushAll,{execute_arbitration_flushAll,decode_arbitration_flushAll}}} != (4'b0000));
   assign execute_arbitration_isFlushed = ({writeBack_arbitration_flushAll,{memory_arbitration_flushAll,execute_arbitration_flushAll}} != (3'b000));
   assign memory_arbitration_isFlushed = ({writeBack_arbitration_flushAll,memory_arbitration_flushAll} != (2'b00));
@@ -2848,10 +3316,10 @@ module VexRiscv (
       end
       _zz_VexRiscv_130_ <= _zz_VexRiscv_129_;
       if((! writeBack_arbitration_isStuck))begin
-        memory_to_writeBack_REGFILE_WRITE_DATA <= memory_REGFILE_WRITE_DATA;
+        memory_to_writeBack_INSTRUCTION <= memory_INSTRUCTION;
       end
       if((! writeBack_arbitration_isStuck))begin
-        memory_to_writeBack_INSTRUCTION <= memory_INSTRUCTION;
+        memory_to_writeBack_REGFILE_WRITE_DATA <= memory_REGFILE_WRITE_DATA;
       end
       if(((! execute_arbitration_isStuck) || execute_arbitration_removeIt))begin
         execute_arbitration_isValid <= 1'b0;
@@ -2950,43 +3418,10 @@ module VexRiscv (
       _zz_VexRiscv_131_ <= _zz_VexRiscv_37_[11 : 7];
     end
     if((! execute_arbitration_isStuck))begin
-      decode_to_execute_SRC2 <= decode_SRC2;
-    end
-    if((! execute_arbitration_isStuck))begin
-      decode_to_execute_IS_CSR <= decode_IS_CSR;
+      decode_to_execute_BYPASSABLE_MEMORY_STAGE <= decode_BYPASSABLE_MEMORY_STAGE;
     end
     if((! memory_arbitration_isStuck))begin
-      execute_to_memory_REGFILE_WRITE_DATA <= _zz_VexRiscv_58_;
-    end
-    if((! execute_arbitration_isStuck))begin
-      decode_to_execute_BYPASSABLE_EXECUTE_STAGE <= decode_BYPASSABLE_EXECUTE_STAGE;
-    end
-    if((! execute_arbitration_isStuck))begin
-      decode_to_execute_SRC_USE_SUB_LESS <= decode_SRC_USE_SUB_LESS;
-    end
-    if((! execute_arbitration_isStuck))begin
-      decode_to_execute_ALU_CTRL <= _zz_VexRiscv_18_;
-    end
-    if((! memory_arbitration_isStuck))begin
-      execute_to_memory_BRANCH_DO <= execute_BRANCH_DO;
-    end
-    if((! memory_arbitration_isStuck))begin
-      execute_to_memory_MEMORY_ADDRESS_LOW <= execute_MEMORY_ADDRESS_LOW;
-    end
-    if((! writeBack_arbitration_isStuck))begin
-      memory_to_writeBack_MEMORY_ADDRESS_LOW <= memory_MEMORY_ADDRESS_LOW;
-    end
-    if((! execute_arbitration_isStuck))begin
-      decode_to_execute_BRANCH_CTRL <= _zz_VexRiscv_15_;
-    end
-    if((! execute_arbitration_isStuck))begin
-      decode_to_execute_CSR_WRITE_OPCODE <= decode_CSR_WRITE_OPCODE;
-    end
-    if((! execute_arbitration_isStuck))begin
-      decode_to_execute_CSR_READ_OPCODE <= decode_CSR_READ_OPCODE;
-    end
-    if((! writeBack_arbitration_isStuck))begin
-      memory_to_writeBack_MEMORY_READ_DATA <= memory_MEMORY_READ_DATA;
+      execute_to_memory_BYPASSABLE_MEMORY_STAGE <= execute_BYPASSABLE_MEMORY_STAGE;
     end
     if((! execute_arbitration_isStuck))begin
       decode_to_execute_INSTRUCTION <= decode_INSTRUCTION;
@@ -2995,7 +3430,13 @@ module VexRiscv (
       execute_to_memory_INSTRUCTION <= execute_INSTRUCTION;
     end
     if((! execute_arbitration_isStuck))begin
-      decode_to_execute_SRC_LESS_UNSIGNED <= decode_SRC_LESS_UNSIGNED;
+      decode_to_execute_BYPASSABLE_EXECUTE_STAGE <= decode_BYPASSABLE_EXECUTE_STAGE;
+    end
+    if((! execute_arbitration_isStuck))begin
+      decode_to_execute_CSR_WRITE_OPCODE <= decode_CSR_WRITE_OPCODE;
+    end
+    if((! memory_arbitration_isStuck))begin
+      execute_to_memory_BRANCH_DO <= execute_BRANCH_DO;
     end
     if((! execute_arbitration_isStuck))begin
       decode_to_execute_REGFILE_WRITE_VALID <= decode_REGFILE_WRITE_VALID;
@@ -3007,25 +3448,22 @@ module VexRiscv (
       memory_to_writeBack_REGFILE_WRITE_VALID <= memory_REGFILE_WRITE_VALID;
     end
     if((! execute_arbitration_isStuck))begin
-      decode_to_execute_SHIFT_CTRL <= _zz_VexRiscv_12_;
-    end
-    if((! execute_arbitration_isStuck))begin
       decode_to_execute_RS2 <= _zz_VexRiscv_28_;
     end
     if((! execute_arbitration_isStuck))begin
-      decode_to_execute_MEMORY_ENABLE <= decode_MEMORY_ENABLE;
+      decode_to_execute_IS_CSR <= decode_IS_CSR;
     end
     if((! memory_arbitration_isStuck))begin
-      execute_to_memory_MEMORY_ENABLE <= execute_MEMORY_ENABLE;
-    end
-    if((! writeBack_arbitration_isStuck))begin
-      memory_to_writeBack_MEMORY_ENABLE <= memory_MEMORY_ENABLE;
-    end
-    if((! memory_arbitration_isStuck))begin
-      execute_to_memory_BRANCH_CALC <= execute_BRANCH_CALC;
+      execute_to_memory_REGFILE_WRITE_DATA <= _zz_VexRiscv_58_;
     end
     if((! execute_arbitration_isStuck))begin
-      decode_to_execute_RS1 <= _zz_VexRiscv_31_;
+      decode_to_execute_ALU_BITWISE_CTRL <= _zz_VexRiscv_18_;
+    end
+    if((! execute_arbitration_isStuck))begin
+      decode_to_execute_SRC1 <= decode_SRC1;
+    end
+    if((! execute_arbitration_isStuck))begin
+      decode_to_execute_BRANCH_CTRL <= _zz_VexRiscv_15_;
     end
     if((! execute_arbitration_isStuck))begin
       decode_to_execute_FORMAL_PC_NEXT <= decode_FORMAL_PC_NEXT;
@@ -3036,14 +3474,17 @@ module VexRiscv (
     if((! writeBack_arbitration_isStuck))begin
       memory_to_writeBack_FORMAL_PC_NEXT <= _zz_VexRiscv_67_;
     end
-    if((! execute_arbitration_isStuck))begin
-      decode_to_execute_PC <= _zz_VexRiscv_27_;
-    end
     if((! memory_arbitration_isStuck))begin
-      execute_to_memory_PC <= execute_PC;
+      execute_to_memory_MEMORY_ADDRESS_LOW <= execute_MEMORY_ADDRESS_LOW;
     end
     if((! writeBack_arbitration_isStuck))begin
-      memory_to_writeBack_PC <= memory_PC;
+      memory_to_writeBack_MEMORY_ADDRESS_LOW <= memory_MEMORY_ADDRESS_LOW;
+    end
+    if((! execute_arbitration_isStuck))begin
+      decode_to_execute_ALU_CTRL <= _zz_VexRiscv_12_;
+    end
+    if((! execute_arbitration_isStuck))begin
+      decode_to_execute_SRC_LESS_UNSIGNED <= decode_SRC_LESS_UNSIGNED;
     end
     if((! execute_arbitration_isStuck))begin
       decode_to_execute_ENV_CTRL <= _zz_VexRiscv_9_;
@@ -3055,16 +3496,43 @@ module VexRiscv (
       memory_to_writeBack_ENV_CTRL <= _zz_VexRiscv_4_;
     end
     if((! execute_arbitration_isStuck))begin
-      decode_to_execute_SRC1 <= decode_SRC1;
-    end
-    if((! execute_arbitration_isStuck))begin
-      decode_to_execute_BYPASSABLE_MEMORY_STAGE <= decode_BYPASSABLE_MEMORY_STAGE;
+      decode_to_execute_RS1 <= _zz_VexRiscv_31_;
     end
     if((! memory_arbitration_isStuck))begin
-      execute_to_memory_BYPASSABLE_MEMORY_STAGE <= execute_BYPASSABLE_MEMORY_STAGE;
+      execute_to_memory_BRANCH_CALC <= execute_BRANCH_CALC;
     end
     if((! execute_arbitration_isStuck))begin
-      decode_to_execute_ALU_BITWISE_CTRL <= _zz_VexRiscv_2_;
+      decode_to_execute_SRC2 <= decode_SRC2;
+    end
+    if((! execute_arbitration_isStuck))begin
+      decode_to_execute_SRC_USE_SUB_LESS <= decode_SRC_USE_SUB_LESS;
+    end
+    if((! execute_arbitration_isStuck))begin
+      decode_to_execute_CSR_READ_OPCODE <= decode_CSR_READ_OPCODE;
+    end
+    if((! execute_arbitration_isStuck))begin
+      decode_to_execute_MEMORY_ENABLE <= decode_MEMORY_ENABLE;
+    end
+    if((! memory_arbitration_isStuck))begin
+      execute_to_memory_MEMORY_ENABLE <= execute_MEMORY_ENABLE;
+    end
+    if((! writeBack_arbitration_isStuck))begin
+      memory_to_writeBack_MEMORY_ENABLE <= memory_MEMORY_ENABLE;
+    end
+    if((! execute_arbitration_isStuck))begin
+      decode_to_execute_SHIFT_CTRL <= _zz_VexRiscv_2_;
+    end
+    if((! writeBack_arbitration_isStuck))begin
+      memory_to_writeBack_MEMORY_READ_DATA <= memory_MEMORY_READ_DATA;
+    end
+    if((! execute_arbitration_isStuck))begin
+      decode_to_execute_PC <= _zz_VexRiscv_27_;
+    end
+    if((! memory_arbitration_isStuck))begin
+      execute_to_memory_PC <= execute_PC;
+    end
+    if((! writeBack_arbitration_isStuck))begin
+      memory_to_writeBack_PC <= memory_PC;
     end
   end
 
@@ -3250,6 +3718,141 @@ module PipelinedMemoryBusToApbBridge (
 
 endmodule
 
+module JtagUart (
+      input   io_tx_valid,
+      output  io_tx_ready,
+      input  [7:0] io_tx_payload,
+      output  io_rx_valid,
+      input   io_rx_ready,
+      output [7:0] io_rx_payload,
+      input   toplevel_main_clk,
+      input   toplevel_main_reset_);
+  wire  _zz_JtagUart_1_;
+  reg  _zz_JtagUart_2_;
+  reg  _zz_JtagUart_3_;
+  wire  jtag_CAPTURE;
+  wire  jtag_DRCK;
+  wire  jtag_RESET;
+  wire  jtag_RUNTEST;
+  wire  jtag_SEL;
+  wire  jtag_SHIFT;
+  wire  jtag_TCK;
+  wire  jtag_TDI;
+  wire  jtag_TMS;
+  wire  jtag_UPDATE;
+  wire  txStreamCC_io_push_ready;
+  wire  txStreamCC_io_pop_valid;
+  wire [7:0] txStreamCC_io_pop_payload;
+  wire [8:0] txStreamCC_io_pushOccupancy;
+  wire [8:0] txStreamCC_io_popOccupancy;
+  wire  rxStreamCC_io_push_ready;
+  wire  rxStreamCC_io_pop_valid;
+  wire [7:0] rxStreamCC_io_pop_payload;
+  wire [5:0] rxStreamCC_io_pushOccupancy;
+  wire [5:0] rxStreamCC_io_popOccupancy;
+  wire [8:0] _zz_JtagUart_4_;
+  wire [0:0] _zz_JtagUart_5_;
+  wire [8:0] _zz_JtagUart_6_;
+  wire [8:0] _zz_JtagUart_7_;
+  reg [8:0] jtagArea_dr_shift;
+  reg  jtagArea_push_valid;
+  reg [7:0] jtagArea_push_payload;
+  assign _zz_JtagUart_4_ = (_zz_JtagUart_6_ <<< 8);
+  assign _zz_JtagUart_5_ = jtag_TDI;
+  assign _zz_JtagUart_6_ = {8'd0, _zz_JtagUart_5_};
+  assign _zz_JtagUart_7_ = (jtagArea_dr_shift >>> 1);
+  BSCAN_SPARTAN6 #( 
+    .JTAG_CHAIN(3) 
+  ) jtag ( 
+    .CAPTURE(jtag_CAPTURE),
+    .DRCK(jtag_DRCK),
+    .RESET(jtag_RESET),
+    .RUNTEST(jtag_RUNTEST),
+    .SEL(jtag_SEL),
+    .SHIFT(jtag_SHIFT),
+    .TCK(jtag_TCK),
+    .TDI(jtag_TDI),
+    .TMS(jtag_TMS),
+    .UPDATE(jtag_UPDATE),
+    .TDO(_zz_JtagUart_1_) 
+  );
+  StreamFifoCC txStreamCC ( 
+    .io_push_valid(io_tx_valid),
+    .io_push_ready(txStreamCC_io_push_ready),
+    .io_push_payload(io_tx_payload),
+    .io_pop_valid(txStreamCC_io_pop_valid),
+    .io_pop_ready(_zz_JtagUart_2_),
+    .io_pop_payload(txStreamCC_io_pop_payload),
+    .io_pushOccupancy(txStreamCC_io_pushOccupancy),
+    .io_popOccupancy(txStreamCC_io_popOccupancy),
+    .toplevel_main_clk(toplevel_main_clk),
+    .toplevel_main_reset_(toplevel_main_reset_),
+    .jtag_TCK(jtag_TCK),
+    .jtag_RESET(jtag_RESET) 
+  );
+  StreamFifoCC_1_ rxStreamCC ( 
+    .io_push_valid(_zz_JtagUart_3_),
+    .io_push_ready(rxStreamCC_io_push_ready),
+    .io_push_payload(jtagArea_push_payload),
+    .io_pop_valid(rxStreamCC_io_pop_valid),
+    .io_pop_ready(io_rx_ready),
+    .io_pop_payload(rxStreamCC_io_pop_payload),
+    .io_pushOccupancy(rxStreamCC_io_pushOccupancy),
+    .io_popOccupancy(rxStreamCC_io_popOccupancy),
+    .jtag_TCK(jtag_TCK),
+    .jtag_RESET(jtag_RESET),
+    .toplevel_main_clk(toplevel_main_clk),
+    .toplevel_main_reset_(toplevel_main_reset_) 
+  );
+  assign io_tx_ready = txStreamCC_io_push_ready;
+  assign io_rx_valid = rxStreamCC_io_pop_valid;
+  assign io_rx_payload = rxStreamCC_io_pop_payload;
+  always @ (*) begin
+    _zz_JtagUart_3_ = jtagArea_push_valid;
+    if(rxStreamCC_io_push_ready)begin
+      _zz_JtagUart_3_ = 1'b0;
+    end
+  end
+
+  always @ (*) begin
+    _zz_JtagUart_2_ = 1'b0;
+    if(jtag_SEL)begin
+      if(jtag_CAPTURE)begin
+        _zz_JtagUart_2_ = 1'b1;
+      end
+    end
+  end
+
+  assign _zz_JtagUart_1_ = jtagArea_dr_shift[0];
+  always @ (posedge jtag_TCK or posedge jtag_RESET) begin
+    if (jtag_RESET) begin
+      jtagArea_dr_shift <= (9'b000000000);
+      jtagArea_push_valid <= 1'b0;
+      jtagArea_push_payload <= (8'b00000000);
+    end else begin
+      if(rxStreamCC_io_push_ready)begin
+        jtagArea_push_valid <= 1'b0;
+      end
+      if(jtag_SEL)begin
+        if(jtag_CAPTURE)begin
+          jtagArea_dr_shift[8] <= txStreamCC_io_pop_valid;
+          jtagArea_dr_shift[7 : 0] <= txStreamCC_io_pop_payload;
+        end
+        if(jtag_SHIFT)begin
+          jtagArea_dr_shift <= (_zz_JtagUart_4_ | _zz_JtagUart_7_);
+        end
+        if(jtag_UPDATE)begin
+          if(jtagArea_dr_shift[8])begin
+            jtagArea_push_valid <= 1'b1;
+            jtagArea_push_payload <= jtagArea_dr_shift[7 : 0];
+          end
+        end
+      end
+    end
+  end
+
+endmodule
+
 module Prescaler (
       input   io_clear,
       input  [15:0] io_limit,
@@ -3370,7 +3973,7 @@ module InterruptCtrl (
 
 endmodule
 
-module StreamFifoCC (
+module StreamFifoCC_2_ (
       input   io_push_valid,
       output  io_push_ready,
       input  [9:0] io_push_payload,
@@ -3382,25 +3985,25 @@ module StreamFifoCC (
       input   u_gmii_rx_io_rx_clk,
       input   toplevel_main_clk,
       input   toplevel_main_reset_);
-  wire [11:0] _zz_StreamFifoCC_25_;
-  wire [11:0] _zz_StreamFifoCC_26_;
-  reg [9:0] _zz_StreamFifoCC_27_;
-  wire [11:0] bufferCC_12__io_dataOut;
-  wire [11:0] bufferCC_13__io_dataOut;
-  wire [0:0] _zz_StreamFifoCC_28_;
-  wire [11:0] _zz_StreamFifoCC_29_;
-  wire [11:0] _zz_StreamFifoCC_30_;
-  wire [10:0] _zz_StreamFifoCC_31_;
-  wire [0:0] _zz_StreamFifoCC_32_;
-  wire [11:0] _zz_StreamFifoCC_33_;
-  wire [11:0] _zz_StreamFifoCC_34_;
-  wire [10:0] _zz_StreamFifoCC_35_;
-  wire  _zz_StreamFifoCC_36_;
-  wire [0:0] _zz_StreamFifoCC_37_;
-  wire [1:0] _zz_StreamFifoCC_38_;
-  wire [0:0] _zz_StreamFifoCC_39_;
-  wire [1:0] _zz_StreamFifoCC_40_;
-  reg  _zz_StreamFifoCC_1_;
+  wire [11:0] _zz_StreamFifoCC_2__25_;
+  wire [11:0] _zz_StreamFifoCC_2__26_;
+  reg [9:0] _zz_StreamFifoCC_2__27_;
+  wire [11:0] bufferCC_18__io_dataOut;
+  wire [11:0] bufferCC_19__io_dataOut;
+  wire [0:0] _zz_StreamFifoCC_2__28_;
+  wire [11:0] _zz_StreamFifoCC_2__29_;
+  wire [11:0] _zz_StreamFifoCC_2__30_;
+  wire [10:0] _zz_StreamFifoCC_2__31_;
+  wire [0:0] _zz_StreamFifoCC_2__32_;
+  wire [11:0] _zz_StreamFifoCC_2__33_;
+  wire [11:0] _zz_StreamFifoCC_2__34_;
+  wire [10:0] _zz_StreamFifoCC_2__35_;
+  wire  _zz_StreamFifoCC_2__36_;
+  wire [0:0] _zz_StreamFifoCC_2__37_;
+  wire [1:0] _zz_StreamFifoCC_2__38_;
+  wire [0:0] _zz_StreamFifoCC_2__39_;
+  wire [1:0] _zz_StreamFifoCC_2__40_;
+  reg  _zz_StreamFifoCC_2__1_;
   wire [11:0] popToPushGray;
   wire [11:0] pushToPopGray;
   reg  pushCC_pushPtr_willIncrement;
@@ -3412,17 +4015,17 @@ module StreamFifoCC (
   reg [11:0] pushCC_pushPtrGray = (12'b000000000000);
   wire [11:0] pushCC_popPtrGray;
   wire  pushCC_full;
-  wire  _zz_StreamFifoCC_2_;
-  wire  _zz_StreamFifoCC_3_;
-  wire  _zz_StreamFifoCC_4_;
-  wire  _zz_StreamFifoCC_5_;
-  wire  _zz_StreamFifoCC_6_;
-  wire  _zz_StreamFifoCC_7_;
-  wire  _zz_StreamFifoCC_8_;
-  wire  _zz_StreamFifoCC_9_;
-  wire  _zz_StreamFifoCC_10_;
-  wire  _zz_StreamFifoCC_11_;
-  wire  _zz_StreamFifoCC_12_;
+  wire  _zz_StreamFifoCC_2__2_;
+  wire  _zz_StreamFifoCC_2__3_;
+  wire  _zz_StreamFifoCC_2__4_;
+  wire  _zz_StreamFifoCC_2__5_;
+  wire  _zz_StreamFifoCC_2__6_;
+  wire  _zz_StreamFifoCC_2__7_;
+  wire  _zz_StreamFifoCC_2__8_;
+  wire  _zz_StreamFifoCC_2__9_;
+  wire  _zz_StreamFifoCC_2__10_;
+  wire  _zz_StreamFifoCC_2__11_;
+  wire  _zz_StreamFifoCC_2__12_;
   reg  popCC_popPtr_willIncrement;
   wire  popCC_popPtr_willClear;
   reg [11:0] popCC_popPtr_valueNext;
@@ -3432,35 +4035,35 @@ module StreamFifoCC (
   reg [11:0] popCC_popPtrGray;
   wire [11:0] popCC_pushPtrGray;
   wire  popCC_empty;
-  wire [11:0] _zz_StreamFifoCC_13_;
-  wire  _zz_StreamFifoCC_14_;
-  wire  _zz_StreamFifoCC_15_;
-  wire  _zz_StreamFifoCC_16_;
-  wire  _zz_StreamFifoCC_17_;
-  wire  _zz_StreamFifoCC_18_;
-  wire  _zz_StreamFifoCC_19_;
-  wire  _zz_StreamFifoCC_20_;
-  wire  _zz_StreamFifoCC_21_;
-  wire  _zz_StreamFifoCC_22_;
-  wire  _zz_StreamFifoCC_23_;
-  wire  _zz_StreamFifoCC_24_;
+  wire [11:0] _zz_StreamFifoCC_2__13_;
+  wire  _zz_StreamFifoCC_2__14_;
+  wire  _zz_StreamFifoCC_2__15_;
+  wire  _zz_StreamFifoCC_2__16_;
+  wire  _zz_StreamFifoCC_2__17_;
+  wire  _zz_StreamFifoCC_2__18_;
+  wire  _zz_StreamFifoCC_2__19_;
+  wire  _zz_StreamFifoCC_2__20_;
+  wire  _zz_StreamFifoCC_2__21_;
+  wire  _zz_StreamFifoCC_2__22_;
+  wire  _zz_StreamFifoCC_2__23_;
+  wire  _zz_StreamFifoCC_2__24_;
   reg [9:0] ram [0:2047];
-  assign _zz_StreamFifoCC_28_ = pushCC_pushPtr_willIncrement;
-  assign _zz_StreamFifoCC_29_ = {11'd0, _zz_StreamFifoCC_28_};
-  assign _zz_StreamFifoCC_30_ = (pushCC_pushPtr_valueNext >>> (1'b1));
-  assign _zz_StreamFifoCC_31_ = pushCC_pushPtr_value[10:0];
-  assign _zz_StreamFifoCC_32_ = popCC_popPtr_willIncrement;
-  assign _zz_StreamFifoCC_33_ = {11'd0, _zz_StreamFifoCC_32_};
-  assign _zz_StreamFifoCC_34_ = (popCC_popPtr_valueNext >>> (1'b1));
-  assign _zz_StreamFifoCC_35_ = _zz_StreamFifoCC_13_[10:0];
-  assign _zz_StreamFifoCC_36_ = 1'b1;
-  assign _zz_StreamFifoCC_37_ = _zz_StreamFifoCC_3_;
-  assign _zz_StreamFifoCC_38_ = {_zz_StreamFifoCC_2_,(pushCC_popPtrGray[0] ^ _zz_StreamFifoCC_2_)};
-  assign _zz_StreamFifoCC_39_ = _zz_StreamFifoCC_15_;
-  assign _zz_StreamFifoCC_40_ = {_zz_StreamFifoCC_14_,(popCC_pushPtrGray[0] ^ _zz_StreamFifoCC_14_)};
+  assign _zz_StreamFifoCC_2__28_ = pushCC_pushPtr_willIncrement;
+  assign _zz_StreamFifoCC_2__29_ = {11'd0, _zz_StreamFifoCC_2__28_};
+  assign _zz_StreamFifoCC_2__30_ = (pushCC_pushPtr_valueNext >>> (1'b1));
+  assign _zz_StreamFifoCC_2__31_ = pushCC_pushPtr_value[10:0];
+  assign _zz_StreamFifoCC_2__32_ = popCC_popPtr_willIncrement;
+  assign _zz_StreamFifoCC_2__33_ = {11'd0, _zz_StreamFifoCC_2__32_};
+  assign _zz_StreamFifoCC_2__34_ = (popCC_popPtr_valueNext >>> (1'b1));
+  assign _zz_StreamFifoCC_2__35_ = _zz_StreamFifoCC_2__13_[10:0];
+  assign _zz_StreamFifoCC_2__36_ = 1'b1;
+  assign _zz_StreamFifoCC_2__37_ = _zz_StreamFifoCC_2__3_;
+  assign _zz_StreamFifoCC_2__38_ = {_zz_StreamFifoCC_2__2_,(pushCC_popPtrGray[0] ^ _zz_StreamFifoCC_2__2_)};
+  assign _zz_StreamFifoCC_2__39_ = _zz_StreamFifoCC_2__15_;
+  assign _zz_StreamFifoCC_2__40_ = {_zz_StreamFifoCC_2__14_,(popCC_pushPtrGray[0] ^ _zz_StreamFifoCC_2__14_)};
   always @ (posedge u_gmii_rx_io_rx_clk) begin
-    if(_zz_StreamFifoCC_1_) begin
-      ram[_zz_StreamFifoCC_31_] <= io_push_payload;
+    if(_zz_StreamFifoCC_2__1_) begin
+      ram[_zz_StreamFifoCC_2__31_] <= io_push_payload;
     end
   end
 
@@ -3468,29 +4071,29 @@ module StreamFifoCC (
   end
 
   always @ (posedge toplevel_main_clk) begin
-    if(_zz_StreamFifoCC_36_) begin
-      _zz_StreamFifoCC_27_ <= ram[_zz_StreamFifoCC_35_];
+    if(_zz_StreamFifoCC_2__36_) begin
+      _zz_StreamFifoCC_2__27_ <= ram[_zz_StreamFifoCC_2__35_];
     end
   end
 
-  BufferCC bufferCC_12_ ( 
-    .io_initial(_zz_StreamFifoCC_25_),
+  BufferCC_4_ bufferCC_18_ ( 
+    .io_initial(_zz_StreamFifoCC_2__25_),
     .io_dataIn(popToPushGray),
-    .io_dataOut(bufferCC_12__io_dataOut),
+    .io_dataOut(bufferCC_18__io_dataOut),
     .u_gmii_rx_io_rx_clk(u_gmii_rx_io_rx_clk) 
   );
-  BufferCC_1_ bufferCC_13_ ( 
-    .io_initial(_zz_StreamFifoCC_26_),
+  BufferCC_5_ bufferCC_19_ ( 
+    .io_initial(_zz_StreamFifoCC_2__26_),
     .io_dataIn(pushToPopGray),
-    .io_dataOut(bufferCC_13__io_dataOut),
+    .io_dataOut(bufferCC_19__io_dataOut),
     .toplevel_main_clk(toplevel_main_clk),
     .toplevel_main_reset_(toplevel_main_reset_) 
   );
   always @ (*) begin
-    _zz_StreamFifoCC_1_ = 1'b0;
+    _zz_StreamFifoCC_2__1_ = 1'b0;
     pushCC_pushPtr_willIncrement = 1'b0;
     if((io_push_valid && io_push_ready))begin
-      _zz_StreamFifoCC_1_ = 1'b1;
+      _zz_StreamFifoCC_2__1_ = 1'b1;
       pushCC_pushPtr_willIncrement = 1'b1;
     end
   end
@@ -3499,28 +4102,28 @@ module StreamFifoCC (
   assign pushCC_pushPtr_willOverflowIfInc = (pushCC_pushPtr_value == (12'b111111111111));
   assign pushCC_pushPtr_willOverflow = (pushCC_pushPtr_willOverflowIfInc && pushCC_pushPtr_willIncrement);
   always @ (*) begin
-    pushCC_pushPtr_valueNext = (pushCC_pushPtr_value + _zz_StreamFifoCC_29_);
+    pushCC_pushPtr_valueNext = (pushCC_pushPtr_value + _zz_StreamFifoCC_2__29_);
     if(pushCC_pushPtr_willClear)begin
       pushCC_pushPtr_valueNext = (12'b000000000000);
     end
   end
 
-  assign _zz_StreamFifoCC_25_ = (12'b000000000000);
-  assign pushCC_popPtrGray = bufferCC_12__io_dataOut;
+  assign _zz_StreamFifoCC_2__25_ = (12'b000000000000);
+  assign pushCC_popPtrGray = bufferCC_18__io_dataOut;
   assign pushCC_full = ((pushCC_pushPtrGray[11 : 10] == (~ pushCC_popPtrGray[11 : 10])) && (pushCC_pushPtrGray[9 : 0] == pushCC_popPtrGray[9 : 0]));
   assign io_push_ready = (! pushCC_full);
-  assign _zz_StreamFifoCC_2_ = (pushCC_popPtrGray[1] ^ _zz_StreamFifoCC_3_);
-  assign _zz_StreamFifoCC_3_ = (pushCC_popPtrGray[2] ^ _zz_StreamFifoCC_4_);
-  assign _zz_StreamFifoCC_4_ = (pushCC_popPtrGray[3] ^ _zz_StreamFifoCC_5_);
-  assign _zz_StreamFifoCC_5_ = (pushCC_popPtrGray[4] ^ _zz_StreamFifoCC_6_);
-  assign _zz_StreamFifoCC_6_ = (pushCC_popPtrGray[5] ^ _zz_StreamFifoCC_7_);
-  assign _zz_StreamFifoCC_7_ = (pushCC_popPtrGray[6] ^ _zz_StreamFifoCC_8_);
-  assign _zz_StreamFifoCC_8_ = (pushCC_popPtrGray[7] ^ _zz_StreamFifoCC_9_);
-  assign _zz_StreamFifoCC_9_ = (pushCC_popPtrGray[8] ^ _zz_StreamFifoCC_10_);
-  assign _zz_StreamFifoCC_10_ = (pushCC_popPtrGray[9] ^ _zz_StreamFifoCC_11_);
-  assign _zz_StreamFifoCC_11_ = (pushCC_popPtrGray[10] ^ _zz_StreamFifoCC_12_);
-  assign _zz_StreamFifoCC_12_ = pushCC_popPtrGray[11];
-  assign io_pushOccupancy = (pushCC_pushPtr_value - {_zz_StreamFifoCC_12_,{_zz_StreamFifoCC_11_,{_zz_StreamFifoCC_10_,{_zz_StreamFifoCC_9_,{_zz_StreamFifoCC_8_,{_zz_StreamFifoCC_7_,{_zz_StreamFifoCC_6_,{_zz_StreamFifoCC_5_,{_zz_StreamFifoCC_4_,{_zz_StreamFifoCC_37_,_zz_StreamFifoCC_38_}}}}}}}}}});
+  assign _zz_StreamFifoCC_2__2_ = (pushCC_popPtrGray[1] ^ _zz_StreamFifoCC_2__3_);
+  assign _zz_StreamFifoCC_2__3_ = (pushCC_popPtrGray[2] ^ _zz_StreamFifoCC_2__4_);
+  assign _zz_StreamFifoCC_2__4_ = (pushCC_popPtrGray[3] ^ _zz_StreamFifoCC_2__5_);
+  assign _zz_StreamFifoCC_2__5_ = (pushCC_popPtrGray[4] ^ _zz_StreamFifoCC_2__6_);
+  assign _zz_StreamFifoCC_2__6_ = (pushCC_popPtrGray[5] ^ _zz_StreamFifoCC_2__7_);
+  assign _zz_StreamFifoCC_2__7_ = (pushCC_popPtrGray[6] ^ _zz_StreamFifoCC_2__8_);
+  assign _zz_StreamFifoCC_2__8_ = (pushCC_popPtrGray[7] ^ _zz_StreamFifoCC_2__9_);
+  assign _zz_StreamFifoCC_2__9_ = (pushCC_popPtrGray[8] ^ _zz_StreamFifoCC_2__10_);
+  assign _zz_StreamFifoCC_2__10_ = (pushCC_popPtrGray[9] ^ _zz_StreamFifoCC_2__11_);
+  assign _zz_StreamFifoCC_2__11_ = (pushCC_popPtrGray[10] ^ _zz_StreamFifoCC_2__12_);
+  assign _zz_StreamFifoCC_2__12_ = pushCC_popPtrGray[11];
+  assign io_pushOccupancy = (pushCC_pushPtr_value - {_zz_StreamFifoCC_2__12_,{_zz_StreamFifoCC_2__11_,{_zz_StreamFifoCC_2__10_,{_zz_StreamFifoCC_2__9_,{_zz_StreamFifoCC_2__8_,{_zz_StreamFifoCC_2__7_,{_zz_StreamFifoCC_2__6_,{_zz_StreamFifoCC_2__5_,{_zz_StreamFifoCC_2__4_,{_zz_StreamFifoCC_2__37_,_zz_StreamFifoCC_2__38_}}}}}}}}}});
   always @ (*) begin
     popCC_popPtr_willIncrement = 1'b0;
     if((io_pop_valid && io_pop_ready))begin
@@ -3532,35 +4135,35 @@ module StreamFifoCC (
   assign popCC_popPtr_willOverflowIfInc = (popCC_popPtr_value == (12'b111111111111));
   assign popCC_popPtr_willOverflow = (popCC_popPtr_willOverflowIfInc && popCC_popPtr_willIncrement);
   always @ (*) begin
-    popCC_popPtr_valueNext = (popCC_popPtr_value + _zz_StreamFifoCC_33_);
+    popCC_popPtr_valueNext = (popCC_popPtr_value + _zz_StreamFifoCC_2__33_);
     if(popCC_popPtr_willClear)begin
       popCC_popPtr_valueNext = (12'b000000000000);
     end
   end
 
-  assign _zz_StreamFifoCC_26_ = (12'b000000000000);
-  assign popCC_pushPtrGray = bufferCC_13__io_dataOut;
+  assign _zz_StreamFifoCC_2__26_ = (12'b000000000000);
+  assign popCC_pushPtrGray = bufferCC_19__io_dataOut;
   assign popCC_empty = (popCC_popPtrGray == popCC_pushPtrGray);
   assign io_pop_valid = (! popCC_empty);
-  assign _zz_StreamFifoCC_13_ = popCC_popPtr_valueNext;
-  assign io_pop_payload = _zz_StreamFifoCC_27_;
-  assign _zz_StreamFifoCC_14_ = (popCC_pushPtrGray[1] ^ _zz_StreamFifoCC_15_);
-  assign _zz_StreamFifoCC_15_ = (popCC_pushPtrGray[2] ^ _zz_StreamFifoCC_16_);
-  assign _zz_StreamFifoCC_16_ = (popCC_pushPtrGray[3] ^ _zz_StreamFifoCC_17_);
-  assign _zz_StreamFifoCC_17_ = (popCC_pushPtrGray[4] ^ _zz_StreamFifoCC_18_);
-  assign _zz_StreamFifoCC_18_ = (popCC_pushPtrGray[5] ^ _zz_StreamFifoCC_19_);
-  assign _zz_StreamFifoCC_19_ = (popCC_pushPtrGray[6] ^ _zz_StreamFifoCC_20_);
-  assign _zz_StreamFifoCC_20_ = (popCC_pushPtrGray[7] ^ _zz_StreamFifoCC_21_);
-  assign _zz_StreamFifoCC_21_ = (popCC_pushPtrGray[8] ^ _zz_StreamFifoCC_22_);
-  assign _zz_StreamFifoCC_22_ = (popCC_pushPtrGray[9] ^ _zz_StreamFifoCC_23_);
-  assign _zz_StreamFifoCC_23_ = (popCC_pushPtrGray[10] ^ _zz_StreamFifoCC_24_);
-  assign _zz_StreamFifoCC_24_ = popCC_pushPtrGray[11];
-  assign io_popOccupancy = ({_zz_StreamFifoCC_24_,{_zz_StreamFifoCC_23_,{_zz_StreamFifoCC_22_,{_zz_StreamFifoCC_21_,{_zz_StreamFifoCC_20_,{_zz_StreamFifoCC_19_,{_zz_StreamFifoCC_18_,{_zz_StreamFifoCC_17_,{_zz_StreamFifoCC_16_,{_zz_StreamFifoCC_39_,_zz_StreamFifoCC_40_}}}}}}}}}} - popCC_popPtr_value);
+  assign _zz_StreamFifoCC_2__13_ = popCC_popPtr_valueNext;
+  assign io_pop_payload = _zz_StreamFifoCC_2__27_;
+  assign _zz_StreamFifoCC_2__14_ = (popCC_pushPtrGray[1] ^ _zz_StreamFifoCC_2__15_);
+  assign _zz_StreamFifoCC_2__15_ = (popCC_pushPtrGray[2] ^ _zz_StreamFifoCC_2__16_);
+  assign _zz_StreamFifoCC_2__16_ = (popCC_pushPtrGray[3] ^ _zz_StreamFifoCC_2__17_);
+  assign _zz_StreamFifoCC_2__17_ = (popCC_pushPtrGray[4] ^ _zz_StreamFifoCC_2__18_);
+  assign _zz_StreamFifoCC_2__18_ = (popCC_pushPtrGray[5] ^ _zz_StreamFifoCC_2__19_);
+  assign _zz_StreamFifoCC_2__19_ = (popCC_pushPtrGray[6] ^ _zz_StreamFifoCC_2__20_);
+  assign _zz_StreamFifoCC_2__20_ = (popCC_pushPtrGray[7] ^ _zz_StreamFifoCC_2__21_);
+  assign _zz_StreamFifoCC_2__21_ = (popCC_pushPtrGray[8] ^ _zz_StreamFifoCC_2__22_);
+  assign _zz_StreamFifoCC_2__22_ = (popCC_pushPtrGray[9] ^ _zz_StreamFifoCC_2__23_);
+  assign _zz_StreamFifoCC_2__23_ = (popCC_pushPtrGray[10] ^ _zz_StreamFifoCC_2__24_);
+  assign _zz_StreamFifoCC_2__24_ = popCC_pushPtrGray[11];
+  assign io_popOccupancy = ({_zz_StreamFifoCC_2__24_,{_zz_StreamFifoCC_2__23_,{_zz_StreamFifoCC_2__22_,{_zz_StreamFifoCC_2__21_,{_zz_StreamFifoCC_2__20_,{_zz_StreamFifoCC_2__19_,{_zz_StreamFifoCC_2__18_,{_zz_StreamFifoCC_2__17_,{_zz_StreamFifoCC_2__16_,{_zz_StreamFifoCC_2__39_,_zz_StreamFifoCC_2__40_}}}}}}}}}} - popCC_popPtr_value);
   assign pushToPopGray = pushCC_pushPtrGray;
   assign popToPushGray = popCC_popPtrGray;
   always @ (posedge u_gmii_rx_io_rx_clk) begin
     pushCC_pushPtr_value <= pushCC_pushPtr_valueNext;
-    pushCC_pushPtrGray <= (_zz_StreamFifoCC_30_ ^ pushCC_pushPtr_valueNext);
+    pushCC_pushPtrGray <= (_zz_StreamFifoCC_2__30_ ^ pushCC_pushPtr_valueNext);
   end
 
   always @ (posedge toplevel_main_clk) begin
@@ -3569,13 +4172,13 @@ module StreamFifoCC (
       popCC_popPtrGray <= (12'b000000000000);
     end else begin
       popCC_popPtr_value <= popCC_popPtr_valueNext;
-      popCC_popPtrGray <= (_zz_StreamFifoCC_34_ ^ popCC_popPtr_valueNext);
+      popCC_popPtrGray <= (_zz_StreamFifoCC_2__34_ ^ popCC_popPtr_valueNext);
     end
   end
 
 endmodule
 
-module BufferCC_2_ (
+module BufferCC_6_ (
       input   io_initial,
       input   io_dataIn,
       output  io_dataOut,
@@ -3596,17 +4199,17 @@ module BufferCC_2_ (
 
 endmodule
 
-module BufferCC_3_ (
+module BufferCC_7_ (
       input   io_initial,
       input   io_dataIn,
       output  io_dataOut,
       input   core_u_pano_core_io_ulpi_clk,
-      input   core_u_pano_core_ulpi_reset_);
+      input   _zz_BufferCC_7__1_);
   reg  buffers_0;
   reg  buffers_1;
   assign io_dataOut = buffers_1;
   always @ (posedge core_u_pano_core_io_ulpi_clk) begin
-    if(!core_u_pano_core_ulpi_reset_) begin
+    if(!_zz_BufferCC_7__1_) begin
       buffers_0 <= io_initial;
       buffers_1 <= io_initial;
     end else begin
@@ -3893,6 +4496,68 @@ module CpuComplex (
 
 endmodule
 
+module Apb3JtagUart (
+      input  [3:0] io_apb_PADDR,
+      input  [0:0] io_apb_PSEL,
+      input   io_apb_PENABLE,
+      output  io_apb_PREADY,
+      input   io_apb_PWRITE,
+      input  [31:0] io_apb_PWDATA,
+      output reg [31:0] io_apb_PRDATA,
+      output  io_apb_PSLVERROR,
+      input   toplevel_main_clk,
+      input   toplevel_main_reset_);
+  reg  _zz_Apb3JtagUart_3_;
+  wire  jtagUart_1__io_tx_ready;
+  wire  jtagUart_1__io_rx_valid;
+  wire [7:0] jtagUart_1__io_rx_payload;
+  wire  busCtrl_askWrite;
+  wire  busCtrl_askRead;
+  wire  busCtrl_doWrite;
+  wire  busCtrl_doRead;
+  reg  _zz_Apb3JtagUart_1_;
+  wire [7:0] _zz_Apb3JtagUart_2_;
+  JtagUart jtagUart_1_ ( 
+    .io_tx_valid(_zz_Apb3JtagUart_1_),
+    .io_tx_ready(jtagUart_1__io_tx_ready),
+    .io_tx_payload(_zz_Apb3JtagUart_2_),
+    .io_rx_valid(jtagUart_1__io_rx_valid),
+    .io_rx_ready(_zz_Apb3JtagUart_3_),
+    .io_rx_payload(jtagUart_1__io_rx_payload),
+    .toplevel_main_clk(toplevel_main_clk),
+    .toplevel_main_reset_(toplevel_main_reset_) 
+  );
+  assign io_apb_PREADY = 1'b1;
+  always @ (*) begin
+    io_apb_PRDATA = (32'b00000000000000000000000000000000);
+    _zz_Apb3JtagUart_1_ = 1'b0;
+    _zz_Apb3JtagUart_3_ = 1'b0;
+    case(io_apb_PADDR)
+      4'b1000 : begin
+        if(busCtrl_doWrite)begin
+          _zz_Apb3JtagUart_1_ = 1'b1;
+        end
+      end
+      4'b1100 : begin
+        if(busCtrl_doRead)begin
+          _zz_Apb3JtagUart_3_ = 1'b1;
+        end
+        io_apb_PRDATA[31 : 31] = jtagUart_1__io_rx_valid;
+        io_apb_PRDATA[7 : 0] = jtagUart_1__io_rx_payload;
+      end
+      default : begin
+      end
+    endcase
+  end
+
+  assign io_apb_PSLVERROR = 1'b0;
+  assign busCtrl_askWrite = ((io_apb_PSEL[0] && io_apb_PENABLE) && io_apb_PWRITE);
+  assign busCtrl_askRead = ((io_apb_PSEL[0] && io_apb_PENABLE) && (! io_apb_PWRITE));
+  assign busCtrl_doWrite = (((io_apb_PSEL[0] && io_apb_PENABLE) && io_apb_PREADY) && io_apb_PWRITE);
+  assign busCtrl_doRead = (((io_apb_PSEL[0] && io_apb_PENABLE) && io_apb_PREADY) && (! io_apb_PWRITE));
+  assign _zz_Apb3JtagUart_2_ = io_apb_PWDATA[7 : 0];
+endmodule
+
 module MuraxApb3Timer (
       input  [7:0] io_apb_PADDR,
       input  [0:0] io_apb_PSEL,
@@ -4156,7 +4821,7 @@ module Apb3Decoder (
       output [31:0] io_input_PRDATA,
       output reg  io_input_PSLVERROR,
       output [19:0] io_output_PADDR,
-      output reg [7:0] io_output_PSEL,
+      output reg [9:0] io_output_PSEL,
       output  io_output_PENABLE,
       input   io_output_PREADY,
       output  io_output_PWRITE,
@@ -4171,14 +4836,18 @@ module Apb3Decoder (
   wire [19:0] _zz_Apb3Decoder_6_;
   wire [19:0] _zz_Apb3Decoder_7_;
   wire [19:0] _zz_Apb3Decoder_8_;
+  wire [19:0] _zz_Apb3Decoder_9_;
+  wire [19:0] _zz_Apb3Decoder_10_;
   assign _zz_Apb3Decoder_1_ = (20'b11111111111100000000);
   assign _zz_Apb3Decoder_2_ = (20'b11111111111100000000);
   assign _zz_Apb3Decoder_3_ = (20'b11111111111100000000);
   assign _zz_Apb3Decoder_4_ = (20'b11111111111100000000);
   assign _zz_Apb3Decoder_5_ = (20'b11111111111100000000);
-  assign _zz_Apb3Decoder_6_ = (20'b11111111000000000000);
-  assign _zz_Apb3Decoder_7_ = (20'b11110000000000000000);
+  assign _zz_Apb3Decoder_6_ = (20'b11111111111111110000);
+  assign _zz_Apb3Decoder_7_ = (20'b11111111111100000000);
   assign _zz_Apb3Decoder_8_ = (20'b11111111000000000000);
+  assign _zz_Apb3Decoder_9_ = (20'b11110000000000000000);
+  assign _zz_Apb3Decoder_10_ = (20'b11111111000000000000);
   assign io_output_PADDR = io_input_PADDR;
   assign io_output_PENABLE = io_input_PENABLE;
   assign io_output_PWRITE = io_input_PWRITE;
@@ -4189,15 +4858,17 @@ module Apb3Decoder (
     io_output_PSEL[2] = (((io_input_PADDR & _zz_Apb3Decoder_3_) == (20'b00000000001000000000)) && io_input_PSEL[0]);
     io_output_PSEL[3] = (((io_input_PADDR & _zz_Apb3Decoder_4_) == (20'b00000000001100000000)) && io_input_PSEL[0]);
     io_output_PSEL[4] = (((io_input_PADDR & _zz_Apb3Decoder_5_) == (20'b00000000010000000000)) && io_input_PSEL[0]);
-    io_output_PSEL[5] = (((io_input_PADDR & _zz_Apb3Decoder_6_) == (20'b00010000000000000000)) && io_input_PSEL[0]);
-    io_output_PSEL[6] = (((io_input_PADDR & _zz_Apb3Decoder_7_) == (20'b00100000000000000000)) && io_input_PSEL[0]);
-    io_output_PSEL[7] = (((io_input_PADDR & _zz_Apb3Decoder_8_) == (20'b00110000000000000000)) && io_input_PSEL[0]);
+    io_output_PSEL[5] = (((io_input_PADDR & _zz_Apb3Decoder_6_) == (20'b00000000011000000000)) && io_input_PSEL[0]);
+    io_output_PSEL[6] = (((io_input_PADDR & _zz_Apb3Decoder_7_) == (20'b00000000011100000000)) && io_input_PSEL[0]);
+    io_output_PSEL[7] = (((io_input_PADDR & _zz_Apb3Decoder_8_) == (20'b00010000000000000000)) && io_input_PSEL[0]);
+    io_output_PSEL[8] = (((io_input_PADDR & _zz_Apb3Decoder_9_) == (20'b00100000000000000000)) && io_input_PSEL[0]);
+    io_output_PSEL[9] = (((io_input_PADDR & _zz_Apb3Decoder_10_) == (20'b00110000000000000000)) && io_input_PSEL[0]);
   end
 
   always @ (*) begin
     io_input_PREADY = io_output_PREADY;
     io_input_PSLVERROR = io_output_PSLVERROR;
-    if((io_input_PSEL[0] && (io_output_PSEL == (8'b00000000))))begin
+    if((io_input_PSEL[0] && (io_output_PSEL == (10'b0000000000))))begin
       io_input_PREADY = 1'b1;
       io_input_PSLVERROR = 1'b1;
     end
@@ -4208,7 +4879,7 @@ endmodule
 
 module Apb3Router (
       input  [19:0] io_input_PADDR,
-      input  [7:0] io_input_PSEL,
+      input  [9:0] io_input_PSEL,
       input   io_input_PENABLE,
       output  io_input_PREADY,
       input   io_input_PWRITE,
@@ -4279,11 +4950,27 @@ module Apb3Router (
       output [31:0] io_outputs_7_PWDATA,
       input  [31:0] io_outputs_7_PRDATA,
       input   io_outputs_7_PSLVERROR,
+      output [19:0] io_outputs_8_PADDR,
+      output [0:0] io_outputs_8_PSEL,
+      output  io_outputs_8_PENABLE,
+      input   io_outputs_8_PREADY,
+      output  io_outputs_8_PWRITE,
+      output [31:0] io_outputs_8_PWDATA,
+      input  [31:0] io_outputs_8_PRDATA,
+      input   io_outputs_8_PSLVERROR,
+      output [19:0] io_outputs_9_PADDR,
+      output [0:0] io_outputs_9_PSEL,
+      output  io_outputs_9_PENABLE,
+      input   io_outputs_9_PREADY,
+      output  io_outputs_9_PWRITE,
+      output [31:0] io_outputs_9_PWDATA,
+      input  [31:0] io_outputs_9_PRDATA,
+      input   io_outputs_9_PSLVERROR,
       input   toplevel_main_clk,
       input   toplevel_main_reset_);
-  reg  _zz_Apb3Router_8_;
-  reg [31:0] _zz_Apb3Router_9_;
   reg  _zz_Apb3Router_10_;
+  reg [31:0] _zz_Apb3Router_11_;
+  reg  _zz_Apb3Router_12_;
   wire  _zz_Apb3Router_1_;
   wire  _zz_Apb3Router_2_;
   wire  _zz_Apb3Router_3_;
@@ -4291,48 +4978,60 @@ module Apb3Router (
   wire  _zz_Apb3Router_5_;
   wire  _zz_Apb3Router_6_;
   wire  _zz_Apb3Router_7_;
-  reg [2:0] selIndex;
+  wire  _zz_Apb3Router_8_;
+  wire  _zz_Apb3Router_9_;
+  reg [3:0] selIndex;
   always @(*) begin
     case(selIndex)
-      3'b000 : begin
-        _zz_Apb3Router_8_ = io_outputs_0_PREADY;
-        _zz_Apb3Router_9_ = io_outputs_0_PRDATA;
-        _zz_Apb3Router_10_ = io_outputs_0_PSLVERROR;
+      4'b0000 : begin
+        _zz_Apb3Router_10_ = io_outputs_0_PREADY;
+        _zz_Apb3Router_11_ = io_outputs_0_PRDATA;
+        _zz_Apb3Router_12_ = io_outputs_0_PSLVERROR;
       end
-      3'b001 : begin
-        _zz_Apb3Router_8_ = io_outputs_1_PREADY;
-        _zz_Apb3Router_9_ = io_outputs_1_PRDATA;
-        _zz_Apb3Router_10_ = io_outputs_1_PSLVERROR;
+      4'b0001 : begin
+        _zz_Apb3Router_10_ = io_outputs_1_PREADY;
+        _zz_Apb3Router_11_ = io_outputs_1_PRDATA;
+        _zz_Apb3Router_12_ = io_outputs_1_PSLVERROR;
       end
-      3'b010 : begin
-        _zz_Apb3Router_8_ = io_outputs_2_PREADY;
-        _zz_Apb3Router_9_ = io_outputs_2_PRDATA;
-        _zz_Apb3Router_10_ = io_outputs_2_PSLVERROR;
+      4'b0010 : begin
+        _zz_Apb3Router_10_ = io_outputs_2_PREADY;
+        _zz_Apb3Router_11_ = io_outputs_2_PRDATA;
+        _zz_Apb3Router_12_ = io_outputs_2_PSLVERROR;
       end
-      3'b011 : begin
-        _zz_Apb3Router_8_ = io_outputs_3_PREADY;
-        _zz_Apb3Router_9_ = io_outputs_3_PRDATA;
-        _zz_Apb3Router_10_ = io_outputs_3_PSLVERROR;
+      4'b0011 : begin
+        _zz_Apb3Router_10_ = io_outputs_3_PREADY;
+        _zz_Apb3Router_11_ = io_outputs_3_PRDATA;
+        _zz_Apb3Router_12_ = io_outputs_3_PSLVERROR;
       end
-      3'b100 : begin
-        _zz_Apb3Router_8_ = io_outputs_4_PREADY;
-        _zz_Apb3Router_9_ = io_outputs_4_PRDATA;
-        _zz_Apb3Router_10_ = io_outputs_4_PSLVERROR;
+      4'b0100 : begin
+        _zz_Apb3Router_10_ = io_outputs_4_PREADY;
+        _zz_Apb3Router_11_ = io_outputs_4_PRDATA;
+        _zz_Apb3Router_12_ = io_outputs_4_PSLVERROR;
       end
-      3'b101 : begin
-        _zz_Apb3Router_8_ = io_outputs_5_PREADY;
-        _zz_Apb3Router_9_ = io_outputs_5_PRDATA;
-        _zz_Apb3Router_10_ = io_outputs_5_PSLVERROR;
+      4'b0101 : begin
+        _zz_Apb3Router_10_ = io_outputs_5_PREADY;
+        _zz_Apb3Router_11_ = io_outputs_5_PRDATA;
+        _zz_Apb3Router_12_ = io_outputs_5_PSLVERROR;
       end
-      3'b110 : begin
-        _zz_Apb3Router_8_ = io_outputs_6_PREADY;
-        _zz_Apb3Router_9_ = io_outputs_6_PRDATA;
-        _zz_Apb3Router_10_ = io_outputs_6_PSLVERROR;
+      4'b0110 : begin
+        _zz_Apb3Router_10_ = io_outputs_6_PREADY;
+        _zz_Apb3Router_11_ = io_outputs_6_PRDATA;
+        _zz_Apb3Router_12_ = io_outputs_6_PSLVERROR;
+      end
+      4'b0111 : begin
+        _zz_Apb3Router_10_ = io_outputs_7_PREADY;
+        _zz_Apb3Router_11_ = io_outputs_7_PRDATA;
+        _zz_Apb3Router_12_ = io_outputs_7_PSLVERROR;
+      end
+      4'b1000 : begin
+        _zz_Apb3Router_10_ = io_outputs_8_PREADY;
+        _zz_Apb3Router_11_ = io_outputs_8_PRDATA;
+        _zz_Apb3Router_12_ = io_outputs_8_PSLVERROR;
       end
       default : begin
-        _zz_Apb3Router_8_ = io_outputs_7_PREADY;
-        _zz_Apb3Router_9_ = io_outputs_7_PRDATA;
-        _zz_Apb3Router_10_ = io_outputs_7_PSLVERROR;
+        _zz_Apb3Router_10_ = io_outputs_9_PREADY;
+        _zz_Apb3Router_11_ = io_outputs_9_PRDATA;
+        _zz_Apb3Router_12_ = io_outputs_9_PSLVERROR;
       end
     endcase
   end
@@ -4377,18 +5076,74 @@ module Apb3Router (
   assign io_outputs_7_PSEL[0] = io_input_PSEL[7];
   assign io_outputs_7_PWRITE = io_input_PWRITE;
   assign io_outputs_7_PWDATA = io_input_PWDATA;
+  assign io_outputs_8_PADDR = io_input_PADDR;
+  assign io_outputs_8_PENABLE = io_input_PENABLE;
+  assign io_outputs_8_PSEL[0] = io_input_PSEL[8];
+  assign io_outputs_8_PWRITE = io_input_PWRITE;
+  assign io_outputs_8_PWDATA = io_input_PWDATA;
+  assign io_outputs_9_PADDR = io_input_PADDR;
+  assign io_outputs_9_PENABLE = io_input_PENABLE;
+  assign io_outputs_9_PSEL[0] = io_input_PSEL[9];
+  assign io_outputs_9_PWRITE = io_input_PWRITE;
+  assign io_outputs_9_PWDATA = io_input_PWDATA;
   assign _zz_Apb3Router_1_ = io_input_PSEL[3];
   assign _zz_Apb3Router_2_ = io_input_PSEL[5];
   assign _zz_Apb3Router_3_ = io_input_PSEL[6];
   assign _zz_Apb3Router_4_ = io_input_PSEL[7];
-  assign _zz_Apb3Router_5_ = (((io_input_PSEL[1] || _zz_Apb3Router_1_) || _zz_Apb3Router_2_) || _zz_Apb3Router_4_);
-  assign _zz_Apb3Router_6_ = (((io_input_PSEL[2] || _zz_Apb3Router_1_) || _zz_Apb3Router_3_) || _zz_Apb3Router_4_);
-  assign _zz_Apb3Router_7_ = (((io_input_PSEL[4] || _zz_Apb3Router_2_) || _zz_Apb3Router_3_) || _zz_Apb3Router_4_);
-  assign io_input_PREADY = _zz_Apb3Router_8_;
-  assign io_input_PRDATA = _zz_Apb3Router_9_;
-  assign io_input_PSLVERROR = _zz_Apb3Router_10_;
+  assign _zz_Apb3Router_5_ = io_input_PSEL[9];
+  assign _zz_Apb3Router_6_ = ((((io_input_PSEL[1] || _zz_Apb3Router_1_) || _zz_Apb3Router_2_) || _zz_Apb3Router_4_) || _zz_Apb3Router_5_);
+  assign _zz_Apb3Router_7_ = (((io_input_PSEL[2] || _zz_Apb3Router_1_) || _zz_Apb3Router_3_) || _zz_Apb3Router_4_);
+  assign _zz_Apb3Router_8_ = (((io_input_PSEL[4] || _zz_Apb3Router_2_) || _zz_Apb3Router_3_) || _zz_Apb3Router_4_);
+  assign _zz_Apb3Router_9_ = (io_input_PSEL[8] || _zz_Apb3Router_5_);
+  assign io_input_PREADY = _zz_Apb3Router_10_;
+  assign io_input_PRDATA = _zz_Apb3Router_11_;
+  assign io_input_PSLVERROR = _zz_Apb3Router_12_;
   always @ (posedge toplevel_main_clk) begin
-    selIndex <= {_zz_Apb3Router_7_,{_zz_Apb3Router_6_,_zz_Apb3Router_5_}};
+    selIndex <= {_zz_Apb3Router_9_,{_zz_Apb3Router_8_,{_zz_Apb3Router_7_,_zz_Apb3Router_6_}}};
+  end
+
+endmodule
+
+module BufferCC_8_ (
+      input  [3:0] io_dataIn,
+      output [3:0] io_dataOut,
+      input   toplevel_u_vo_clk_gen_vo_clk,
+      input   toplevel_u_vo_clk_gen_vo_reset_);
+  reg [3:0] buffers_0;
+  reg [3:0] buffers_1;
+  assign io_dataOut = buffers_1;
+  always @ (posedge toplevel_u_vo_clk_gen_vo_clk) begin
+    buffers_0 <= io_dataIn;
+    buffers_1 <= buffers_0;
+  end
+
+endmodule
+
+module BufferCC_9_ (
+      input  [7:0] io_dataIn_r,
+      input  [7:0] io_dataIn_g,
+      input  [7:0] io_dataIn_b,
+      output [7:0] io_dataOut_r,
+      output [7:0] io_dataOut_g,
+      output [7:0] io_dataOut_b,
+      input   toplevel_u_vo_clk_gen_vo_clk,
+      input   toplevel_u_vo_clk_gen_vo_reset_);
+  reg [7:0] buffers_0_r;
+  reg [7:0] buffers_0_g;
+  reg [7:0] buffers_0_b;
+  reg [7:0] buffers_1_r;
+  reg [7:0] buffers_1_g;
+  reg [7:0] buffers_1_b;
+  assign io_dataOut_r = buffers_1_r;
+  assign io_dataOut_g = buffers_1_g;
+  assign io_dataOut_b = buffers_1_b;
+  always @ (posedge toplevel_u_vo_clk_gen_vo_clk) begin
+    buffers_0_r <= io_dataIn_r;
+    buffers_0_g <= io_dataIn_g;
+    buffers_0_b <= io_dataIn_b;
+    buffers_1_r <= buffers_0_r;
+    buffers_1_g <= buffers_0_g;
+    buffers_1_b <= buffers_0_b;
   end
 
 endmodule
@@ -4412,7 +5167,7 @@ module GmiiRxCtrl (
   wire  rx_domain_rx_fifo_wr_valid;
   wire  rx_domain_rx_fifo_wr_ready;
   wire [9:0] rx_domain_rx_fifo_wr_payload;
-  StreamFifoCC u_rx_fifo ( 
+  StreamFifoCC_2_ u_rx_fifo ( 
     .io_push_valid(rx_domain_rx_fifo_wr_valid),
     .io_push_ready(u_rx_fifo_io_push_ready),
     .io_push_payload(rx_domain_rx_fifo_wr_payload),
@@ -4444,7 +5199,7 @@ module GmiiTxCtrl (
   assign io_tx_d = (8'b00000000);
 endmodule
 
-module BufferCC_4_ (
+module BufferCC_10_ (
       input  [1:0] io_initial,
       input  [1:0] io_dataIn,
       output [1:0] io_dataOut,
@@ -4465,17 +5220,17 @@ module BufferCC_4_ (
 
 endmodule
 
-module BufferCC_5_ (
+module BufferCC_11_ (
       input  [1:0] io_initial,
       input  [1:0] io_dataIn,
       output [1:0] io_dataOut,
-      input   u_ulpi_ctrl_io_ulpi_clk,
-      input   u_ulpi_ctrl_ulpi_reset_);
+      input   _zz_BufferCC_11__1_,
+      input   _zz_BufferCC_11__2_);
   reg [1:0] buffers_0;
   reg [1:0] buffers_1;
   assign io_dataOut = buffers_1;
-  always @ (posedge u_ulpi_ctrl_io_ulpi_clk) begin
-    if(!u_ulpi_ctrl_ulpi_reset_) begin
+  always @ (posedge _zz_BufferCC_11__1_) begin
+    if(!_zz_BufferCC_11__2_) begin
       buffers_0 <= io_initial;
       buffers_1 <= io_initial;
     end else begin
@@ -4487,9 +5242,9 @@ module BufferCC_5_ (
 endmodule
 
 
-//BufferCC_6_ remplaced by BufferCC_2_
+//BufferCC_12_ remplaced by BufferCC_6_
 
-module BufferCC_7_ (
+module BufferCC_13_ (
       input  [10:0] io_initial,
       input  [10:0] io_dataIn,
       output [10:0] io_dataOut,
@@ -4510,17 +5265,17 @@ module BufferCC_7_ (
 
 endmodule
 
-module BufferCC_8_ (
+module BufferCC_14_ (
       input  [10:0] io_initial,
       input  [10:0] io_dataIn,
       output [10:0] io_dataOut,
-      input   u_ulpi_ctrl_io_ulpi_clk,
-      input   u_ulpi_ctrl_ulpi_reset_);
+      input   _zz_BufferCC_14__1_,
+      input   _zz_BufferCC_14__2_);
   reg [10:0] buffers_0;
   reg [10:0] buffers_1;
   assign io_dataOut = buffers_1;
-  always @ (posedge u_ulpi_ctrl_io_ulpi_clk) begin
-    if(!u_ulpi_ctrl_ulpi_reset_) begin
+  always @ (posedge _zz_BufferCC_14__1_) begin
+    if(!_zz_BufferCC_14__2_) begin
       buffers_0 <= io_initial;
       buffers_1 <= io_initial;
     end else begin
@@ -4531,17 +5286,17 @@ module BufferCC_8_ (
 
 endmodule
 
-module BufferCC_9_ (
+module BufferCC_15_ (
       input   io_initial,
       input   io_dataIn,
       output  io_dataOut,
-      input   u_ulpi_ctrl_io_ulpi_clk,
-      input   u_ulpi_ctrl_ulpi_reset_);
+      input   _zz_BufferCC_15__1_,
+      input   _zz_BufferCC_15__2_);
   reg  buffers_0;
   reg  buffers_1;
   assign io_dataOut = buffers_1;
-  always @ (posedge u_ulpi_ctrl_io_ulpi_clk) begin
-    if(!u_ulpi_ctrl_ulpi_reset_) begin
+  always @ (posedge _zz_BufferCC_15__1_) begin
+    if(!_zz_BufferCC_15__2_) begin
       buffers_0 <= io_initial;
       buffers_1 <= io_initial;
     end else begin
@@ -4556,26 +5311,26 @@ module PulseCCByToggle (
       input   io_pulseIn,
       output  io_pulseOut,
       input   core_u_pano_core_io_ulpi_clk,
-      input   core_u_pano_core_ulpi_reset_,
+      input   _zz_PulseCCByToggle_1_,
       input   toplevel_main_clk,
       input   toplevel_main_reset_);
-  wire  _zz_PulseCCByToggle_1_;
-  wire  bufferCC_12__io_dataOut;
+  wire  _zz_PulseCCByToggle_2_;
+  wire  bufferCC_18__io_dataOut;
   reg  inArea_target;
   wire  outArea_target;
   reg  outArea_hit;
-  BufferCC_2_ bufferCC_12_ ( 
-    .io_initial(_zz_PulseCCByToggle_1_),
+  BufferCC_6_ bufferCC_18_ ( 
+    .io_initial(_zz_PulseCCByToggle_2_),
     .io_dataIn(inArea_target),
-    .io_dataOut(bufferCC_12__io_dataOut),
+    .io_dataOut(bufferCC_18__io_dataOut),
     .toplevel_main_clk(toplevel_main_clk),
     .toplevel_main_reset_(toplevel_main_reset_) 
   );
-  assign _zz_PulseCCByToggle_1_ = 1'b0;
-  assign outArea_target = bufferCC_12__io_dataOut;
+  assign _zz_PulseCCByToggle_2_ = 1'b0;
+  assign outArea_target = bufferCC_18__io_dataOut;
   assign io_pulseOut = (outArea_target != outArea_hit);
   always @ (posedge core_u_pano_core_io_ulpi_clk) begin
-    if(!core_u_pano_core_ulpi_reset_) begin
+    if(!_zz_PulseCCByToggle_1_) begin
       inArea_target <= 1'b0;
     end else begin
       if(io_pulseIn)begin
@@ -4602,21 +5357,21 @@ module PulseCCByToggle_1_ (
       input   toplevel_main_clk,
       input   toplevel_main_reset_,
       input   core_u_pano_core_io_ulpi_clk,
-      input   core_u_pano_core_ulpi_reset_);
-  wire  _zz_PulseCCByToggle_1__1_;
-  wire  bufferCC_12__io_dataOut;
+      input   _zz_PulseCCByToggle_1__1_);
+  wire  _zz_PulseCCByToggle_1__2_;
+  wire  bufferCC_18__io_dataOut;
   reg  inArea_target;
   wire  outArea_target;
   reg  outArea_hit;
-  BufferCC_3_ bufferCC_12_ ( 
-    .io_initial(_zz_PulseCCByToggle_1__1_),
+  BufferCC_7_ bufferCC_18_ ( 
+    .io_initial(_zz_PulseCCByToggle_1__2_),
     .io_dataIn(inArea_target),
-    .io_dataOut(bufferCC_12__io_dataOut),
+    .io_dataOut(bufferCC_18__io_dataOut),
     .core_u_pano_core_io_ulpi_clk(core_u_pano_core_io_ulpi_clk),
-    .core_u_pano_core_ulpi_reset_(core_u_pano_core_ulpi_reset_) 
+    ._zz_BufferCC_7__1_(_zz_PulseCCByToggle_1__1_) 
   );
-  assign _zz_PulseCCByToggle_1__1_ = 1'b0;
-  assign outArea_target = bufferCC_12__io_dataOut;
+  assign _zz_PulseCCByToggle_1__2_ = 1'b0;
+  assign outArea_target = bufferCC_18__io_dataOut;
   assign io_pulseOut = (outArea_target != outArea_hit);
   always @ (posedge toplevel_main_clk) begin
     if(!toplevel_main_reset_) begin
@@ -4629,7 +5384,7 @@ module PulseCCByToggle_1_ (
   end
 
   always @ (posedge core_u_pano_core_io_ulpi_clk) begin
-    if(!core_u_pano_core_ulpi_reset_) begin
+    if(!_zz_PulseCCByToggle_1__1_) begin
       outArea_hit <= 1'b0;
     end else begin
       if((outArea_target != outArea_hit))begin
@@ -4640,7 +5395,7 @@ module PulseCCByToggle_1_ (
 
 endmodule
 
-module BufferCC_10_ (
+module BufferCC_16_ (
       input  [2:0] io_dataIn,
       output [2:0] io_dataOut,
       input   toplevel_main_clk,
@@ -4651,6 +5406,497 @@ module BufferCC_10_ (
   always @ (posedge toplevel_main_clk) begin
     buffers_0 <= io_dataIn;
     buffers_1 <= buffers_0;
+  end
+
+endmodule
+
+module SpiMasterCtrl (
+      input   io_config_kind_cpol,
+      input   io_config_kind_cpha,
+      input  [15:0] io_config_sclkToogle,
+      input  [0:0] io_config_ss_activeHigh,
+      input  [15:0] io_config_ss_setup,
+      input  [15:0] io_config_ss_hold,
+      input  [15:0] io_config_ss_disable,
+      input   io_cmd_valid,
+      output reg  io_cmd_ready,
+      input  `SpiMasterCtrlCmdMode_defaultEncoding_type io_cmd_payload_mode,
+      input  [8:0] io_cmd_payload_args,
+      output  io_rsp_valid,
+      output [7:0] io_rsp_payload,
+      output [0:0] io_spi_ss,
+      output  io_spi_sclk,
+      output  io_spi_mosi,
+      input   io_spi_miso,
+      input   toplevel_main_clk,
+      input   toplevel_main_reset_);
+  wire  _zz_SpiMasterCtrl_4_;
+  wire  _zz_SpiMasterCtrl_5_;
+  wire  _zz_SpiMasterCtrl_6_;
+  wire  _zz_SpiMasterCtrl_7_;
+  wire [0:0] _zz_SpiMasterCtrl_8_;
+  wire [3:0] _zz_SpiMasterCtrl_9_;
+  wire [8:0] _zz_SpiMasterCtrl_10_;
+  wire [0:0] _zz_SpiMasterCtrl_11_;
+  wire [0:0] _zz_SpiMasterCtrl_12_;
+  wire [7:0] _zz_SpiMasterCtrl_13_;
+  wire [2:0] _zz_SpiMasterCtrl_14_;
+  wire [2:0] _zz_SpiMasterCtrl_15_;
+  reg [15:0] timer_counter;
+  reg  timer_reset;
+  wire  timer_ss_setupHit;
+  wire  timer_ss_holdHit;
+  wire  timer_ss_disableHit;
+  wire  timer_sclkToogleHit;
+  reg  fsm_counter_willIncrement;
+  wire  fsm_counter_willClear;
+  reg [3:0] fsm_counter_valueNext;
+  reg [3:0] fsm_counter_value;
+  wire  fsm_counter_willOverflowIfInc;
+  wire  fsm_counter_willOverflow;
+  reg [7:0] fsm_buffer;
+  reg [0:0] fsm_ss;
+  reg  _zz_SpiMasterCtrl_1_;
+  reg  _zz_SpiMasterCtrl_2_;
+  reg  _zz_SpiMasterCtrl_3_;
+  `ifndef SYNTHESIS
+  reg [31:0] io_cmd_payload_mode_string;
+  `endif
+
+  assign _zz_SpiMasterCtrl_4_ = (io_cmd_payload_mode == `SpiMasterCtrlCmdMode_defaultEncoding_DATA);
+  assign _zz_SpiMasterCtrl_5_ = _zz_SpiMasterCtrl_11_[0];
+  assign _zz_SpiMasterCtrl_6_ = (! fsm_counter_value[0]);
+  assign _zz_SpiMasterCtrl_7_ = ((! io_cmd_valid) || io_cmd_ready);
+  assign _zz_SpiMasterCtrl_8_ = fsm_counter_willIncrement;
+  assign _zz_SpiMasterCtrl_9_ = {3'd0, _zz_SpiMasterCtrl_8_};
+  assign _zz_SpiMasterCtrl_10_ = {fsm_buffer,io_spi_miso};
+  assign _zz_SpiMasterCtrl_11_ = io_cmd_payload_args[0 : 0];
+  assign _zz_SpiMasterCtrl_12_ = io_cmd_payload_args[8 : 8];
+  assign _zz_SpiMasterCtrl_13_ = io_cmd_payload_args[7 : 0];
+  assign _zz_SpiMasterCtrl_14_ = ((3'b111) - _zz_SpiMasterCtrl_15_);
+  assign _zz_SpiMasterCtrl_15_ = (fsm_counter_value >>> 1);
+  `ifndef SYNTHESIS
+  always @(*) begin
+    case(io_cmd_payload_mode)
+      `SpiMasterCtrlCmdMode_defaultEncoding_DATA : io_cmd_payload_mode_string = "DATA";
+      `SpiMasterCtrlCmdMode_defaultEncoding_SS : io_cmd_payload_mode_string = "SS  ";
+      default : io_cmd_payload_mode_string = "????";
+    endcase
+  end
+  `endif
+
+  always @ (*) begin
+    timer_reset = 1'b0;
+    fsm_counter_willIncrement = 1'b0;
+    io_cmd_ready = 1'b0;
+    if(io_cmd_valid)begin
+      if(_zz_SpiMasterCtrl_4_)begin
+        if(timer_sclkToogleHit)begin
+          fsm_counter_willIncrement = 1'b1;
+          timer_reset = 1'b1;
+          io_cmd_ready = fsm_counter_willOverflowIfInc;
+        end
+      end else begin
+        if(_zz_SpiMasterCtrl_5_)begin
+          if(timer_ss_setupHit)begin
+            io_cmd_ready = 1'b1;
+          end
+        end else begin
+          if(_zz_SpiMasterCtrl_6_)begin
+            if(timer_ss_holdHit)begin
+              fsm_counter_willIncrement = 1'b1;
+              timer_reset = 1'b1;
+            end
+          end else begin
+            if(timer_ss_disableHit)begin
+              io_cmd_ready = 1'b1;
+            end
+          end
+        end
+      end
+    end
+    if(_zz_SpiMasterCtrl_7_)begin
+      timer_reset = 1'b1;
+    end
+  end
+
+  assign timer_ss_setupHit = (timer_counter == io_config_ss_setup);
+  assign timer_ss_holdHit = (timer_counter == io_config_ss_hold);
+  assign timer_ss_disableHit = (timer_counter == io_config_ss_disable);
+  assign timer_sclkToogleHit = (timer_counter == io_config_sclkToogle);
+  assign fsm_counter_willClear = 1'b0;
+  assign fsm_counter_willOverflowIfInc = (fsm_counter_value == (4'b1111));
+  assign fsm_counter_willOverflow = (fsm_counter_willOverflowIfInc && fsm_counter_willIncrement);
+  always @ (*) begin
+    fsm_counter_valueNext = (fsm_counter_value + _zz_SpiMasterCtrl_9_);
+    if(fsm_counter_willClear)begin
+      fsm_counter_valueNext = (4'b0000);
+    end
+  end
+
+  assign io_rsp_valid = _zz_SpiMasterCtrl_1_;
+  assign io_rsp_payload = fsm_buffer;
+  assign io_spi_ss = (fsm_ss ^ io_config_ss_activeHigh);
+  assign io_spi_sclk = _zz_SpiMasterCtrl_2_;
+  assign io_spi_mosi = _zz_SpiMasterCtrl_3_;
+  always @ (posedge toplevel_main_clk) begin
+    timer_counter <= (timer_counter + (16'b0000000000000001));
+    if(timer_reset)begin
+      timer_counter <= (16'b0000000000000000);
+    end
+    if(io_cmd_valid)begin
+      if(_zz_SpiMasterCtrl_4_)begin
+        if(timer_sclkToogleHit)begin
+          if(fsm_counter_value[0])begin
+            fsm_buffer <= _zz_SpiMasterCtrl_10_[7:0];
+          end
+        end
+      end
+    end
+    _zz_SpiMasterCtrl_2_ <= (((io_cmd_valid && (io_cmd_payload_mode == `SpiMasterCtrlCmdMode_defaultEncoding_DATA)) && (fsm_counter_value[0] ^ io_config_kind_cpha)) ^ io_config_kind_cpol);
+    _zz_SpiMasterCtrl_3_ <= _zz_SpiMasterCtrl_13_[_zz_SpiMasterCtrl_14_];
+  end
+
+  always @ (posedge toplevel_main_clk) begin
+    if(!toplevel_main_reset_) begin
+      fsm_counter_value <= (4'b0000);
+      fsm_ss <= (1'b1);
+      _zz_SpiMasterCtrl_1_ <= 1'b0;
+    end else begin
+      fsm_counter_value <= fsm_counter_valueNext;
+      if(io_cmd_valid)begin
+        if(! _zz_SpiMasterCtrl_4_) begin
+          if(_zz_SpiMasterCtrl_5_)begin
+            fsm_ss[0] <= 1'b0;
+          end else begin
+            if(! _zz_SpiMasterCtrl_6_) begin
+              fsm_ss[0] <= 1'b1;
+            end
+          end
+        end
+      end
+      _zz_SpiMasterCtrl_1_ <= (((io_cmd_valid && io_cmd_ready) && (io_cmd_payload_mode == `SpiMasterCtrlCmdMode_defaultEncoding_DATA)) && _zz_SpiMasterCtrl_12_[0]);
+      if(_zz_SpiMasterCtrl_7_)begin
+        fsm_counter_value <= (4'b0000);
+      end
+    end
+  end
+
+endmodule
+
+module StreamFifo (
+      input   io_push_valid,
+      output  io_push_ready,
+      input  `SpiMasterCtrlCmdMode_defaultEncoding_type io_push_payload_mode,
+      input  [8:0] io_push_payload_args,
+      output  io_pop_valid,
+      input   io_pop_ready,
+      output `SpiMasterCtrlCmdMode_defaultEncoding_type io_pop_payload_mode,
+      output [8:0] io_pop_payload_args,
+      input   io_flush,
+      output [5:0] io_occupancy,
+      output [5:0] io_availability,
+      input   toplevel_main_clk,
+      input   toplevel_main_reset_);
+  reg [9:0] _zz_StreamFifo_6_;
+  wire [0:0] _zz_StreamFifo_7_;
+  wire [4:0] _zz_StreamFifo_8_;
+  wire [0:0] _zz_StreamFifo_9_;
+  wire [4:0] _zz_StreamFifo_10_;
+  wire [4:0] _zz_StreamFifo_11_;
+  wire  _zz_StreamFifo_12_;
+  wire [9:0] _zz_StreamFifo_13_;
+  reg  _zz_StreamFifo_1_;
+  reg  logic_pushPtr_willIncrement;
+  reg  logic_pushPtr_willClear;
+  reg [4:0] logic_pushPtr_valueNext;
+  reg [4:0] logic_pushPtr_value;
+  wire  logic_pushPtr_willOverflowIfInc;
+  wire  logic_pushPtr_willOverflow;
+  reg  logic_popPtr_willIncrement;
+  reg  logic_popPtr_willClear;
+  reg [4:0] logic_popPtr_valueNext;
+  reg [4:0] logic_popPtr_value;
+  wire  logic_popPtr_willOverflowIfInc;
+  wire  logic_popPtr_willOverflow;
+  wire  logic_ptrMatch;
+  reg  logic_risingOccupancy;
+  wire  logic_pushing;
+  wire  logic_popping;
+  wire  logic_empty;
+  wire  logic_full;
+  reg  _zz_StreamFifo_2_;
+  wire `SpiMasterCtrlCmdMode_defaultEncoding_type _zz_StreamFifo_3_;
+  wire [9:0] _zz_StreamFifo_4_;
+  wire `SpiMasterCtrlCmdMode_defaultEncoding_type _zz_StreamFifo_5_;
+  wire [4:0] logic_ptrDif;
+  `ifndef SYNTHESIS
+  reg [31:0] io_push_payload_mode_string;
+  reg [31:0] io_pop_payload_mode_string;
+  reg [31:0] _zz_StreamFifo_3__string;
+  reg [31:0] _zz_StreamFifo_5__string;
+  `endif
+
+  reg [9:0] logic_ram [0:31];
+  assign _zz_StreamFifo_7_ = logic_pushPtr_willIncrement;
+  assign _zz_StreamFifo_8_ = {4'd0, _zz_StreamFifo_7_};
+  assign _zz_StreamFifo_9_ = logic_popPtr_willIncrement;
+  assign _zz_StreamFifo_10_ = {4'd0, _zz_StreamFifo_9_};
+  assign _zz_StreamFifo_11_ = (logic_popPtr_value - logic_pushPtr_value);
+  assign _zz_StreamFifo_12_ = 1'b1;
+  assign _zz_StreamFifo_13_ = {io_push_payload_args,io_push_payload_mode};
+  always @ (posedge toplevel_main_clk) begin
+    if(_zz_StreamFifo_1_) begin
+      logic_ram[logic_pushPtr_value] <= _zz_StreamFifo_13_;
+    end
+  end
+
+  always @ (posedge toplevel_main_clk) begin
+    if(_zz_StreamFifo_12_) begin
+      _zz_StreamFifo_6_ <= logic_ram[logic_popPtr_valueNext];
+    end
+  end
+
+  `ifndef SYNTHESIS
+  always @(*) begin
+    case(io_push_payload_mode)
+      `SpiMasterCtrlCmdMode_defaultEncoding_DATA : io_push_payload_mode_string = "DATA";
+      `SpiMasterCtrlCmdMode_defaultEncoding_SS : io_push_payload_mode_string = "SS  ";
+      default : io_push_payload_mode_string = "????";
+    endcase
+  end
+  always @(*) begin
+    case(io_pop_payload_mode)
+      `SpiMasterCtrlCmdMode_defaultEncoding_DATA : io_pop_payload_mode_string = "DATA";
+      `SpiMasterCtrlCmdMode_defaultEncoding_SS : io_pop_payload_mode_string = "SS  ";
+      default : io_pop_payload_mode_string = "????";
+    endcase
+  end
+  always @(*) begin
+    case(_zz_StreamFifo_3_)
+      `SpiMasterCtrlCmdMode_defaultEncoding_DATA : _zz_StreamFifo_3__string = "DATA";
+      `SpiMasterCtrlCmdMode_defaultEncoding_SS : _zz_StreamFifo_3__string = "SS  ";
+      default : _zz_StreamFifo_3__string = "????";
+    endcase
+  end
+  always @(*) begin
+    case(_zz_StreamFifo_5_)
+      `SpiMasterCtrlCmdMode_defaultEncoding_DATA : _zz_StreamFifo_5__string = "DATA";
+      `SpiMasterCtrlCmdMode_defaultEncoding_SS : _zz_StreamFifo_5__string = "SS  ";
+      default : _zz_StreamFifo_5__string = "????";
+    endcase
+  end
+  `endif
+
+  always @ (*) begin
+    _zz_StreamFifo_1_ = 1'b0;
+    logic_pushPtr_willIncrement = 1'b0;
+    if(logic_pushing)begin
+      _zz_StreamFifo_1_ = 1'b1;
+      logic_pushPtr_willIncrement = 1'b1;
+    end
+  end
+
+  always @ (*) begin
+    logic_pushPtr_willClear = 1'b0;
+    logic_popPtr_willClear = 1'b0;
+    if(io_flush)begin
+      logic_pushPtr_willClear = 1'b1;
+      logic_popPtr_willClear = 1'b1;
+    end
+  end
+
+  assign logic_pushPtr_willOverflowIfInc = (logic_pushPtr_value == (5'b11111));
+  assign logic_pushPtr_willOverflow = (logic_pushPtr_willOverflowIfInc && logic_pushPtr_willIncrement);
+  always @ (*) begin
+    logic_pushPtr_valueNext = (logic_pushPtr_value + _zz_StreamFifo_8_);
+    if(logic_pushPtr_willClear)begin
+      logic_pushPtr_valueNext = (5'b00000);
+    end
+  end
+
+  always @ (*) begin
+    logic_popPtr_willIncrement = 1'b0;
+    if(logic_popping)begin
+      logic_popPtr_willIncrement = 1'b1;
+    end
+  end
+
+  assign logic_popPtr_willOverflowIfInc = (logic_popPtr_value == (5'b11111));
+  assign logic_popPtr_willOverflow = (logic_popPtr_willOverflowIfInc && logic_popPtr_willIncrement);
+  always @ (*) begin
+    logic_popPtr_valueNext = (logic_popPtr_value + _zz_StreamFifo_10_);
+    if(logic_popPtr_willClear)begin
+      logic_popPtr_valueNext = (5'b00000);
+    end
+  end
+
+  assign logic_ptrMatch = (logic_pushPtr_value == logic_popPtr_value);
+  assign logic_pushing = (io_push_valid && io_push_ready);
+  assign logic_popping = (io_pop_valid && io_pop_ready);
+  assign logic_empty = (logic_ptrMatch && (! logic_risingOccupancy));
+  assign logic_full = (logic_ptrMatch && logic_risingOccupancy);
+  assign io_push_ready = (! logic_full);
+  assign io_pop_valid = ((! logic_empty) && (! (_zz_StreamFifo_2_ && (! logic_full))));
+  assign _zz_StreamFifo_4_ = _zz_StreamFifo_6_;
+  assign _zz_StreamFifo_5_ = _zz_StreamFifo_4_[0 : 0];
+  assign _zz_StreamFifo_3_ = _zz_StreamFifo_5_;
+  assign io_pop_payload_mode = _zz_StreamFifo_3_;
+  assign io_pop_payload_args = _zz_StreamFifo_4_[9 : 1];
+  assign logic_ptrDif = (logic_pushPtr_value - logic_popPtr_value);
+  assign io_occupancy = {(logic_risingOccupancy && logic_ptrMatch),logic_ptrDif};
+  assign io_availability = {((! logic_risingOccupancy) && logic_ptrMatch),_zz_StreamFifo_11_};
+  always @ (posedge toplevel_main_clk) begin
+    if(!toplevel_main_reset_) begin
+      logic_pushPtr_value <= (5'b00000);
+      logic_popPtr_value <= (5'b00000);
+      logic_risingOccupancy <= 1'b0;
+      _zz_StreamFifo_2_ <= 1'b0;
+    end else begin
+      logic_pushPtr_value <= logic_pushPtr_valueNext;
+      logic_popPtr_value <= logic_popPtr_valueNext;
+      _zz_StreamFifo_2_ <= (logic_popPtr_valueNext == logic_pushPtr_value);
+      if((logic_pushing != logic_popping))begin
+        logic_risingOccupancy <= logic_pushing;
+      end
+      if(io_flush)begin
+        logic_risingOccupancy <= 1'b0;
+      end
+    end
+  end
+
+endmodule
+
+module StreamFifo_1_ (
+      input   io_push_valid,
+      output  io_push_ready,
+      input  [7:0] io_push_payload,
+      output  io_pop_valid,
+      input   io_pop_ready,
+      output [7:0] io_pop_payload,
+      input   io_flush,
+      output [5:0] io_occupancy,
+      output [5:0] io_availability,
+      input   toplevel_main_clk,
+      input   toplevel_main_reset_);
+  reg [7:0] _zz_StreamFifo_1__3_;
+  wire [0:0] _zz_StreamFifo_1__4_;
+  wire [4:0] _zz_StreamFifo_1__5_;
+  wire [0:0] _zz_StreamFifo_1__6_;
+  wire [4:0] _zz_StreamFifo_1__7_;
+  wire [4:0] _zz_StreamFifo_1__8_;
+  wire  _zz_StreamFifo_1__9_;
+  reg  _zz_StreamFifo_1__1_;
+  reg  logic_pushPtr_willIncrement;
+  reg  logic_pushPtr_willClear;
+  reg [4:0] logic_pushPtr_valueNext;
+  reg [4:0] logic_pushPtr_value;
+  wire  logic_pushPtr_willOverflowIfInc;
+  wire  logic_pushPtr_willOverflow;
+  reg  logic_popPtr_willIncrement;
+  reg  logic_popPtr_willClear;
+  reg [4:0] logic_popPtr_valueNext;
+  reg [4:0] logic_popPtr_value;
+  wire  logic_popPtr_willOverflowIfInc;
+  wire  logic_popPtr_willOverflow;
+  wire  logic_ptrMatch;
+  reg  logic_risingOccupancy;
+  wire  logic_pushing;
+  wire  logic_popping;
+  wire  logic_empty;
+  wire  logic_full;
+  reg  _zz_StreamFifo_1__2_;
+  wire [4:0] logic_ptrDif;
+  reg [7:0] logic_ram [0:31];
+  assign _zz_StreamFifo_1__4_ = logic_pushPtr_willIncrement;
+  assign _zz_StreamFifo_1__5_ = {4'd0, _zz_StreamFifo_1__4_};
+  assign _zz_StreamFifo_1__6_ = logic_popPtr_willIncrement;
+  assign _zz_StreamFifo_1__7_ = {4'd0, _zz_StreamFifo_1__6_};
+  assign _zz_StreamFifo_1__8_ = (logic_popPtr_value - logic_pushPtr_value);
+  assign _zz_StreamFifo_1__9_ = 1'b1;
+  always @ (posedge toplevel_main_clk) begin
+    if(_zz_StreamFifo_1__1_) begin
+      logic_ram[logic_pushPtr_value] <= io_push_payload;
+    end
+  end
+
+  always @ (posedge toplevel_main_clk) begin
+    if(_zz_StreamFifo_1__9_) begin
+      _zz_StreamFifo_1__3_ <= logic_ram[logic_popPtr_valueNext];
+    end
+  end
+
+  always @ (*) begin
+    _zz_StreamFifo_1__1_ = 1'b0;
+    logic_pushPtr_willIncrement = 1'b0;
+    if(logic_pushing)begin
+      _zz_StreamFifo_1__1_ = 1'b1;
+      logic_pushPtr_willIncrement = 1'b1;
+    end
+  end
+
+  always @ (*) begin
+    logic_pushPtr_willClear = 1'b0;
+    logic_popPtr_willClear = 1'b0;
+    if(io_flush)begin
+      logic_pushPtr_willClear = 1'b1;
+      logic_popPtr_willClear = 1'b1;
+    end
+  end
+
+  assign logic_pushPtr_willOverflowIfInc = (logic_pushPtr_value == (5'b11111));
+  assign logic_pushPtr_willOverflow = (logic_pushPtr_willOverflowIfInc && logic_pushPtr_willIncrement);
+  always @ (*) begin
+    logic_pushPtr_valueNext = (logic_pushPtr_value + _zz_StreamFifo_1__5_);
+    if(logic_pushPtr_willClear)begin
+      logic_pushPtr_valueNext = (5'b00000);
+    end
+  end
+
+  always @ (*) begin
+    logic_popPtr_willIncrement = 1'b0;
+    if(logic_popping)begin
+      logic_popPtr_willIncrement = 1'b1;
+    end
+  end
+
+  assign logic_popPtr_willOverflowIfInc = (logic_popPtr_value == (5'b11111));
+  assign logic_popPtr_willOverflow = (logic_popPtr_willOverflowIfInc && logic_popPtr_willIncrement);
+  always @ (*) begin
+    logic_popPtr_valueNext = (logic_popPtr_value + _zz_StreamFifo_1__7_);
+    if(logic_popPtr_willClear)begin
+      logic_popPtr_valueNext = (5'b00000);
+    end
+  end
+
+  assign logic_ptrMatch = (logic_pushPtr_value == logic_popPtr_value);
+  assign logic_pushing = (io_push_valid && io_push_ready);
+  assign logic_popping = (io_pop_valid && io_pop_ready);
+  assign logic_empty = (logic_ptrMatch && (! logic_risingOccupancy));
+  assign logic_full = (logic_ptrMatch && logic_risingOccupancy);
+  assign io_push_ready = (! logic_full);
+  assign io_pop_valid = ((! logic_empty) && (! (_zz_StreamFifo_1__2_ && (! logic_full))));
+  assign io_pop_payload = _zz_StreamFifo_1__3_;
+  assign logic_ptrDif = (logic_pushPtr_value - logic_popPtr_value);
+  assign io_occupancy = {(logic_risingOccupancy && logic_ptrMatch),logic_ptrDif};
+  assign io_availability = {((! logic_risingOccupancy) && logic_ptrMatch),_zz_StreamFifo_1__8_};
+  always @ (posedge toplevel_main_clk) begin
+    if(!toplevel_main_reset_) begin
+      logic_pushPtr_value <= (5'b00000);
+      logic_popPtr_value <= (5'b00000);
+      logic_risingOccupancy <= 1'b0;
+      _zz_StreamFifo_1__2_ <= 1'b0;
+    end else begin
+      logic_pushPtr_value <= logic_pushPtr_valueNext;
+      logic_popPtr_value <= logic_popPtr_valueNext;
+      _zz_StreamFifo_1__2_ <= (logic_popPtr_valueNext == logic_pushPtr_value);
+      if((logic_pushing != logic_popping))begin
+        logic_risingOccupancy <= logic_pushing;
+      end
+      if(io_flush)begin
+        logic_risingOccupancy <= 1'b0;
+      end
+    end
   end
 
 endmodule
@@ -4712,16 +5958,28 @@ module CpuTop (
       output [31:0] io_usb_host_apb_PWDATA,
       input  [31:0] io_usb_host_apb_PRDATA,
       input   io_usb_host_apb_PSLVERROR,
+      output [7:0] io_spi_flash_ctrl_apb_PADDR,
+      output [0:0] io_spi_flash_ctrl_apb_PSEL,
+      output  io_spi_flash_ctrl_apb_PENABLE,
+      input   io_spi_flash_ctrl_apb_PREADY,
+      output  io_spi_flash_ctrl_apb_PWRITE,
+      output [31:0] io_spi_flash_ctrl_apb_PWDATA,
+      input  [31:0] io_spi_flash_ctrl_apb_PRDATA,
       input   io_switch_,
       input   toplevel_main_clk,
       input   toplevel_main_reset_);
   wire  _zz_CpuTop_1_;
-  wire [7:0] _zz_CpuTop_2_;
+  wire [3:0] _zz_CpuTop_2_;
+  wire [7:0] _zz_CpuTop_3_;
+  wire  _zz_CpuTop_4_;
   wire [19:0] u_cpu_io_apb_PADDR;
   wire [0:0] u_cpu_io_apb_PSEL;
   wire  u_cpu_io_apb_PENABLE;
   wire  u_cpu_io_apb_PWRITE;
   wire [31:0] u_cpu_io_apb_PWDATA;
+  wire  jtagUart_1__io_apb_PREADY;
+  wire [31:0] jtagUart_1__io_apb_PRDATA;
+  wire  jtagUart_1__io_apb_PSLVERROR;
   wire  u_timer_io_apb_PREADY;
   wire [31:0] u_timer_io_apb_PRDATA;
   wire  u_timer_io_apb_PSLVERROR;
@@ -4730,7 +5988,7 @@ module CpuTop (
   wire [31:0] io_apb_decoder_io_input_PRDATA;
   wire  io_apb_decoder_io_input_PSLVERROR;
   wire [19:0] io_apb_decoder_io_output_PADDR;
-  wire [7:0] io_apb_decoder_io_output_PSEL;
+  wire [9:0] io_apb_decoder_io_output_PSEL;
   wire  io_apb_decoder_io_output_PENABLE;
   wire  io_apb_decoder_io_output_PWRITE;
   wire [31:0] io_apb_decoder_io_output_PWDATA;
@@ -4777,6 +6035,16 @@ module CpuTop (
   wire  apb3Router_1__io_outputs_7_PENABLE;
   wire  apb3Router_1__io_outputs_7_PWRITE;
   wire [31:0] apb3Router_1__io_outputs_7_PWDATA;
+  wire [19:0] apb3Router_1__io_outputs_8_PADDR;
+  wire [0:0] apb3Router_1__io_outputs_8_PSEL;
+  wire  apb3Router_1__io_outputs_8_PENABLE;
+  wire  apb3Router_1__io_outputs_8_PWRITE;
+  wire [31:0] apb3Router_1__io_outputs_8_PWDATA;
+  wire [19:0] apb3Router_1__io_outputs_9_PADDR;
+  wire [0:0] apb3Router_1__io_outputs_9_PSEL;
+  wire  apb3Router_1__io_outputs_9_PENABLE;
+  wire  apb3Router_1__io_outputs_9_PWRITE;
+  wire [31:0] apb3Router_1__io_outputs_9_PWDATA;
   CpuComplex u_cpu ( 
     .io_apb_PADDR(u_cpu_io_apb_PADDR),
     .io_apb_PSEL(u_cpu_io_apb_PSEL),
@@ -4791,13 +6059,25 @@ module CpuTop (
     .toplevel_main_clk(toplevel_main_clk),
     .toplevel_main_reset_(toplevel_main_reset_) 
   );
-  MuraxApb3Timer u_timer ( 
+  Apb3JtagUart jtagUart_1_ ( 
     .io_apb_PADDR(_zz_CpuTop_2_),
-    .io_apb_PSEL(apb3Router_1__io_outputs_7_PSEL),
-    .io_apb_PENABLE(apb3Router_1__io_outputs_7_PENABLE),
+    .io_apb_PSEL(apb3Router_1__io_outputs_5_PSEL),
+    .io_apb_PENABLE(apb3Router_1__io_outputs_5_PENABLE),
+    .io_apb_PREADY(jtagUart_1__io_apb_PREADY),
+    .io_apb_PWRITE(apb3Router_1__io_outputs_5_PWRITE),
+    .io_apb_PWDATA(apb3Router_1__io_outputs_5_PWDATA),
+    .io_apb_PRDATA(jtagUart_1__io_apb_PRDATA),
+    .io_apb_PSLVERROR(jtagUart_1__io_apb_PSLVERROR),
+    .toplevel_main_clk(toplevel_main_clk),
+    .toplevel_main_reset_(toplevel_main_reset_) 
+  );
+  MuraxApb3Timer u_timer ( 
+    .io_apb_PADDR(_zz_CpuTop_3_),
+    .io_apb_PSEL(apb3Router_1__io_outputs_9_PSEL),
+    .io_apb_PENABLE(apb3Router_1__io_outputs_9_PENABLE),
     .io_apb_PREADY(u_timer_io_apb_PREADY),
-    .io_apb_PWRITE(apb3Router_1__io_outputs_7_PWRITE),
-    .io_apb_PWDATA(apb3Router_1__io_outputs_7_PWDATA),
+    .io_apb_PWRITE(apb3Router_1__io_outputs_9_PWRITE),
+    .io_apb_PWDATA(apb3Router_1__io_outputs_9_PWDATA),
     .io_apb_PRDATA(u_timer_io_apb_PRDATA),
     .io_apb_PSLVERROR(u_timer_io_apb_PSLVERROR),
     .io_interrupt(u_timer_io_interrupt),
@@ -4874,27 +6154,43 @@ module CpuTop (
     .io_outputs_5_PADDR(apb3Router_1__io_outputs_5_PADDR),
     .io_outputs_5_PSEL(apb3Router_1__io_outputs_5_PSEL),
     .io_outputs_5_PENABLE(apb3Router_1__io_outputs_5_PENABLE),
-    .io_outputs_5_PREADY(io_gmii_ctrl_apb_PREADY),
+    .io_outputs_5_PREADY(jtagUart_1__io_apb_PREADY),
     .io_outputs_5_PWRITE(apb3Router_1__io_outputs_5_PWRITE),
     .io_outputs_5_PWDATA(apb3Router_1__io_outputs_5_PWDATA),
-    .io_outputs_5_PRDATA(io_gmii_ctrl_apb_PRDATA),
-    .io_outputs_5_PSLVERROR(io_gmii_ctrl_apb_PSLVERROR),
+    .io_outputs_5_PRDATA(jtagUart_1__io_apb_PRDATA),
+    .io_outputs_5_PSLVERROR(jtagUart_1__io_apb_PSLVERROR),
     .io_outputs_6_PADDR(apb3Router_1__io_outputs_6_PADDR),
     .io_outputs_6_PSEL(apb3Router_1__io_outputs_6_PSEL),
     .io_outputs_6_PENABLE(apb3Router_1__io_outputs_6_PENABLE),
-    .io_outputs_6_PREADY(io_txt_gen_apb_PREADY),
+    .io_outputs_6_PREADY(io_spi_flash_ctrl_apb_PREADY),
     .io_outputs_6_PWRITE(apb3Router_1__io_outputs_6_PWRITE),
     .io_outputs_6_PWDATA(apb3Router_1__io_outputs_6_PWDATA),
-    .io_outputs_6_PRDATA(io_txt_gen_apb_PRDATA),
-    .io_outputs_6_PSLVERROR(io_txt_gen_apb_PSLVERROR),
+    .io_outputs_6_PRDATA(io_spi_flash_ctrl_apb_PRDATA),
+    .io_outputs_6_PSLVERROR(_zz_CpuTop_4_),
     .io_outputs_7_PADDR(apb3Router_1__io_outputs_7_PADDR),
     .io_outputs_7_PSEL(apb3Router_1__io_outputs_7_PSEL),
     .io_outputs_7_PENABLE(apb3Router_1__io_outputs_7_PENABLE),
-    .io_outputs_7_PREADY(u_timer_io_apb_PREADY),
+    .io_outputs_7_PREADY(io_gmii_ctrl_apb_PREADY),
     .io_outputs_7_PWRITE(apb3Router_1__io_outputs_7_PWRITE),
     .io_outputs_7_PWDATA(apb3Router_1__io_outputs_7_PWDATA),
-    .io_outputs_7_PRDATA(u_timer_io_apb_PRDATA),
-    .io_outputs_7_PSLVERROR(u_timer_io_apb_PSLVERROR),
+    .io_outputs_7_PRDATA(io_gmii_ctrl_apb_PRDATA),
+    .io_outputs_7_PSLVERROR(io_gmii_ctrl_apb_PSLVERROR),
+    .io_outputs_8_PADDR(apb3Router_1__io_outputs_8_PADDR),
+    .io_outputs_8_PSEL(apb3Router_1__io_outputs_8_PSEL),
+    .io_outputs_8_PENABLE(apb3Router_1__io_outputs_8_PENABLE),
+    .io_outputs_8_PREADY(io_txt_gen_apb_PREADY),
+    .io_outputs_8_PWRITE(apb3Router_1__io_outputs_8_PWRITE),
+    .io_outputs_8_PWDATA(apb3Router_1__io_outputs_8_PWDATA),
+    .io_outputs_8_PRDATA(io_txt_gen_apb_PRDATA),
+    .io_outputs_8_PSLVERROR(io_txt_gen_apb_PSLVERROR),
+    .io_outputs_9_PADDR(apb3Router_1__io_outputs_9_PADDR),
+    .io_outputs_9_PSEL(apb3Router_1__io_outputs_9_PSEL),
+    .io_outputs_9_PENABLE(apb3Router_1__io_outputs_9_PENABLE),
+    .io_outputs_9_PREADY(u_timer_io_apb_PREADY),
+    .io_outputs_9_PWRITE(apb3Router_1__io_outputs_9_PWRITE),
+    .io_outputs_9_PWDATA(apb3Router_1__io_outputs_9_PWDATA),
+    .io_outputs_9_PRDATA(u_timer_io_apb_PRDATA),
+    .io_outputs_9_PSLVERROR(u_timer_io_apb_PSLVERROR),
     .toplevel_main_clk(toplevel_main_clk),
     .toplevel_main_reset_(toplevel_main_reset_) 
   );
@@ -4924,17 +6220,24 @@ module CpuTop (
   assign io_usb_host_apb_PENABLE = apb3Router_1__io_outputs_4_PENABLE;
   assign io_usb_host_apb_PWRITE = apb3Router_1__io_outputs_4_PWRITE;
   assign io_usb_host_apb_PWDATA = apb3Router_1__io_outputs_4_PWDATA;
-  assign io_gmii_ctrl_apb_PADDR = apb3Router_1__io_outputs_5_PADDR[4:0];
-  assign io_gmii_ctrl_apb_PSEL = apb3Router_1__io_outputs_5_PSEL;
-  assign io_gmii_ctrl_apb_PENABLE = apb3Router_1__io_outputs_5_PENABLE;
-  assign io_gmii_ctrl_apb_PWRITE = apb3Router_1__io_outputs_5_PWRITE;
-  assign io_gmii_ctrl_apb_PWDATA = apb3Router_1__io_outputs_5_PWDATA;
-  assign io_txt_gen_apb_PADDR = apb3Router_1__io_outputs_6_PADDR[15:0];
-  assign io_txt_gen_apb_PSEL = apb3Router_1__io_outputs_6_PSEL;
-  assign io_txt_gen_apb_PENABLE = apb3Router_1__io_outputs_6_PENABLE;
-  assign io_txt_gen_apb_PWRITE = apb3Router_1__io_outputs_6_PWRITE;
-  assign io_txt_gen_apb_PWDATA = apb3Router_1__io_outputs_6_PWDATA;
-  assign _zz_CpuTop_2_ = apb3Router_1__io_outputs_7_PADDR[7:0];
+  assign _zz_CpuTop_2_ = apb3Router_1__io_outputs_5_PADDR[3:0];
+  assign io_spi_flash_ctrl_apb_PADDR = apb3Router_1__io_outputs_6_PADDR[7:0];
+  assign io_spi_flash_ctrl_apb_PSEL = apb3Router_1__io_outputs_6_PSEL;
+  assign io_spi_flash_ctrl_apb_PENABLE = apb3Router_1__io_outputs_6_PENABLE;
+  assign io_spi_flash_ctrl_apb_PWRITE = apb3Router_1__io_outputs_6_PWRITE;
+  assign io_spi_flash_ctrl_apb_PWDATA = apb3Router_1__io_outputs_6_PWDATA;
+  assign _zz_CpuTop_4_ = 1'b0;
+  assign io_gmii_ctrl_apb_PADDR = apb3Router_1__io_outputs_7_PADDR[4:0];
+  assign io_gmii_ctrl_apb_PSEL = apb3Router_1__io_outputs_7_PSEL;
+  assign io_gmii_ctrl_apb_PENABLE = apb3Router_1__io_outputs_7_PENABLE;
+  assign io_gmii_ctrl_apb_PWRITE = apb3Router_1__io_outputs_7_PWRITE;
+  assign io_gmii_ctrl_apb_PWDATA = apb3Router_1__io_outputs_7_PWDATA;
+  assign io_txt_gen_apb_PADDR = apb3Router_1__io_outputs_8_PADDR[15:0];
+  assign io_txt_gen_apb_PSEL = apb3Router_1__io_outputs_8_PSEL;
+  assign io_txt_gen_apb_PENABLE = apb3Router_1__io_outputs_8_PENABLE;
+  assign io_txt_gen_apb_PWRITE = apb3Router_1__io_outputs_8_PWRITE;
+  assign io_txt_gen_apb_PWDATA = apb3Router_1__io_outputs_8_PWDATA;
+  assign _zz_CpuTop_3_ = apb3Router_1__io_outputs_9_PADDR[7:0];
 endmodule
 
 module VideoTimingGen (
@@ -4943,27 +6246,38 @@ module VideoTimingGen (
       input  [8:0] io_timings_h_sync,
       input  [8:0] io_timings_h_bp,
       input   io_timings_h_sync_positive,
-      input  [11:0] io_timings_h_total_m1,
       input  [10:0] io_timings_v_active,
       input  [8:0] io_timings_v_fp,
       input  [8:0] io_timings_v_sync,
       input  [8:0] io_timings_v_bp,
       input   io_timings_v_sync_positive,
-      input  [11:0] io_timings_v_total_m1,
       output reg  io_pixel_out_vsync,
       output reg  io_pixel_out_req,
-      output reg  io_pixel_out_eol,
-      output reg  io_pixel_out_eof,
+      output reg  io_pixel_out_last_col,
+      output reg  io_pixel_out_last_line,
       output reg [7:0] io_pixel_out_pixel_r,
       output reg [7:0] io_pixel_out_pixel_g,
       output reg [7:0] io_pixel_out_pixel_b,
       input   toplevel_u_vo_clk_gen_vo_clk,
       input   toplevel_u_vo_clk_gen_vo_reset_);
   wire [11:0] _zz_VideoTimingGen_1_;
-  wire [8:0] _zz_VideoTimingGen_2_;
-  wire [8:0] _zz_VideoTimingGen_3_;
+  wire [11:0] _zz_VideoTimingGen_2_;
+  wire [11:0] _zz_VideoTimingGen_3_;
   wire [11:0] _zz_VideoTimingGen_4_;
-  wire [10:0] _zz_VideoTimingGen_5_;
+  wire [11:0] _zz_VideoTimingGen_5_;
+  wire [11:0] _zz_VideoTimingGen_6_;
+  wire [11:0] _zz_VideoTimingGen_7_;
+  wire [10:0] _zz_VideoTimingGen_8_;
+  wire [10:0] _zz_VideoTimingGen_9_;
+  wire [10:0] _zz_VideoTimingGen_10_;
+  wire [10:0] _zz_VideoTimingGen_11_;
+  wire [10:0] _zz_VideoTimingGen_12_;
+  wire [10:0] _zz_VideoTimingGen_13_;
+  wire [10:0] _zz_VideoTimingGen_14_;
+  wire [8:0] _zz_VideoTimingGen_15_;
+  wire [8:0] _zz_VideoTimingGen_16_;
+  wire [11:0] _zz_VideoTimingGen_17_;
+  wire [10:0] _zz_VideoTimingGen_18_;
   reg [11:0] col_cntr;
   reg [10:0] line_cntr;
   wire  last_col;
@@ -4971,16 +6285,29 @@ module VideoTimingGen (
   wire [8:0] h_blank;
   wire [8:0] v_blank;
   wire  pixel_active;
-  assign _zz_VideoTimingGen_1_ = {1'd0, line_cntr};
-  assign _zz_VideoTimingGen_2_ = (io_timings_h_fp + io_timings_h_sync);
-  assign _zz_VideoTimingGen_3_ = (io_timings_v_fp + io_timings_v_sync);
-  assign _zz_VideoTimingGen_4_ = {3'd0, h_blank};
-  assign _zz_VideoTimingGen_5_ = {2'd0, v_blank};
-  assign last_col = (col_cntr == io_timings_h_total_m1);
-  assign last_line = (_zz_VideoTimingGen_1_ == io_timings_v_total_m1);
-  assign h_blank = (_zz_VideoTimingGen_2_ + io_timings_h_bp);
-  assign v_blank = (_zz_VideoTimingGen_3_ + io_timings_v_bp);
-  assign pixel_active = ((_zz_VideoTimingGen_4_ <= col_cntr) && (_zz_VideoTimingGen_5_ <= line_cntr));
+  assign _zz_VideoTimingGen_1_ = (_zz_VideoTimingGen_2_ - (12'b000000000001));
+  assign _zz_VideoTimingGen_2_ = (_zz_VideoTimingGen_3_ + _zz_VideoTimingGen_7_);
+  assign _zz_VideoTimingGen_3_ = (_zz_VideoTimingGen_4_ + _zz_VideoTimingGen_6_);
+  assign _zz_VideoTimingGen_4_ = (io_timings_h_active + _zz_VideoTimingGen_5_);
+  assign _zz_VideoTimingGen_5_ = {3'd0, io_timings_h_fp};
+  assign _zz_VideoTimingGen_6_ = {3'd0, io_timings_h_sync};
+  assign _zz_VideoTimingGen_7_ = {3'd0, io_timings_h_bp};
+  assign _zz_VideoTimingGen_8_ = (_zz_VideoTimingGen_9_ - (11'b00000000001));
+  assign _zz_VideoTimingGen_9_ = (_zz_VideoTimingGen_10_ + _zz_VideoTimingGen_14_);
+  assign _zz_VideoTimingGen_10_ = (_zz_VideoTimingGen_11_ + _zz_VideoTimingGen_13_);
+  assign _zz_VideoTimingGen_11_ = (io_timings_v_active + _zz_VideoTimingGen_12_);
+  assign _zz_VideoTimingGen_12_ = {2'd0, io_timings_v_fp};
+  assign _zz_VideoTimingGen_13_ = {2'd0, io_timings_v_sync};
+  assign _zz_VideoTimingGen_14_ = {2'd0, io_timings_v_bp};
+  assign _zz_VideoTimingGen_15_ = (io_timings_h_fp + io_timings_h_sync);
+  assign _zz_VideoTimingGen_16_ = (io_timings_v_fp + io_timings_v_sync);
+  assign _zz_VideoTimingGen_17_ = {3'd0, h_blank};
+  assign _zz_VideoTimingGen_18_ = {2'd0, v_blank};
+  assign last_col = (col_cntr == _zz_VideoTimingGen_1_);
+  assign last_line = (line_cntr == _zz_VideoTimingGen_8_);
+  assign h_blank = (_zz_VideoTimingGen_15_ + io_timings_h_bp);
+  assign v_blank = (_zz_VideoTimingGen_16_ + io_timings_v_bp);
+  assign pixel_active = ((_zz_VideoTimingGen_17_ <= col_cntr) && (_zz_VideoTimingGen_18_ <= line_cntr));
   always @ (posedge toplevel_u_vo_clk_gen_vo_clk) begin
     if(!toplevel_u_vo_clk_gen_vo_reset_) begin
       col_cntr <= (12'b000000000000);
@@ -5002,8 +6329,8 @@ module VideoTimingGen (
   always @ (posedge toplevel_u_vo_clk_gen_vo_clk) begin
     io_pixel_out_vsync <= ((col_cntr == (12'b000000000000)) && (line_cntr == (11'b00000000000)));
     io_pixel_out_req <= pixel_active;
-    io_pixel_out_eol <= (pixel_active ? last_col : 1'b0);
-    io_pixel_out_eof <= (pixel_active ? (last_col && last_line) : 1'b0);
+    io_pixel_out_last_col <= (pixel_active ? last_col : 1'b0);
+    io_pixel_out_last_line <= (pixel_active ? last_line : 1'b0);
     io_pixel_out_pixel_r <= (8'b10000000);
     io_pixel_out_pixel_g <= (8'b10000000);
     io_pixel_out_pixel_b <= (8'b10000000);
@@ -5017,24 +6344,22 @@ module VideoTestPattern (
       input  [8:0] io_timings_h_sync,
       input  [8:0] io_timings_h_bp,
       input   io_timings_h_sync_positive,
-      input  [11:0] io_timings_h_total_m1,
       input  [10:0] io_timings_v_active,
       input  [8:0] io_timings_v_fp,
       input  [8:0] io_timings_v_sync,
       input  [8:0] io_timings_v_bp,
       input   io_timings_v_sync_positive,
-      input  [11:0] io_timings_v_total_m1,
       input   io_pixel_in_vsync,
       input   io_pixel_in_req,
-      input   io_pixel_in_eol,
-      input   io_pixel_in_eof,
+      input   io_pixel_in_last_col,
+      input   io_pixel_in_last_line,
       input  [7:0] io_pixel_in_pixel_r,
       input  [7:0] io_pixel_in_pixel_g,
       input  [7:0] io_pixel_in_pixel_b,
       output reg  io_pixel_out_vsync,
       output reg  io_pixel_out_req,
-      output reg  io_pixel_out_eol,
-      output reg  io_pixel_out_eof,
+      output reg  io_pixel_out_last_col,
+      output reg  io_pixel_out_last_line,
       output reg [7:0] io_pixel_out_pixel_r,
       output reg [7:0] io_pixel_out_pixel_g,
       output reg [7:0] io_pixel_out_pixel_b,
@@ -5044,6 +6369,10 @@ module VideoTestPattern (
       input  [7:0] io_const_color_b,
       input   toplevel_u_vo_clk_gen_vo_clk,
       input   toplevel_u_vo_clk_gen_vo_reset_);
+  wire [3:0] bufferCC_18__io_dataOut;
+  wire [7:0] bufferCC_19__io_dataOut_r;
+  wire [7:0] bufferCC_19__io_dataOut_g;
+  wire [7:0] bufferCC_19__io_dataOut_b;
   wire [13:0] _zz_VideoTestPattern_1_;
   wire [13:0] _zz_VideoTestPattern_2_;
   wire [13:0] _zz_VideoTestPattern_3_;
@@ -5090,6 +6419,22 @@ module VideoTestPattern (
   assign _zz_VideoTestPattern_15_ = (col_cntr[7 : 0] + line_cntr[7 : 0]);
   assign _zz_VideoTestPattern_16_ = (line_cntr <<< 3);
   assign _zz_VideoTestPattern_17_ = (col_cntr <<< 3);
+  BufferCC_8_ bufferCC_18_ ( 
+    .io_dataIn(io_pattern_nr),
+    .io_dataOut(bufferCC_18__io_dataOut),
+    .toplevel_u_vo_clk_gen_vo_clk(toplevel_u_vo_clk_gen_vo_clk),
+    .toplevel_u_vo_clk_gen_vo_reset_(toplevel_u_vo_clk_gen_vo_reset_) 
+  );
+  BufferCC_9_ bufferCC_19_ ( 
+    .io_dataIn_r(io_const_color_r),
+    .io_dataIn_g(io_const_color_g),
+    .io_dataIn_b(io_const_color_b),
+    .io_dataOut_r(bufferCC_19__io_dataOut_r),
+    .io_dataOut_g(bufferCC_19__io_dataOut_g),
+    .io_dataOut_b(bufferCC_19__io_dataOut_b),
+    .toplevel_u_vo_clk_gen_vo_clk(toplevel_u_vo_clk_gen_vo_clk),
+    .toplevel_u_vo_clk_gen_vo_reset_(toplevel_u_vo_clk_gen_vo_reset_) 
+  );
   assign h_active_div4 = (io_timings_h_active >>> 2);
   assign v_active_div4 = (io_timings_v_active >>> 2);
   assign h1 = (col_cntr < h_active_div4);
@@ -5110,11 +6455,11 @@ module VideoTestPattern (
         col_cntr <= (12'b000000000000);
       end else begin
         if(io_pixel_in_req)begin
-          if(io_pixel_in_eof)begin
+          if((io_pixel_in_last_col && io_pixel_in_last_line))begin
             line_cntr <= (11'b00000000000);
             col_cntr <= (12'b000000000000);
           end else begin
-            if(io_pixel_in_eol)begin
+            if(io_pixel_in_last_col)begin
               line_cntr <= (line_cntr + (11'b00000000001));
               col_cntr <= (12'b000000000000);
             end else begin
@@ -5129,16 +6474,16 @@ module VideoTestPattern (
   always @ (posedge toplevel_u_vo_clk_gen_vo_clk) begin
     io_pixel_out_vsync <= io_pixel_in_vsync;
     io_pixel_out_req <= io_pixel_in_req;
-    io_pixel_out_eol <= io_pixel_in_eol;
-    io_pixel_out_eof <= io_pixel_in_eof;
+    io_pixel_out_last_col <= io_pixel_in_last_col;
+    io_pixel_out_last_line <= io_pixel_in_last_line;
     io_pixel_out_pixel_r <= io_pixel_in_pixel_r;
     io_pixel_out_pixel_g <= io_pixel_in_pixel_g;
     io_pixel_out_pixel_b <= io_pixel_in_pixel_b;
-    case(io_pattern_nr)
+    case(bufferCC_18__io_dataOut)
       4'b0000 : begin
-        io_pixel_out_pixel_r <= io_const_color_r;
-        io_pixel_out_pixel_g <= io_const_color_g;
-        io_pixel_out_pixel_b <= io_const_color_b;
+        io_pixel_out_pixel_r <= bufferCC_19__io_dataOut_r;
+        io_pixel_out_pixel_g <= bufferCC_19__io_dataOut_g;
+        io_pixel_out_pixel_b <= bufferCC_19__io_dataOut_b;
       end
       4'b0001 : begin
         io_pixel_out_pixel_r <= _zz_VideoTestPattern_13_;
@@ -5216,15 +6561,15 @@ endmodule
 module VideoTxtGen (
       input   io_pixel_in_vsync,
       input   io_pixel_in_req,
-      input   io_pixel_in_eol,
-      input   io_pixel_in_eof,
+      input   io_pixel_in_last_col,
+      input   io_pixel_in_last_line,
       input  [7:0] io_pixel_in_pixel_r,
       input  [7:0] io_pixel_in_pixel_g,
       input  [7:0] io_pixel_in_pixel_b,
       output  io_pixel_out_vsync,
       output  io_pixel_out_req,
-      output  io_pixel_out_eol,
-      output  io_pixel_out_eof,
+      output  io_pixel_out_last_col,
+      output  io_pixel_out_last_line,
       output reg [7:0] io_pixel_out_pixel_r,
       output reg [7:0] io_pixel_out_pixel_g,
       output reg [7:0] io_pixel_out_pixel_b,
@@ -5273,15 +6618,15 @@ module VideoTxtGen (
   wire  bitmap_pixel;
   reg  io_pixel_in_regNext_vsync;
   reg  io_pixel_in_regNext_req;
-  reg  io_pixel_in_regNext_eol;
-  reg  io_pixel_in_regNext_eof;
+  reg  io_pixel_in_regNext_last_col;
+  reg  io_pixel_in_regNext_last_line;
   reg [7:0] io_pixel_in_regNext_pixel_r;
   reg [7:0] io_pixel_in_regNext_pixel_g;
   reg [7:0] io_pixel_in_regNext_pixel_b;
   reg  pixel_in_p2_vsync;
   reg  pixel_in_p2_req;
-  reg  pixel_in_p2_eol;
-  reg  pixel_in_p2_eof;
+  reg  pixel_in_p2_last_col;
+  reg  pixel_in_p2_last_line;
   reg [7:0] pixel_in_p2_pixel_r;
   reg [7:0] pixel_in_p2_pixel_g;
   reg [7:0] pixel_in_p2_pixel_b;
@@ -5340,8 +6685,8 @@ module VideoTxtGen (
   assign bitmap_pixel = (_zz_VideoTxtGen_15_[0] && (! char_sub_x_p2[3]));
   assign io_pixel_out_vsync = pixel_in_p2_vsync;
   assign io_pixel_out_req = pixel_in_p2_req;
-  assign io_pixel_out_eol = pixel_in_p2_eol;
-  assign io_pixel_out_eof = pixel_in_p2_eof;
+  assign io_pixel_out_last_col = pixel_in_p2_last_col;
+  assign io_pixel_out_last_line = pixel_in_p2_last_line;
   always @ (*) begin
     io_pixel_out_pixel_r = pixel_in_p2_pixel_r;
     io_pixel_out_pixel_g = pixel_in_p2_pixel_g;
@@ -5363,7 +6708,7 @@ module VideoTxtGen (
       char_sub_y <= (4'b0000);
       txt_buf_addr_sol <= (13'b0000000000000);
     end else begin
-      if((io_pixel_in_vsync || (io_pixel_in_req && io_pixel_in_eof)))begin
+      if((io_pixel_in_vsync || (io_pixel_in_req && (io_pixel_in_last_col && io_pixel_in_last_line))))begin
         pix_x <= (12'b000000000000);
         pix_y <= (11'b00000000000);
         char_x <= (8'b00000000);
@@ -5373,7 +6718,7 @@ module VideoTxtGen (
         txt_buf_addr_sol <= (13'b0000000000000);
       end else begin
         if(io_pixel_in_req)begin
-          if(io_pixel_in_eol)begin
+          if(io_pixel_in_last_col)begin
             pix_x <= (12'b000000000000);
             pix_y <= (pix_y + (11'b00000000001));
             char_x <= (8'b00000000);
@@ -5406,15 +6751,15 @@ module VideoTxtGen (
     char_sub_x_p2 <= char_sub_x_p1;
     io_pixel_in_regNext_vsync <= io_pixel_in_vsync;
     io_pixel_in_regNext_req <= io_pixel_in_req;
-    io_pixel_in_regNext_eol <= io_pixel_in_eol;
-    io_pixel_in_regNext_eof <= io_pixel_in_eof;
+    io_pixel_in_regNext_last_col <= io_pixel_in_last_col;
+    io_pixel_in_regNext_last_line <= io_pixel_in_last_line;
     io_pixel_in_regNext_pixel_r <= io_pixel_in_pixel_r;
     io_pixel_in_regNext_pixel_g <= io_pixel_in_pixel_g;
     io_pixel_in_regNext_pixel_b <= io_pixel_in_pixel_b;
     pixel_in_p2_vsync <= io_pixel_in_regNext_vsync;
     pixel_in_p2_req <= io_pixel_in_regNext_req;
-    pixel_in_p2_eol <= io_pixel_in_regNext_eol;
-    pixel_in_p2_eof <= io_pixel_in_regNext_eof;
+    pixel_in_p2_last_col <= io_pixel_in_regNext_last_col;
+    pixel_in_p2_last_line <= io_pixel_in_regNext_last_line;
     pixel_in_p2_pixel_r <= io_pixel_in_regNext_pixel_r;
     pixel_in_p2_pixel_g <= io_pixel_in_regNext_pixel_g;
     pixel_in_p2_pixel_b <= io_pixel_in_regNext_pixel_b;
@@ -5428,17 +6773,15 @@ module VideoOut (
       input  [8:0] io_timings_h_sync,
       input  [8:0] io_timings_h_bp,
       input   io_timings_h_sync_positive,
-      input  [11:0] io_timings_h_total_m1,
       input  [10:0] io_timings_v_active,
       input  [8:0] io_timings_v_fp,
       input  [8:0] io_timings_v_sync,
       input  [8:0] io_timings_v_bp,
       input   io_timings_v_sync_positive,
-      input  [11:0] io_timings_v_total_m1,
       input   io_pixel_in_vsync,
       input   io_pixel_in_req,
-      input   io_pixel_in_eol,
-      input   io_pixel_in_eof,
+      input   io_pixel_in_last_col,
+      input   io_pixel_in_last_line,
       input  [7:0] io_pixel_in_pixel_r,
       input  [7:0] io_pixel_in_pixel_g,
       input  [7:0] io_pixel_in_pixel_b,
@@ -5451,34 +6794,48 @@ module VideoOut (
       output reg [7:0] io_vga_out_b,
       input   toplevel_u_vo_clk_gen_vo_clk,
       input   toplevel_u_vo_clk_gen_vo_reset_);
-  wire [8:0] _zz_VideoOut_1_;
-  wire [8:0] _zz_VideoOut_2_;
-  wire [10:0] _zz_VideoOut_3_;
+  wire [11:0] _zz_VideoOut_1_;
+  wire [11:0] _zz_VideoOut_2_;
+  wire [11:0] _zz_VideoOut_3_;
   wire [11:0] _zz_VideoOut_4_;
   wire [11:0] _zz_VideoOut_5_;
-  wire [8:0] _zz_VideoOut_6_;
+  wire [11:0] _zz_VideoOut_6_;
   wire [11:0] _zz_VideoOut_7_;
-  wire [10:0] _zz_VideoOut_8_;
+  wire [8:0] _zz_VideoOut_8_;
   wire [8:0] _zz_VideoOut_9_;
   wire [10:0] _zz_VideoOut_10_;
+  wire [11:0] _zz_VideoOut_11_;
+  wire [11:0] _zz_VideoOut_12_;
+  wire [8:0] _zz_VideoOut_13_;
+  wire [11:0] _zz_VideoOut_14_;
+  wire [10:0] _zz_VideoOut_15_;
+  wire [8:0] _zz_VideoOut_16_;
+  wire [10:0] _zz_VideoOut_17_;
   reg [11:0] h_cntr;
   reg [10:0] v_cntr;
   wire [8:0] h_blank;
   wire [8:0] v_blank;
   wire  blank;
-  assign _zz_VideoOut_1_ = (io_timings_h_fp + io_timings_h_sync);
-  assign _zz_VideoOut_2_ = (io_timings_v_fp + io_timings_v_sync);
-  assign _zz_VideoOut_3_ = {2'd0, v_blank};
-  assign _zz_VideoOut_4_ = {3'd0, h_blank};
+  assign _zz_VideoOut_1_ = (_zz_VideoOut_2_ - (12'b000000000001));
+  assign _zz_VideoOut_2_ = (_zz_VideoOut_3_ + _zz_VideoOut_7_);
+  assign _zz_VideoOut_3_ = (_zz_VideoOut_4_ + _zz_VideoOut_6_);
+  assign _zz_VideoOut_4_ = (io_timings_h_active + _zz_VideoOut_5_);
   assign _zz_VideoOut_5_ = {3'd0, io_timings_h_fp};
-  assign _zz_VideoOut_6_ = (io_timings_h_fp + io_timings_h_sync);
-  assign _zz_VideoOut_7_ = {3'd0, _zz_VideoOut_6_};
-  assign _zz_VideoOut_8_ = {2'd0, io_timings_v_fp};
+  assign _zz_VideoOut_6_ = {3'd0, io_timings_h_sync};
+  assign _zz_VideoOut_7_ = {3'd0, io_timings_h_bp};
+  assign _zz_VideoOut_8_ = (io_timings_h_fp + io_timings_h_sync);
   assign _zz_VideoOut_9_ = (io_timings_v_fp + io_timings_v_sync);
-  assign _zz_VideoOut_10_ = {2'd0, _zz_VideoOut_9_};
-  assign h_blank = (_zz_VideoOut_1_ + io_timings_h_bp);
-  assign v_blank = (_zz_VideoOut_2_ + io_timings_v_bp);
-  assign blank = ((v_cntr < _zz_VideoOut_3_) || (h_cntr < _zz_VideoOut_4_));
+  assign _zz_VideoOut_10_ = {2'd0, v_blank};
+  assign _zz_VideoOut_11_ = {3'd0, h_blank};
+  assign _zz_VideoOut_12_ = {3'd0, io_timings_h_fp};
+  assign _zz_VideoOut_13_ = (io_timings_h_fp + io_timings_h_sync);
+  assign _zz_VideoOut_14_ = {3'd0, _zz_VideoOut_13_};
+  assign _zz_VideoOut_15_ = {2'd0, io_timings_v_fp};
+  assign _zz_VideoOut_16_ = (io_timings_v_fp + io_timings_v_sync);
+  assign _zz_VideoOut_17_ = {2'd0, _zz_VideoOut_16_};
+  assign h_blank = (_zz_VideoOut_8_ + io_timings_h_bp);
+  assign v_blank = (_zz_VideoOut_9_ + io_timings_v_bp);
+  assign blank = ((v_cntr < _zz_VideoOut_10_) || (h_cntr < _zz_VideoOut_11_));
   always @ (posedge toplevel_u_vo_clk_gen_vo_clk) begin
     if(!toplevel_u_vo_clk_gen_vo_reset_) begin
       io_vga_out_vsync <= 1'b0;
@@ -5491,11 +6848,11 @@ module VideoOut (
       h_cntr <= (12'b000000000000);
       v_cntr <= (11'b00000000000);
     end else begin
-      if((io_pixel_in_req && io_pixel_in_eof))begin
+      if((io_pixel_in_req && (io_pixel_in_last_col && io_pixel_in_last_line)))begin
         h_cntr <= (12'b000000000000);
         v_cntr <= (11'b00000000000);
       end else begin
-        if((h_cntr == io_timings_h_total_m1))begin
+        if((h_cntr == _zz_VideoOut_1_))begin
           h_cntr <= (12'b000000000000);
           v_cntr <= (v_cntr + (11'b00000000001));
         end else begin
@@ -5504,8 +6861,8 @@ module VideoOut (
       end
       io_vga_out_blank_ <= (! blank);
       io_vga_out_de <= (! blank);
-      io_vga_out_hsync <= (((_zz_VideoOut_5_ <= h_cntr) && (h_cntr < _zz_VideoOut_7_)) ^ (! io_timings_h_sync_positive));
-      io_vga_out_vsync <= (((_zz_VideoOut_8_ <= v_cntr) && (v_cntr < _zz_VideoOut_10_)) ^ (! io_timings_v_sync_positive));
+      io_vga_out_hsync <= (((_zz_VideoOut_12_ <= h_cntr) && (h_cntr < _zz_VideoOut_14_)) ^ (! io_timings_h_sync_positive));
+      io_vga_out_vsync <= (((_zz_VideoOut_15_ <= v_cntr) && (v_cntr < _zz_VideoOut_17_)) ^ (! io_timings_v_sync_positive));
       io_vga_out_r <= (blank ? (8'b00000000) : io_pixel_in_pixel_r);
       io_vga_out_g <= (blank ? (8'b00000000) : io_pixel_in_pixel_g);
       io_vga_out_b <= (blank ? (8'b00000000) : io_pixel_in_pixel_b);
@@ -5909,7 +7266,7 @@ module UlpiCtrl (
 
 endmodule
 
-module StreamFifoCC_1_ (
+module StreamFifoCC_3_ (
       input   io_push_valid,
       output  io_push_ready,
       input   io_push_payload,
@@ -5920,24 +7277,24 @@ module StreamFifoCC_1_ (
       output [1:0] io_popOccupancy,
       input   toplevel_main_clk,
       input   toplevel_main_reset_,
-      input   u_ulpi_ctrl_io_ulpi_clk,
-      input   u_ulpi_ctrl_ulpi_reset_);
-  wire [1:0] _zz_StreamFifoCC_1__5_;
-  wire [1:0] _zz_StreamFifoCC_1__6_;
-  reg [0:0] _zz_StreamFifoCC_1__7_;
-  wire [1:0] bufferCC_12__io_dataOut;
-  wire [1:0] bufferCC_13__io_dataOut;
-  wire [0:0] _zz_StreamFifoCC_1__8_;
-  wire [1:0] _zz_StreamFifoCC_1__9_;
-  wire [1:0] _zz_StreamFifoCC_1__10_;
-  wire [0:0] _zz_StreamFifoCC_1__11_;
-  wire [0:0] _zz_StreamFifoCC_1__12_;
-  wire [1:0] _zz_StreamFifoCC_1__13_;
-  wire [1:0] _zz_StreamFifoCC_1__14_;
-  wire [0:0] _zz_StreamFifoCC_1__15_;
-  wire [0:0] _zz_StreamFifoCC_1__16_;
-  wire  _zz_StreamFifoCC_1__17_;
-  reg  _zz_StreamFifoCC_1__1_;
+      input   _zz_StreamFifoCC_3__5_,
+      input   _zz_StreamFifoCC_3__6_);
+  wire [1:0] _zz_StreamFifoCC_3__7_;
+  wire [1:0] _zz_StreamFifoCC_3__8_;
+  reg [0:0] _zz_StreamFifoCC_3__9_;
+  wire [1:0] bufferCC_18__io_dataOut;
+  wire [1:0] bufferCC_19__io_dataOut;
+  wire [0:0] _zz_StreamFifoCC_3__10_;
+  wire [1:0] _zz_StreamFifoCC_3__11_;
+  wire [1:0] _zz_StreamFifoCC_3__12_;
+  wire [0:0] _zz_StreamFifoCC_3__13_;
+  wire [0:0] _zz_StreamFifoCC_3__14_;
+  wire [1:0] _zz_StreamFifoCC_3__15_;
+  wire [1:0] _zz_StreamFifoCC_3__16_;
+  wire [0:0] _zz_StreamFifoCC_3__17_;
+  wire [0:0] _zz_StreamFifoCC_3__18_;
+  wire  _zz_StreamFifoCC_3__19_;
+  reg  _zz_StreamFifoCC_3__1_;
   wire [1:0] popToPushGray;
   wire [1:0] pushToPopGray;
   reg  pushCC_pushPtr_willIncrement;
@@ -5949,7 +7306,7 @@ module StreamFifoCC_1_ (
   reg [1:0] pushCC_pushPtrGray;
   wire [1:0] pushCC_popPtrGray;
   wire  pushCC_full;
-  wire  _zz_StreamFifoCC_1__2_;
+  wire  _zz_StreamFifoCC_3__2_;
   reg  popCC_popPtr_willIncrement;
   wire  popCC_popPtr_willClear;
   reg [1:0] popCC_popPtr_valueNext;
@@ -5959,53 +7316,53 @@ module StreamFifoCC_1_ (
   reg [1:0] popCC_popPtrGray;
   wire [1:0] popCC_pushPtrGray;
   wire  popCC_empty;
-  wire [1:0] _zz_StreamFifoCC_1__3_;
-  wire  _zz_StreamFifoCC_1__4_;
+  wire [1:0] _zz_StreamFifoCC_3__3_;
+  wire  _zz_StreamFifoCC_3__4_;
   reg [0:0] ram [0:1];
-  assign _zz_StreamFifoCC_1__8_ = pushCC_pushPtr_willIncrement;
-  assign _zz_StreamFifoCC_1__9_ = {1'd0, _zz_StreamFifoCC_1__8_};
-  assign _zz_StreamFifoCC_1__10_ = (pushCC_pushPtr_valueNext >>> (1'b1));
-  assign _zz_StreamFifoCC_1__11_ = pushCC_pushPtr_value[0:0];
-  assign _zz_StreamFifoCC_1__12_ = popCC_popPtr_willIncrement;
-  assign _zz_StreamFifoCC_1__13_ = {1'd0, _zz_StreamFifoCC_1__12_};
-  assign _zz_StreamFifoCC_1__14_ = (popCC_popPtr_valueNext >>> (1'b1));
-  assign _zz_StreamFifoCC_1__15_ = _zz_StreamFifoCC_1__3_[0:0];
-  assign _zz_StreamFifoCC_1__16_ = io_push_payload;
-  assign _zz_StreamFifoCC_1__17_ = 1'b1;
+  assign _zz_StreamFifoCC_3__10_ = pushCC_pushPtr_willIncrement;
+  assign _zz_StreamFifoCC_3__11_ = {1'd0, _zz_StreamFifoCC_3__10_};
+  assign _zz_StreamFifoCC_3__12_ = (pushCC_pushPtr_valueNext >>> (1'b1));
+  assign _zz_StreamFifoCC_3__13_ = pushCC_pushPtr_value[0:0];
+  assign _zz_StreamFifoCC_3__14_ = popCC_popPtr_willIncrement;
+  assign _zz_StreamFifoCC_3__15_ = {1'd0, _zz_StreamFifoCC_3__14_};
+  assign _zz_StreamFifoCC_3__16_ = (popCC_popPtr_valueNext >>> (1'b1));
+  assign _zz_StreamFifoCC_3__17_ = _zz_StreamFifoCC_3__3_[0:0];
+  assign _zz_StreamFifoCC_3__18_ = io_push_payload;
+  assign _zz_StreamFifoCC_3__19_ = 1'b1;
   always @ (posedge toplevel_main_clk) begin
-    if(_zz_StreamFifoCC_1__1_) begin
-      ram[_zz_StreamFifoCC_1__11_] <= _zz_StreamFifoCC_1__16_;
+    if(_zz_StreamFifoCC_3__1_) begin
+      ram[_zz_StreamFifoCC_3__13_] <= _zz_StreamFifoCC_3__18_;
     end
   end
 
-  always @ (posedge u_ulpi_ctrl_io_ulpi_clk) begin
+  always @ (posedge _zz_StreamFifoCC_3__5_) begin
   end
 
-  always @ (posedge u_ulpi_ctrl_io_ulpi_clk) begin
-    if(_zz_StreamFifoCC_1__17_) begin
-      _zz_StreamFifoCC_1__7_ <= ram[_zz_StreamFifoCC_1__15_];
+  always @ (posedge _zz_StreamFifoCC_3__5_) begin
+    if(_zz_StreamFifoCC_3__19_) begin
+      _zz_StreamFifoCC_3__9_ <= ram[_zz_StreamFifoCC_3__17_];
     end
   end
 
-  BufferCC_4_ bufferCC_12_ ( 
-    .io_initial(_zz_StreamFifoCC_1__5_),
+  BufferCC_10_ bufferCC_18_ ( 
+    .io_initial(_zz_StreamFifoCC_3__7_),
     .io_dataIn(popToPushGray),
-    .io_dataOut(bufferCC_12__io_dataOut),
+    .io_dataOut(bufferCC_18__io_dataOut),
     .toplevel_main_clk(toplevel_main_clk),
     .toplevel_main_reset_(toplevel_main_reset_) 
   );
-  BufferCC_5_ bufferCC_13_ ( 
-    .io_initial(_zz_StreamFifoCC_1__6_),
+  BufferCC_11_ bufferCC_19_ ( 
+    .io_initial(_zz_StreamFifoCC_3__8_),
     .io_dataIn(pushToPopGray),
-    .io_dataOut(bufferCC_13__io_dataOut),
-    .u_ulpi_ctrl_io_ulpi_clk(u_ulpi_ctrl_io_ulpi_clk),
-    .u_ulpi_ctrl_ulpi_reset_(u_ulpi_ctrl_ulpi_reset_) 
+    .io_dataOut(bufferCC_19__io_dataOut),
+    ._zz_BufferCC_11__1_(_zz_StreamFifoCC_3__5_),
+    ._zz_BufferCC_11__2_(_zz_StreamFifoCC_3__6_) 
   );
   always @ (*) begin
-    _zz_StreamFifoCC_1__1_ = 1'b0;
+    _zz_StreamFifoCC_3__1_ = 1'b0;
     pushCC_pushPtr_willIncrement = 1'b0;
     if((io_push_valid && io_push_ready))begin
-      _zz_StreamFifoCC_1__1_ = 1'b1;
+      _zz_StreamFifoCC_3__1_ = 1'b1;
       pushCC_pushPtr_willIncrement = 1'b1;
     end
   end
@@ -6014,18 +7371,18 @@ module StreamFifoCC_1_ (
   assign pushCC_pushPtr_willOverflowIfInc = (pushCC_pushPtr_value == (2'b11));
   assign pushCC_pushPtr_willOverflow = (pushCC_pushPtr_willOverflowIfInc && pushCC_pushPtr_willIncrement);
   always @ (*) begin
-    pushCC_pushPtr_valueNext = (pushCC_pushPtr_value + _zz_StreamFifoCC_1__9_);
+    pushCC_pushPtr_valueNext = (pushCC_pushPtr_value + _zz_StreamFifoCC_3__11_);
     if(pushCC_pushPtr_willClear)begin
       pushCC_pushPtr_valueNext = (2'b00);
     end
   end
 
-  assign _zz_StreamFifoCC_1__5_ = (2'b00);
-  assign pushCC_popPtrGray = bufferCC_12__io_dataOut;
+  assign _zz_StreamFifoCC_3__7_ = (2'b00);
+  assign pushCC_popPtrGray = bufferCC_18__io_dataOut;
   assign pushCC_full = ((pushCC_pushPtrGray[1 : 0] == (~ pushCC_popPtrGray[1 : 0])) && 1'b1);
   assign io_push_ready = (! pushCC_full);
-  assign _zz_StreamFifoCC_1__2_ = pushCC_popPtrGray[1];
-  assign io_pushOccupancy = (pushCC_pushPtr_value - {_zz_StreamFifoCC_1__2_,(pushCC_popPtrGray[0] ^ _zz_StreamFifoCC_1__2_)});
+  assign _zz_StreamFifoCC_3__2_ = pushCC_popPtrGray[1];
+  assign io_pushOccupancy = (pushCC_pushPtr_value - {_zz_StreamFifoCC_3__2_,(pushCC_popPtrGray[0] ^ _zz_StreamFifoCC_3__2_)});
   always @ (*) begin
     popCC_popPtr_willIncrement = 1'b0;
     if((io_pop_valid && io_pop_ready))begin
@@ -6037,20 +7394,20 @@ module StreamFifoCC_1_ (
   assign popCC_popPtr_willOverflowIfInc = (popCC_popPtr_value == (2'b11));
   assign popCC_popPtr_willOverflow = (popCC_popPtr_willOverflowIfInc && popCC_popPtr_willIncrement);
   always @ (*) begin
-    popCC_popPtr_valueNext = (popCC_popPtr_value + _zz_StreamFifoCC_1__13_);
+    popCC_popPtr_valueNext = (popCC_popPtr_value + _zz_StreamFifoCC_3__15_);
     if(popCC_popPtr_willClear)begin
       popCC_popPtr_valueNext = (2'b00);
     end
   end
 
-  assign _zz_StreamFifoCC_1__6_ = (2'b00);
-  assign popCC_pushPtrGray = bufferCC_13__io_dataOut;
+  assign _zz_StreamFifoCC_3__8_ = (2'b00);
+  assign popCC_pushPtrGray = bufferCC_19__io_dataOut;
   assign popCC_empty = (popCC_popPtrGray == popCC_pushPtrGray);
   assign io_pop_valid = (! popCC_empty);
-  assign _zz_StreamFifoCC_1__3_ = popCC_popPtr_valueNext;
-  assign io_pop_payload = _zz_StreamFifoCC_1__7_[0];
-  assign _zz_StreamFifoCC_1__4_ = popCC_pushPtrGray[1];
-  assign io_popOccupancy = ({_zz_StreamFifoCC_1__4_,(popCC_pushPtrGray[0] ^ _zz_StreamFifoCC_1__4_)} - popCC_popPtr_value);
+  assign _zz_StreamFifoCC_3__3_ = popCC_popPtr_valueNext;
+  assign io_pop_payload = _zz_StreamFifoCC_3__9_[0];
+  assign _zz_StreamFifoCC_3__4_ = popCC_pushPtrGray[1];
+  assign io_popOccupancy = ({_zz_StreamFifoCC_3__4_,(popCC_pushPtrGray[0] ^ _zz_StreamFifoCC_3__4_)} - popCC_popPtr_value);
   assign pushToPopGray = pushCC_pushPtrGray;
   assign popToPushGray = popCC_popPtrGray;
   always @ (posedge toplevel_main_clk) begin
@@ -6059,17 +7416,17 @@ module StreamFifoCC_1_ (
       pushCC_pushPtrGray <= (2'b00);
     end else begin
       pushCC_pushPtr_value <= pushCC_pushPtr_valueNext;
-      pushCC_pushPtrGray <= (_zz_StreamFifoCC_1__10_ ^ pushCC_pushPtr_valueNext);
+      pushCC_pushPtrGray <= (_zz_StreamFifoCC_3__12_ ^ pushCC_pushPtr_valueNext);
     end
   end
 
-  always @ (posedge u_ulpi_ctrl_io_ulpi_clk) begin
-    if(!u_ulpi_ctrl_ulpi_reset_) begin
+  always @ (posedge _zz_StreamFifoCC_3__5_) begin
+    if(!_zz_StreamFifoCC_3__6_) begin
       popCC_popPtr_value <= (2'b00);
       popCC_popPtrGray <= (2'b00);
     end else begin
       popCC_popPtr_value <= popCC_popPtr_valueNext;
-      popCC_popPtrGray <= (_zz_StreamFifoCC_1__14_ ^ popCC_popPtr_valueNext);
+      popCC_popPtrGray <= (_zz_StreamFifoCC_3__16_ ^ popCC_popPtr_valueNext);
     end
   end
 
@@ -6078,27 +7435,27 @@ endmodule
 module PulseCCByToggle_2_ (
       input   io_pulseIn,
       output  io_pulseOut,
-      input   u_ulpi_ctrl_io_ulpi_clk,
-      input   u_ulpi_ctrl_ulpi_reset_,
+      input   _zz_PulseCCByToggle_2__1_,
+      input   _zz_PulseCCByToggle_2__2_,
       input   toplevel_main_clk,
       input   toplevel_main_reset_);
-  wire  _zz_PulseCCByToggle_2__1_;
-  wire  bufferCC_12__io_dataOut;
+  wire  _zz_PulseCCByToggle_2__3_;
+  wire  bufferCC_18__io_dataOut;
   reg  inArea_target;
   wire  outArea_target;
   reg  outArea_hit;
-  BufferCC_2_ bufferCC_12_ ( 
-    .io_initial(_zz_PulseCCByToggle_2__1_),
+  BufferCC_6_ bufferCC_18_ ( 
+    .io_initial(_zz_PulseCCByToggle_2__3_),
     .io_dataIn(inArea_target),
-    .io_dataOut(bufferCC_12__io_dataOut),
+    .io_dataOut(bufferCC_18__io_dataOut),
     .toplevel_main_clk(toplevel_main_clk),
     .toplevel_main_reset_(toplevel_main_reset_) 
   );
-  assign _zz_PulseCCByToggle_2__1_ = 1'b0;
-  assign outArea_target = bufferCC_12__io_dataOut;
+  assign _zz_PulseCCByToggle_2__3_ = 1'b0;
+  assign outArea_target = bufferCC_18__io_dataOut;
   assign io_pulseOut = (outArea_target != outArea_hit);
-  always @ (posedge u_ulpi_ctrl_io_ulpi_clk) begin
-    if(!u_ulpi_ctrl_ulpi_reset_) begin
+  always @ (posedge _zz_PulseCCByToggle_2__1_) begin
+    if(!_zz_PulseCCByToggle_2__2_) begin
       inArea_target <= 1'b0;
     end else begin
       if(io_pulseIn)begin
@@ -6119,7 +7476,7 @@ module PulseCCByToggle_2_ (
 
 endmodule
 
-module StreamFifoCC_2_ (
+module StreamFifoCC_4_ (
       input   io_push_valid,
       output  io_push_ready,
       input  [7:0] io_push_payload,
@@ -6130,27 +7487,27 @@ module StreamFifoCC_2_ (
       output [10:0] io_popOccupancy,
       input   toplevel_main_clk,
       input   toplevel_main_reset_,
-      input   u_ulpi_ctrl_io_ulpi_clk,
-      input   u_ulpi_ctrl_ulpi_reset_);
-  wire [10:0] _zz_StreamFifoCC_2__23_;
-  wire [10:0] _zz_StreamFifoCC_2__24_;
-  reg [7:0] _zz_StreamFifoCC_2__25_;
-  wire [10:0] bufferCC_12__io_dataOut;
-  wire [10:0] bufferCC_13__io_dataOut;
-  wire [0:0] _zz_StreamFifoCC_2__26_;
-  wire [10:0] _zz_StreamFifoCC_2__27_;
-  wire [10:0] _zz_StreamFifoCC_2__28_;
-  wire [9:0] _zz_StreamFifoCC_2__29_;
-  wire [0:0] _zz_StreamFifoCC_2__30_;
-  wire [10:0] _zz_StreamFifoCC_2__31_;
-  wire [10:0] _zz_StreamFifoCC_2__32_;
-  wire [9:0] _zz_StreamFifoCC_2__33_;
-  wire  _zz_StreamFifoCC_2__34_;
-  wire [0:0] _zz_StreamFifoCC_2__35_;
-  wire [0:0] _zz_StreamFifoCC_2__36_;
-  wire [0:0] _zz_StreamFifoCC_2__37_;
-  wire [0:0] _zz_StreamFifoCC_2__38_;
-  reg  _zz_StreamFifoCC_2__1_;
+      input   _zz_StreamFifoCC_4__23_,
+      input   _zz_StreamFifoCC_4__24_);
+  wire [10:0] _zz_StreamFifoCC_4__25_;
+  wire [10:0] _zz_StreamFifoCC_4__26_;
+  reg [7:0] _zz_StreamFifoCC_4__27_;
+  wire [10:0] bufferCC_18__io_dataOut;
+  wire [10:0] bufferCC_19__io_dataOut;
+  wire [0:0] _zz_StreamFifoCC_4__28_;
+  wire [10:0] _zz_StreamFifoCC_4__29_;
+  wire [10:0] _zz_StreamFifoCC_4__30_;
+  wire [9:0] _zz_StreamFifoCC_4__31_;
+  wire [0:0] _zz_StreamFifoCC_4__32_;
+  wire [10:0] _zz_StreamFifoCC_4__33_;
+  wire [10:0] _zz_StreamFifoCC_4__34_;
+  wire [9:0] _zz_StreamFifoCC_4__35_;
+  wire  _zz_StreamFifoCC_4__36_;
+  wire [0:0] _zz_StreamFifoCC_4__37_;
+  wire [0:0] _zz_StreamFifoCC_4__38_;
+  wire [0:0] _zz_StreamFifoCC_4__39_;
+  wire [0:0] _zz_StreamFifoCC_4__40_;
+  reg  _zz_StreamFifoCC_4__1_;
   wire [10:0] popToPushGray;
   wire [10:0] pushToPopGray;
   reg  pushCC_pushPtr_willIncrement;
@@ -6162,16 +7519,16 @@ module StreamFifoCC_2_ (
   reg [10:0] pushCC_pushPtrGray;
   wire [10:0] pushCC_popPtrGray;
   wire  pushCC_full;
-  wire  _zz_StreamFifoCC_2__2_;
-  wire  _zz_StreamFifoCC_2__3_;
-  wire  _zz_StreamFifoCC_2__4_;
-  wire  _zz_StreamFifoCC_2__5_;
-  wire  _zz_StreamFifoCC_2__6_;
-  wire  _zz_StreamFifoCC_2__7_;
-  wire  _zz_StreamFifoCC_2__8_;
-  wire  _zz_StreamFifoCC_2__9_;
-  wire  _zz_StreamFifoCC_2__10_;
-  wire  _zz_StreamFifoCC_2__11_;
+  wire  _zz_StreamFifoCC_4__2_;
+  wire  _zz_StreamFifoCC_4__3_;
+  wire  _zz_StreamFifoCC_4__4_;
+  wire  _zz_StreamFifoCC_4__5_;
+  wire  _zz_StreamFifoCC_4__6_;
+  wire  _zz_StreamFifoCC_4__7_;
+  wire  _zz_StreamFifoCC_4__8_;
+  wire  _zz_StreamFifoCC_4__9_;
+  wire  _zz_StreamFifoCC_4__10_;
+  wire  _zz_StreamFifoCC_4__11_;
   reg  popCC_popPtr_willIncrement;
   wire  popCC_popPtr_willClear;
   reg [10:0] popCC_popPtr_valueNext;
@@ -6181,65 +7538,65 @@ module StreamFifoCC_2_ (
   reg [10:0] popCC_popPtrGray;
   wire [10:0] popCC_pushPtrGray;
   wire  popCC_empty;
-  wire [10:0] _zz_StreamFifoCC_2__12_;
-  wire  _zz_StreamFifoCC_2__13_;
-  wire  _zz_StreamFifoCC_2__14_;
-  wire  _zz_StreamFifoCC_2__15_;
-  wire  _zz_StreamFifoCC_2__16_;
-  wire  _zz_StreamFifoCC_2__17_;
-  wire  _zz_StreamFifoCC_2__18_;
-  wire  _zz_StreamFifoCC_2__19_;
-  wire  _zz_StreamFifoCC_2__20_;
-  wire  _zz_StreamFifoCC_2__21_;
-  wire  _zz_StreamFifoCC_2__22_;
+  wire [10:0] _zz_StreamFifoCC_4__12_;
+  wire  _zz_StreamFifoCC_4__13_;
+  wire  _zz_StreamFifoCC_4__14_;
+  wire  _zz_StreamFifoCC_4__15_;
+  wire  _zz_StreamFifoCC_4__16_;
+  wire  _zz_StreamFifoCC_4__17_;
+  wire  _zz_StreamFifoCC_4__18_;
+  wire  _zz_StreamFifoCC_4__19_;
+  wire  _zz_StreamFifoCC_4__20_;
+  wire  _zz_StreamFifoCC_4__21_;
+  wire  _zz_StreamFifoCC_4__22_;
   reg [7:0] ram [0:1023];
-  assign _zz_StreamFifoCC_2__26_ = pushCC_pushPtr_willIncrement;
-  assign _zz_StreamFifoCC_2__27_ = {10'd0, _zz_StreamFifoCC_2__26_};
-  assign _zz_StreamFifoCC_2__28_ = (pushCC_pushPtr_valueNext >>> (1'b1));
-  assign _zz_StreamFifoCC_2__29_ = pushCC_pushPtr_value[9:0];
-  assign _zz_StreamFifoCC_2__30_ = popCC_popPtr_willIncrement;
-  assign _zz_StreamFifoCC_2__31_ = {10'd0, _zz_StreamFifoCC_2__30_};
-  assign _zz_StreamFifoCC_2__32_ = (popCC_popPtr_valueNext >>> (1'b1));
-  assign _zz_StreamFifoCC_2__33_ = _zz_StreamFifoCC_2__12_[9:0];
-  assign _zz_StreamFifoCC_2__34_ = 1'b1;
-  assign _zz_StreamFifoCC_2__35_ = _zz_StreamFifoCC_2__2_;
-  assign _zz_StreamFifoCC_2__36_ = (pushCC_popPtrGray[0] ^ _zz_StreamFifoCC_2__2_);
-  assign _zz_StreamFifoCC_2__37_ = _zz_StreamFifoCC_2__13_;
-  assign _zz_StreamFifoCC_2__38_ = (popCC_pushPtrGray[0] ^ _zz_StreamFifoCC_2__13_);
+  assign _zz_StreamFifoCC_4__28_ = pushCC_pushPtr_willIncrement;
+  assign _zz_StreamFifoCC_4__29_ = {10'd0, _zz_StreamFifoCC_4__28_};
+  assign _zz_StreamFifoCC_4__30_ = (pushCC_pushPtr_valueNext >>> (1'b1));
+  assign _zz_StreamFifoCC_4__31_ = pushCC_pushPtr_value[9:0];
+  assign _zz_StreamFifoCC_4__32_ = popCC_popPtr_willIncrement;
+  assign _zz_StreamFifoCC_4__33_ = {10'd0, _zz_StreamFifoCC_4__32_};
+  assign _zz_StreamFifoCC_4__34_ = (popCC_popPtr_valueNext >>> (1'b1));
+  assign _zz_StreamFifoCC_4__35_ = _zz_StreamFifoCC_4__12_[9:0];
+  assign _zz_StreamFifoCC_4__36_ = 1'b1;
+  assign _zz_StreamFifoCC_4__37_ = _zz_StreamFifoCC_4__2_;
+  assign _zz_StreamFifoCC_4__38_ = (pushCC_popPtrGray[0] ^ _zz_StreamFifoCC_4__2_);
+  assign _zz_StreamFifoCC_4__39_ = _zz_StreamFifoCC_4__13_;
+  assign _zz_StreamFifoCC_4__40_ = (popCC_pushPtrGray[0] ^ _zz_StreamFifoCC_4__13_);
   always @ (posedge toplevel_main_clk) begin
-    if(_zz_StreamFifoCC_2__1_) begin
-      ram[_zz_StreamFifoCC_2__29_] <= io_push_payload;
+    if(_zz_StreamFifoCC_4__1_) begin
+      ram[_zz_StreamFifoCC_4__31_] <= io_push_payload;
     end
   end
 
-  always @ (posedge u_ulpi_ctrl_io_ulpi_clk) begin
+  always @ (posedge _zz_StreamFifoCC_4__23_) begin
   end
 
-  always @ (posedge u_ulpi_ctrl_io_ulpi_clk) begin
-    if(_zz_StreamFifoCC_2__34_) begin
-      _zz_StreamFifoCC_2__25_ <= ram[_zz_StreamFifoCC_2__33_];
+  always @ (posedge _zz_StreamFifoCC_4__23_) begin
+    if(_zz_StreamFifoCC_4__36_) begin
+      _zz_StreamFifoCC_4__27_ <= ram[_zz_StreamFifoCC_4__35_];
     end
   end
 
-  BufferCC_7_ bufferCC_12_ ( 
-    .io_initial(_zz_StreamFifoCC_2__23_),
+  BufferCC_13_ bufferCC_18_ ( 
+    .io_initial(_zz_StreamFifoCC_4__25_),
     .io_dataIn(popToPushGray),
-    .io_dataOut(bufferCC_12__io_dataOut),
+    .io_dataOut(bufferCC_18__io_dataOut),
     .toplevel_main_clk(toplevel_main_clk),
     .toplevel_main_reset_(toplevel_main_reset_) 
   );
-  BufferCC_8_ bufferCC_13_ ( 
-    .io_initial(_zz_StreamFifoCC_2__24_),
+  BufferCC_14_ bufferCC_19_ ( 
+    .io_initial(_zz_StreamFifoCC_4__26_),
     .io_dataIn(pushToPopGray),
-    .io_dataOut(bufferCC_13__io_dataOut),
-    .u_ulpi_ctrl_io_ulpi_clk(u_ulpi_ctrl_io_ulpi_clk),
-    .u_ulpi_ctrl_ulpi_reset_(u_ulpi_ctrl_ulpi_reset_) 
+    .io_dataOut(bufferCC_19__io_dataOut),
+    ._zz_BufferCC_14__1_(_zz_StreamFifoCC_4__23_),
+    ._zz_BufferCC_14__2_(_zz_StreamFifoCC_4__24_) 
   );
   always @ (*) begin
-    _zz_StreamFifoCC_2__1_ = 1'b0;
+    _zz_StreamFifoCC_4__1_ = 1'b0;
     pushCC_pushPtr_willIncrement = 1'b0;
     if((io_push_valid && io_push_ready))begin
-      _zz_StreamFifoCC_2__1_ = 1'b1;
+      _zz_StreamFifoCC_4__1_ = 1'b1;
       pushCC_pushPtr_willIncrement = 1'b1;
     end
   end
@@ -6248,27 +7605,27 @@ module StreamFifoCC_2_ (
   assign pushCC_pushPtr_willOverflowIfInc = (pushCC_pushPtr_value == (11'b11111111111));
   assign pushCC_pushPtr_willOverflow = (pushCC_pushPtr_willOverflowIfInc && pushCC_pushPtr_willIncrement);
   always @ (*) begin
-    pushCC_pushPtr_valueNext = (pushCC_pushPtr_value + _zz_StreamFifoCC_2__27_);
+    pushCC_pushPtr_valueNext = (pushCC_pushPtr_value + _zz_StreamFifoCC_4__29_);
     if(pushCC_pushPtr_willClear)begin
       pushCC_pushPtr_valueNext = (11'b00000000000);
     end
   end
 
-  assign _zz_StreamFifoCC_2__23_ = (11'b00000000000);
-  assign pushCC_popPtrGray = bufferCC_12__io_dataOut;
+  assign _zz_StreamFifoCC_4__25_ = (11'b00000000000);
+  assign pushCC_popPtrGray = bufferCC_18__io_dataOut;
   assign pushCC_full = ((pushCC_pushPtrGray[10 : 9] == (~ pushCC_popPtrGray[10 : 9])) && (pushCC_pushPtrGray[8 : 0] == pushCC_popPtrGray[8 : 0]));
   assign io_push_ready = (! pushCC_full);
-  assign _zz_StreamFifoCC_2__2_ = (pushCC_popPtrGray[1] ^ _zz_StreamFifoCC_2__3_);
-  assign _zz_StreamFifoCC_2__3_ = (pushCC_popPtrGray[2] ^ _zz_StreamFifoCC_2__4_);
-  assign _zz_StreamFifoCC_2__4_ = (pushCC_popPtrGray[3] ^ _zz_StreamFifoCC_2__5_);
-  assign _zz_StreamFifoCC_2__5_ = (pushCC_popPtrGray[4] ^ _zz_StreamFifoCC_2__6_);
-  assign _zz_StreamFifoCC_2__6_ = (pushCC_popPtrGray[5] ^ _zz_StreamFifoCC_2__7_);
-  assign _zz_StreamFifoCC_2__7_ = (pushCC_popPtrGray[6] ^ _zz_StreamFifoCC_2__8_);
-  assign _zz_StreamFifoCC_2__8_ = (pushCC_popPtrGray[7] ^ _zz_StreamFifoCC_2__9_);
-  assign _zz_StreamFifoCC_2__9_ = (pushCC_popPtrGray[8] ^ _zz_StreamFifoCC_2__10_);
-  assign _zz_StreamFifoCC_2__10_ = (pushCC_popPtrGray[9] ^ _zz_StreamFifoCC_2__11_);
-  assign _zz_StreamFifoCC_2__11_ = pushCC_popPtrGray[10];
-  assign io_pushOccupancy = (pushCC_pushPtr_value - {_zz_StreamFifoCC_2__11_,{_zz_StreamFifoCC_2__10_,{_zz_StreamFifoCC_2__9_,{_zz_StreamFifoCC_2__8_,{_zz_StreamFifoCC_2__7_,{_zz_StreamFifoCC_2__6_,{_zz_StreamFifoCC_2__5_,{_zz_StreamFifoCC_2__4_,{_zz_StreamFifoCC_2__3_,{_zz_StreamFifoCC_2__35_,_zz_StreamFifoCC_2__36_}}}}}}}}}});
+  assign _zz_StreamFifoCC_4__2_ = (pushCC_popPtrGray[1] ^ _zz_StreamFifoCC_4__3_);
+  assign _zz_StreamFifoCC_4__3_ = (pushCC_popPtrGray[2] ^ _zz_StreamFifoCC_4__4_);
+  assign _zz_StreamFifoCC_4__4_ = (pushCC_popPtrGray[3] ^ _zz_StreamFifoCC_4__5_);
+  assign _zz_StreamFifoCC_4__5_ = (pushCC_popPtrGray[4] ^ _zz_StreamFifoCC_4__6_);
+  assign _zz_StreamFifoCC_4__6_ = (pushCC_popPtrGray[5] ^ _zz_StreamFifoCC_4__7_);
+  assign _zz_StreamFifoCC_4__7_ = (pushCC_popPtrGray[6] ^ _zz_StreamFifoCC_4__8_);
+  assign _zz_StreamFifoCC_4__8_ = (pushCC_popPtrGray[7] ^ _zz_StreamFifoCC_4__9_);
+  assign _zz_StreamFifoCC_4__9_ = (pushCC_popPtrGray[8] ^ _zz_StreamFifoCC_4__10_);
+  assign _zz_StreamFifoCC_4__10_ = (pushCC_popPtrGray[9] ^ _zz_StreamFifoCC_4__11_);
+  assign _zz_StreamFifoCC_4__11_ = pushCC_popPtrGray[10];
+  assign io_pushOccupancy = (pushCC_pushPtr_value - {_zz_StreamFifoCC_4__11_,{_zz_StreamFifoCC_4__10_,{_zz_StreamFifoCC_4__9_,{_zz_StreamFifoCC_4__8_,{_zz_StreamFifoCC_4__7_,{_zz_StreamFifoCC_4__6_,{_zz_StreamFifoCC_4__5_,{_zz_StreamFifoCC_4__4_,{_zz_StreamFifoCC_4__3_,{_zz_StreamFifoCC_4__37_,_zz_StreamFifoCC_4__38_}}}}}}}}}});
   always @ (*) begin
     popCC_popPtr_willIncrement = 1'b0;
     if((io_pop_valid && io_pop_ready))begin
@@ -6280,29 +7637,29 @@ module StreamFifoCC_2_ (
   assign popCC_popPtr_willOverflowIfInc = (popCC_popPtr_value == (11'b11111111111));
   assign popCC_popPtr_willOverflow = (popCC_popPtr_willOverflowIfInc && popCC_popPtr_willIncrement);
   always @ (*) begin
-    popCC_popPtr_valueNext = (popCC_popPtr_value + _zz_StreamFifoCC_2__31_);
+    popCC_popPtr_valueNext = (popCC_popPtr_value + _zz_StreamFifoCC_4__33_);
     if(popCC_popPtr_willClear)begin
       popCC_popPtr_valueNext = (11'b00000000000);
     end
   end
 
-  assign _zz_StreamFifoCC_2__24_ = (11'b00000000000);
-  assign popCC_pushPtrGray = bufferCC_13__io_dataOut;
+  assign _zz_StreamFifoCC_4__26_ = (11'b00000000000);
+  assign popCC_pushPtrGray = bufferCC_19__io_dataOut;
   assign popCC_empty = (popCC_popPtrGray == popCC_pushPtrGray);
   assign io_pop_valid = (! popCC_empty);
-  assign _zz_StreamFifoCC_2__12_ = popCC_popPtr_valueNext;
-  assign io_pop_payload = _zz_StreamFifoCC_2__25_;
-  assign _zz_StreamFifoCC_2__13_ = (popCC_pushPtrGray[1] ^ _zz_StreamFifoCC_2__14_);
-  assign _zz_StreamFifoCC_2__14_ = (popCC_pushPtrGray[2] ^ _zz_StreamFifoCC_2__15_);
-  assign _zz_StreamFifoCC_2__15_ = (popCC_pushPtrGray[3] ^ _zz_StreamFifoCC_2__16_);
-  assign _zz_StreamFifoCC_2__16_ = (popCC_pushPtrGray[4] ^ _zz_StreamFifoCC_2__17_);
-  assign _zz_StreamFifoCC_2__17_ = (popCC_pushPtrGray[5] ^ _zz_StreamFifoCC_2__18_);
-  assign _zz_StreamFifoCC_2__18_ = (popCC_pushPtrGray[6] ^ _zz_StreamFifoCC_2__19_);
-  assign _zz_StreamFifoCC_2__19_ = (popCC_pushPtrGray[7] ^ _zz_StreamFifoCC_2__20_);
-  assign _zz_StreamFifoCC_2__20_ = (popCC_pushPtrGray[8] ^ _zz_StreamFifoCC_2__21_);
-  assign _zz_StreamFifoCC_2__21_ = (popCC_pushPtrGray[9] ^ _zz_StreamFifoCC_2__22_);
-  assign _zz_StreamFifoCC_2__22_ = popCC_pushPtrGray[10];
-  assign io_popOccupancy = ({_zz_StreamFifoCC_2__22_,{_zz_StreamFifoCC_2__21_,{_zz_StreamFifoCC_2__20_,{_zz_StreamFifoCC_2__19_,{_zz_StreamFifoCC_2__18_,{_zz_StreamFifoCC_2__17_,{_zz_StreamFifoCC_2__16_,{_zz_StreamFifoCC_2__15_,{_zz_StreamFifoCC_2__14_,{_zz_StreamFifoCC_2__37_,_zz_StreamFifoCC_2__38_}}}}}}}}}} - popCC_popPtr_value);
+  assign _zz_StreamFifoCC_4__12_ = popCC_popPtr_valueNext;
+  assign io_pop_payload = _zz_StreamFifoCC_4__27_;
+  assign _zz_StreamFifoCC_4__13_ = (popCC_pushPtrGray[1] ^ _zz_StreamFifoCC_4__14_);
+  assign _zz_StreamFifoCC_4__14_ = (popCC_pushPtrGray[2] ^ _zz_StreamFifoCC_4__15_);
+  assign _zz_StreamFifoCC_4__15_ = (popCC_pushPtrGray[3] ^ _zz_StreamFifoCC_4__16_);
+  assign _zz_StreamFifoCC_4__16_ = (popCC_pushPtrGray[4] ^ _zz_StreamFifoCC_4__17_);
+  assign _zz_StreamFifoCC_4__17_ = (popCC_pushPtrGray[5] ^ _zz_StreamFifoCC_4__18_);
+  assign _zz_StreamFifoCC_4__18_ = (popCC_pushPtrGray[6] ^ _zz_StreamFifoCC_4__19_);
+  assign _zz_StreamFifoCC_4__19_ = (popCC_pushPtrGray[7] ^ _zz_StreamFifoCC_4__20_);
+  assign _zz_StreamFifoCC_4__20_ = (popCC_pushPtrGray[8] ^ _zz_StreamFifoCC_4__21_);
+  assign _zz_StreamFifoCC_4__21_ = (popCC_pushPtrGray[9] ^ _zz_StreamFifoCC_4__22_);
+  assign _zz_StreamFifoCC_4__22_ = popCC_pushPtrGray[10];
+  assign io_popOccupancy = ({_zz_StreamFifoCC_4__22_,{_zz_StreamFifoCC_4__21_,{_zz_StreamFifoCC_4__20_,{_zz_StreamFifoCC_4__19_,{_zz_StreamFifoCC_4__18_,{_zz_StreamFifoCC_4__17_,{_zz_StreamFifoCC_4__16_,{_zz_StreamFifoCC_4__15_,{_zz_StreamFifoCC_4__14_,{_zz_StreamFifoCC_4__39_,_zz_StreamFifoCC_4__40_}}}}}}}}}} - popCC_popPtr_value);
   assign pushToPopGray = pushCC_pushPtrGray;
   assign popToPushGray = popCC_popPtrGray;
   always @ (posedge toplevel_main_clk) begin
@@ -6311,17 +7668,17 @@ module StreamFifoCC_2_ (
       pushCC_pushPtrGray <= (11'b00000000000);
     end else begin
       pushCC_pushPtr_value <= pushCC_pushPtr_valueNext;
-      pushCC_pushPtrGray <= (_zz_StreamFifoCC_2__28_ ^ pushCC_pushPtr_valueNext);
+      pushCC_pushPtrGray <= (_zz_StreamFifoCC_4__30_ ^ pushCC_pushPtr_valueNext);
     end
   end
 
-  always @ (posedge u_ulpi_ctrl_io_ulpi_clk) begin
-    if(!u_ulpi_ctrl_ulpi_reset_) begin
+  always @ (posedge _zz_StreamFifoCC_4__23_) begin
+    if(!_zz_StreamFifoCC_4__24_) begin
       popCC_popPtr_value <= (11'b00000000000);
       popCC_popPtrGray <= (11'b00000000000);
     end else begin
       popCC_popPtr_value <= popCC_popPtr_valueNext;
-      popCC_popPtrGray <= (_zz_StreamFifoCC_2__32_ ^ popCC_popPtr_valueNext);
+      popCC_popPtrGray <= (_zz_StreamFifoCC_4__34_ ^ popCC_popPtr_valueNext);
     end
   end
 
@@ -6332,22 +7689,22 @@ module PulseCCByToggle_3_ (
       output  io_pulseOut,
       input   toplevel_main_clk,
       input   toplevel_main_reset_,
-      input   u_ulpi_ctrl_io_ulpi_clk,
-      input   u_ulpi_ctrl_ulpi_reset_);
-  wire  _zz_PulseCCByToggle_3__1_;
-  wire  bufferCC_12__io_dataOut;
+      input   _zz_PulseCCByToggle_3__1_,
+      input   _zz_PulseCCByToggle_3__2_);
+  wire  _zz_PulseCCByToggle_3__3_;
+  wire  bufferCC_18__io_dataOut;
   reg  inArea_target;
   wire  outArea_target;
   reg  outArea_hit;
-  BufferCC_9_ bufferCC_12_ ( 
-    .io_initial(_zz_PulseCCByToggle_3__1_),
+  BufferCC_15_ bufferCC_18_ ( 
+    .io_initial(_zz_PulseCCByToggle_3__3_),
     .io_dataIn(inArea_target),
-    .io_dataOut(bufferCC_12__io_dataOut),
-    .u_ulpi_ctrl_io_ulpi_clk(u_ulpi_ctrl_io_ulpi_clk),
-    .u_ulpi_ctrl_ulpi_reset_(u_ulpi_ctrl_ulpi_reset_) 
+    .io_dataOut(bufferCC_18__io_dataOut),
+    ._zz_BufferCC_15__1_(_zz_PulseCCByToggle_3__1_),
+    ._zz_BufferCC_15__2_(_zz_PulseCCByToggle_3__2_) 
   );
-  assign _zz_PulseCCByToggle_3__1_ = 1'b0;
-  assign outArea_target = bufferCC_12__io_dataOut;
+  assign _zz_PulseCCByToggle_3__3_ = 1'b0;
+  assign outArea_target = bufferCC_18__io_dataOut;
   assign io_pulseOut = (outArea_target != outArea_hit);
   always @ (posedge toplevel_main_clk) begin
     if(!toplevel_main_reset_) begin
@@ -6359,8 +7716,8 @@ module PulseCCByToggle_3_ (
     end
   end
 
-  always @ (posedge u_ulpi_ctrl_io_ulpi_clk) begin
-    if(!u_ulpi_ctrl_ulpi_reset_) begin
+  always @ (posedge _zz_PulseCCByToggle_3__1_) begin
+    if(!_zz_PulseCCByToggle_3__2_) begin
       outArea_hit <= 1'b0;
     end else begin
       if((outArea_target != outArea_hit))begin
@@ -6372,7 +7729,7 @@ module PulseCCByToggle_3_ (
 endmodule
 
 
-//BufferCC_11_ remplaced by BufferCC_2_
+//BufferCC_17_ remplaced by BufferCC_6_
 
 module Apb3CC (
       input  [6:0] io_src_PADDR,
@@ -6394,7 +7751,7 @@ module Apb3CC (
       input   toplevel_main_clk,
       input   toplevel_main_reset_,
       input   core_u_pano_core_io_ulpi_clk,
-      input   core_u_pano_core_ulpi_reset_);
+      input   _zz_Apb3CC_2_);
   wire  u_sync_pulse_xfer_done_io_pulseOut;
   wire  u_sync_pulse_xfer_start_io_pulseOut;
   wire [31:0] PRDATA_dest;
@@ -6424,7 +7781,7 @@ module Apb3CC (
     .io_pulseIn(xfer_done_dest),
     .io_pulseOut(u_sync_pulse_xfer_done_io_pulseOut),
     .core_u_pano_core_io_ulpi_clk(core_u_pano_core_io_ulpi_clk),
-    .core_u_pano_core_ulpi_reset_(core_u_pano_core_ulpi_reset_),
+    ._zz_PulseCCByToggle_1_(_zz_Apb3CC_2_),
     .toplevel_main_clk(toplevel_main_clk),
     .toplevel_main_reset_(toplevel_main_reset_) 
   );
@@ -6434,7 +7791,7 @@ module Apb3CC (
     .toplevel_main_clk(toplevel_main_clk),
     .toplevel_main_reset_(toplevel_main_reset_),
     .core_u_pano_core_io_ulpi_clk(core_u_pano_core_io_ulpi_clk),
-    .core_u_pano_core_ulpi_reset_(core_u_pano_core_ulpi_reset_) 
+    ._zz_PulseCCByToggle_1__1_(_zz_Apb3CC_2_) 
   );
   assign xfer_done_src = u_sync_pulse_xfer_done_io_pulseOut;
   assign _zz_Apb3CC_1_ = (io_src_PENABLE && (io_src_PSEL != (1'b0)));
@@ -6481,7 +7838,7 @@ module Apb3CC (
   end
 
   always @ (posedge core_u_pano_core_io_ulpi_clk) begin
-    if(!core_u_pano_core_ulpi_reset_) begin
+    if(!_zz_Apb3CC_2_) begin
       dest_xfer_start_dest_d1 <= 1'b0;
       dest_PADDR <= (7'b0000000);
       dest_PSEL <= (1'b0);
@@ -6547,15 +7904,15 @@ module UsbHost (
       input   io_ulpi_tx_data_ready,
       output reg [7:0] io_ulpi_tx_data_payload,
       input   core_u_pano_core_io_ulpi_clk,
-      input   core_u_pano_core_ulpi_reset_);
-  reg [7:0] _zz_UsbHost_12_;
+      input   _zz_UsbHost_12_);
   reg [7:0] _zz_UsbHost_13_;
-  wire  _zz_UsbHost_14_;
+  reg [7:0] _zz_UsbHost_14_;
   wire  _zz_UsbHost_15_;
   wire  _zz_UsbHost_16_;
-  wire [8:0] _zz_UsbHost_17_;
-  wire  _zz_UsbHost_18_;
+  wire  _zz_UsbHost_17_;
+  wire [8:0] _zz_UsbHost_18_;
   wire  _zz_UsbHost_19_;
+  wire  _zz_UsbHost_20_;
   wire [0:0] _zz_UsbHost_1_;
   wire [7:0] _zz_UsbHost_2_;
   reg  _zz_UsbHost_3_;
@@ -6610,24 +7967,24 @@ module UsbHost (
   `endif
 
   reg [7:0] fifo_ram [0:263];
-  assign _zz_UsbHost_14_ = (tx_fsm_tx_state == `TxState_defaultEncoding_Idle);
   assign _zz_UsbHost_15_ = (tx_fsm_tx_state == `TxState_defaultEncoding_Idle);
-  assign _zz_UsbHost_16_ = ((6'b000000) <= tx_buf_cur_byte_count);
-  assign _zz_UsbHost_17_ = {1'd0, tx_buf_setup_first_byte_ptr};
-  assign _zz_UsbHost_18_ = tx_fsm_crc16[7];
-  assign _zz_UsbHost_19_ = tx_fsm_crc16[8];
+  assign _zz_UsbHost_16_ = (tx_fsm_tx_state == `TxState_defaultEncoding_Idle);
+  assign _zz_UsbHost_17_ = ((6'b000000) <= tx_buf_cur_byte_count);
+  assign _zz_UsbHost_18_ = {1'd0, tx_buf_setup_first_byte_ptr};
+  assign _zz_UsbHost_19_ = tx_fsm_crc16[7];
+  assign _zz_UsbHost_20_ = tx_fsm_crc16[8];
   always @ (posedge core_u_pano_core_io_ulpi_clk) begin
     if(io_cpu_fifo_bus_cmd_valid && io_cpu_fifo_bus_cmd_payload_write ) begin
       fifo_ram[io_cpu_fifo_bus_cmd_payload_address] <= _zz_UsbHost_2_;
     end
     if(io_cpu_fifo_bus_cmd_valid) begin
-      _zz_UsbHost_12_ <= fifo_ram[io_cpu_fifo_bus_cmd_payload_address];
+      _zz_UsbHost_13_ <= fifo_ram[io_cpu_fifo_bus_cmd_payload_address];
     end
     if(_zz_UsbHost_4_ && rxtx_ram_access_rx_wr_req ) begin
       fifo_ram[rxtx_ram_access_rxtx_addr] <= _zz_UsbHost_6_;
     end
     if(_zz_UsbHost_4_) begin
-      _zz_UsbHost_13_ <= fifo_ram[rxtx_ram_access_rxtx_addr];
+      _zz_UsbHost_14_ <= fifo_ram[rxtx_ram_access_rxtx_addr];
     end
   end
 
@@ -6757,13 +8114,13 @@ module UsbHost (
   assign io_cpu_fifo_bus_cmd_ready = 1'b1;
   assign _zz_UsbHost_1_ = 1'b1;
   assign _zz_UsbHost_2_ = io_cpu_fifo_bus_cmd_payload_data;
-  assign io_cpu_fifo_bus_rsp_payload_data = _zz_UsbHost_12_;
+  assign io_cpu_fifo_bus_rsp_payload_data = _zz_UsbHost_13_;
   assign io_cpu_fifo_bus_rsp_valid = _zz_UsbHost_3_;
   assign rxtx_ram_access_rxtx_addr = (rxtx_ram_access_tx_rd_req ? rxtx_ram_access_tx_rd_addr : rxtx_ram_access_rx_wr_addr);
   assign _zz_UsbHost_4_ = (rxtx_ram_access_tx_rd_req || rxtx_ram_access_rx_wr_req);
   assign _zz_UsbHost_5_ = 1'b1;
   assign _zz_UsbHost_6_ = rxtx_ram_access_rx_wr_data;
-  assign rxtx_ram_access_tx_rd_data = _zz_UsbHost_13_;
+  assign rxtx_ram_access_tx_rd_data = _zz_UsbHost_14_;
   assign tx_buf_cur_byte_count = ((tx_buf_cur_buf == (1'b0)) ? tx_buf_byte_count0 : tx_buf_byte_count1);
   assign tx_buf_cur_first_byte_ptr = {{(2'b01),tx_buf_cur_buf[0]},(6'b000000)};
   assign tx_buf_setup_first_byte_ptr = {(2'b10),(6'b000000)};
@@ -6780,12 +8137,12 @@ module UsbHost (
       `TopState_defaultEncoding_Idle : begin
       end
       `TopState_defaultEncoding_SetupSendToken : begin
-        if(_zz_UsbHost_14_)begin
+        if(_zz_UsbHost_15_)begin
           tx_fsm_pid = `PidType_staticEncoding_SETUP;
         end
       end
       `TopState_defaultEncoding_SetupSendData0 : begin
-        if(_zz_UsbHost_15_)begin
+        if(_zz_UsbHost_16_)begin
           tx_fsm_pid = `PidType_staticEncoding_DATA0;
           tx_fsm_setup = 1'b1;
         end
@@ -6818,7 +8175,7 @@ module UsbHost (
         io_ulpi_tx_data_valid = 1'b1;
         io_ulpi_tx_data_payload = {(4'b0100),tx_fsm_cur_pid};
         if(io_ulpi_tx_data_ready)begin
-          if(_zz_UsbHost_16_)begin
+          if(_zz_UsbHost_17_)begin
             tx_fsm_rd_req = 1'b1;
           end
         end
@@ -6875,7 +8232,7 @@ module UsbHost (
     tx_fsm_crc16_nxt[12] = tx_fsm_crc16[4];
     tx_fsm_crc16_nxt[13] = tx_fsm_crc16[5];
     tx_fsm_crc16_nxt[14] = tx_fsm_crc16[6];
-    tx_fsm_crc16_nxt[15] = ((((((((((((((((_zz_UsbHost_18_ ^ _zz_UsbHost_19_) ^ tx_fsm_crc16[9]) ^ tx_fsm_crc16[10]) ^ tx_fsm_crc16[11]) ^ tx_fsm_crc16[12]) ^ tx_fsm_crc16[13]) ^ tx_fsm_crc16[14]) ^ tx_fsm_crc16[15]) ^ _zz_UsbHost_7_[0]) ^ _zz_UsbHost_7_[1]) ^ _zz_UsbHost_7_[2]) ^ _zz_UsbHost_7_[3]) ^ _zz_UsbHost_7_[4]) ^ _zz_UsbHost_7_[5]) ^ _zz_UsbHost_7_[6]) ^ _zz_UsbHost_7_[7]);
+    tx_fsm_crc16_nxt[15] = ((((((((((((((((_zz_UsbHost_19_ ^ _zz_UsbHost_20_) ^ tx_fsm_crc16[9]) ^ tx_fsm_crc16[10]) ^ tx_fsm_crc16[11]) ^ tx_fsm_crc16[12]) ^ tx_fsm_crc16[13]) ^ tx_fsm_crc16[14]) ^ tx_fsm_crc16[15]) ^ _zz_UsbHost_7_[0]) ^ _zz_UsbHost_7_[1]) ^ _zz_UsbHost_7_[2]) ^ _zz_UsbHost_7_[3]) ^ _zz_UsbHost_7_[4]) ^ _zz_UsbHost_7_[5]) ^ _zz_UsbHost_7_[6]) ^ _zz_UsbHost_7_[7]);
   end
 
   assign _zz_UsbHost_8_ = ((tx_fsm_cur_pid == `PidType_staticEncoding_SOF) ? tx_fsm_frame_cntr : {io_endpoint,io_periph_addr});
@@ -6907,7 +8264,7 @@ module UsbHost (
   assign rxtx_ram_access_rx_wr_data = (8'b00000000);
   assign io_xfer_result = top_fsm_xfer_result;
   always @ (posedge core_u_pano_core_io_ulpi_clk) begin
-    if(!core_u_pano_core_ulpi_reset_) begin
+    if(!_zz_UsbHost_12_) begin
       _zz_UsbHost_3_ <= 1'b0;
       tx_buf_cur_buf <= (1'b0);
       tx_buf_buf_primed <= (2'b00);
@@ -6985,7 +8342,7 @@ module UsbHost (
             end
             `PidType_staticEncoding_DATA0, `PidType_staticEncoding_DATA1, `PidType_staticEncoding_DATA2, `PidType_staticEncoding_MDATA : begin
               tx_fsm_tx_state <= `TxState_defaultEncoding_DataPid;
-              tx_fsm_rd_ptr <= (tx_fsm_setup ? _zz_UsbHost_17_ : tx_buf_cur_first_byte_ptr);
+              tx_fsm_rd_ptr <= (tx_fsm_setup ? _zz_UsbHost_18_ : tx_buf_cur_first_byte_ptr);
             end
             `PidType_staticEncoding_ACK, `PidType_staticEncoding_NAK, `PidType_staticEncoding_STALL, `PidType_staticEncoding_NYET : begin
               tx_fsm_tx_state <= `TxState_defaultEncoding_HandshakePid;
@@ -7013,7 +8370,7 @@ module UsbHost (
         `TxState_defaultEncoding_DataPid : begin
           if(io_ulpi_tx_data_ready)begin
             tx_fsm_crc16 <= (16'b1111111111111111);
-            if(_zz_UsbHost_16_)begin
+            if(_zz_UsbHost_17_)begin
               tx_fsm_tx_state <= `TxState_defaultEncoding_DataData;
               tx_fsm_data_cntr <= (tx_fsm_cur_setup ? (6'b001000) : tx_buf_cur_byte_count);
             end else begin
@@ -7065,12 +8422,12 @@ module UsbHost (
           end
         end
         `TopState_defaultEncoding_SetupSendToken : begin
-          if(_zz_UsbHost_14_)begin
+          if(_zz_UsbHost_15_)begin
             top_fsm_top_state <= `TopState_defaultEncoding_SetupSendData0;
           end
         end
         `TopState_defaultEncoding_SetupSendData0 : begin
-          if(_zz_UsbHost_15_)begin
+          if(_zz_UsbHost_16_)begin
             top_fsm_top_state <= `TopState_defaultEncoding_SetupWaitHandshake;
           end
         end
@@ -7097,20 +8454,20 @@ module Apb3Gpio (
       output [2:0] io_value,
       input   toplevel_main_clk,
       input   toplevel_main_reset_);
-  wire [2:0] bufferCC_12__io_dataOut;
+  wire [2:0] bufferCC_18__io_dataOut;
   wire  ctrl_askWrite;
   wire  ctrl_askRead;
   wire  ctrl_doWrite;
   wire  ctrl_doRead;
   reg [2:0] io_gpio_write__driver;
   reg [2:0] io_gpio_writeEnable__driver;
-  BufferCC_10_ bufferCC_12_ ( 
+  BufferCC_16_ bufferCC_18_ ( 
     .io_dataIn(io_gpio_read),
-    .io_dataOut(bufferCC_12__io_dataOut),
+    .io_dataOut(bufferCC_18__io_dataOut),
     .toplevel_main_clk(toplevel_main_clk),
     .toplevel_main_reset_(toplevel_main_reset_) 
   );
-  assign io_value = bufferCC_12__io_dataOut;
+  assign io_value = bufferCC_18__io_dataOut;
   assign io_apb_PREADY = 1'b1;
   always @ (*) begin
     io_apb_PRDATA = (32'b00000000000000000000000000000000);
@@ -7271,6 +8628,294 @@ module CCGpio (
 
 endmodule
 
+module Apb3SpiMasterCtrl (
+      input  [7:0] io_apb_PADDR,
+      input  [0:0] io_apb_PSEL,
+      input   io_apb_PENABLE,
+      output  io_apb_PREADY,
+      input   io_apb_PWRITE,
+      input  [31:0] io_apb_PWDATA,
+      output reg [31:0] io_apb_PRDATA,
+      output [0:0] io_spi_ss,
+      output  io_spi_sclk,
+      output  io_spi_mosi,
+      input   io_spi_miso,
+      output  io_interrupt,
+      input   toplevel_main_clk,
+      input   toplevel_main_reset_);
+  wire  _zz_Apb3SpiMasterCtrl_11_;
+  reg  _zz_Apb3SpiMasterCtrl_12_;
+  wire  _zz_Apb3SpiMasterCtrl_13_;
+  wire  spiCtrl_io_cmd_ready;
+  wire  spiCtrl_io_rsp_valid;
+  wire [7:0] spiCtrl_io_rsp_payload;
+  wire  spiCtrl_io_spi_sclk;
+  wire  spiCtrl_io_spi_mosi;
+  wire [0:0] spiCtrl_io_spi_ss;
+  wire  bridge_cmdLogic_streamUnbuffered_queueWithAvailability_io_push_ready;
+  wire  bridge_cmdLogic_streamUnbuffered_queueWithAvailability_io_pop_valid;
+  wire `SpiMasterCtrlCmdMode_defaultEncoding_type bridge_cmdLogic_streamUnbuffered_queueWithAvailability_io_pop_payload_mode;
+  wire [8:0] bridge_cmdLogic_streamUnbuffered_queueWithAvailability_io_pop_payload_args;
+  wire [5:0] bridge_cmdLogic_streamUnbuffered_queueWithAvailability_io_occupancy;
+  wire [5:0] bridge_cmdLogic_streamUnbuffered_queueWithAvailability_io_availability;
+  wire  spiCtrl_io_rsp_queueWithOccupancy_io_push_ready;
+  wire  spiCtrl_io_rsp_queueWithOccupancy_io_pop_valid;
+  wire [7:0] spiCtrl_io_rsp_queueWithOccupancy_io_pop_payload;
+  wire [5:0] spiCtrl_io_rsp_queueWithOccupancy_io_occupancy;
+  wire [5:0] spiCtrl_io_rsp_queueWithOccupancy_io_availability;
+  wire [0:0] _zz_Apb3SpiMasterCtrl_14_;
+  wire [0:0] _zz_Apb3SpiMasterCtrl_15_;
+  wire [0:0] _zz_Apb3SpiMasterCtrl_16_;
+  wire [0:0] _zz_Apb3SpiMasterCtrl_17_;
+  wire [0:0] _zz_Apb3SpiMasterCtrl_18_;
+  wire [0:0] _zz_Apb3SpiMasterCtrl_19_;
+  wire [0:0] _zz_Apb3SpiMasterCtrl_20_;
+  wire  busCtrl_askWrite;
+  wire  busCtrl_askRead;
+  wire  busCtrl_doWrite;
+  wire  busCtrl_doRead;
+  wire  bridge_cmdLogic_streamUnbuffered_valid;
+  wire  bridge_cmdLogic_streamUnbuffered_ready;
+  wire `SpiMasterCtrlCmdMode_defaultEncoding_type bridge_cmdLogic_streamUnbuffered_payload_mode;
+  reg [8:0] bridge_cmdLogic_streamUnbuffered_payload_args;
+  reg  _zz_Apb3SpiMasterCtrl_1_;
+  wire [7:0] bridge_cmdLogic_dataCmd_data;
+  wire  bridge_cmdLogic_dataCmd_read;
+  reg  bridge_interruptCtrl_cmdIntEnable;
+  reg  bridge_interruptCtrl_rspIntEnable;
+  wire  bridge_interruptCtrl_cmdInt;
+  wire  bridge_interruptCtrl_rspInt;
+  wire  bridge_interruptCtrl_interrupt;
+  reg  _zz_Apb3SpiMasterCtrl_2_;
+  reg  _zz_Apb3SpiMasterCtrl_3_;
+  reg [15:0] _zz_Apb3SpiMasterCtrl_4_;
+  reg [0:0] _zz_Apb3SpiMasterCtrl_5_;
+  reg [15:0] _zz_Apb3SpiMasterCtrl_6_;
+  reg [15:0] _zz_Apb3SpiMasterCtrl_7_;
+  reg [15:0] _zz_Apb3SpiMasterCtrl_8_;
+  wire `SpiMasterCtrlCmdMode_defaultEncoding_type _zz_Apb3SpiMasterCtrl_9_;
+  wire [1:0] _zz_Apb3SpiMasterCtrl_10_;
+  `ifndef SYNTHESIS
+  reg [31:0] bridge_cmdLogic_streamUnbuffered_payload_mode_string;
+  reg [31:0] _zz_Apb3SpiMasterCtrl_9__string;
+  `endif
+
+  assign _zz_Apb3SpiMasterCtrl_14_ = _zz_Apb3SpiMasterCtrl_15_[0];
+  assign _zz_Apb3SpiMasterCtrl_15_ = io_apb_PWDATA[24 : 24];
+  assign _zz_Apb3SpiMasterCtrl_16_ = io_apb_PWDATA[24 : 24];
+  assign _zz_Apb3SpiMasterCtrl_17_ = io_apb_PWDATA[0 : 0];
+  assign _zz_Apb3SpiMasterCtrl_18_ = io_apb_PWDATA[1 : 1];
+  assign _zz_Apb3SpiMasterCtrl_19_ = _zz_Apb3SpiMasterCtrl_10_[0 : 0];
+  assign _zz_Apb3SpiMasterCtrl_20_ = _zz_Apb3SpiMasterCtrl_10_[1 : 1];
+  SpiMasterCtrl spiCtrl ( 
+    .io_config_kind_cpol(_zz_Apb3SpiMasterCtrl_2_),
+    .io_config_kind_cpha(_zz_Apb3SpiMasterCtrl_3_),
+    .io_config_sclkToogle(_zz_Apb3SpiMasterCtrl_4_),
+    .io_config_ss_activeHigh(_zz_Apb3SpiMasterCtrl_5_),
+    .io_config_ss_setup(_zz_Apb3SpiMasterCtrl_6_),
+    .io_config_ss_hold(_zz_Apb3SpiMasterCtrl_7_),
+    .io_config_ss_disable(_zz_Apb3SpiMasterCtrl_8_),
+    .io_cmd_valid(bridge_cmdLogic_streamUnbuffered_queueWithAvailability_io_pop_valid),
+    .io_cmd_ready(spiCtrl_io_cmd_ready),
+    .io_cmd_payload_mode(bridge_cmdLogic_streamUnbuffered_queueWithAvailability_io_pop_payload_mode),
+    .io_cmd_payload_args(bridge_cmdLogic_streamUnbuffered_queueWithAvailability_io_pop_payload_args),
+    .io_rsp_valid(spiCtrl_io_rsp_valid),
+    .io_rsp_payload(spiCtrl_io_rsp_payload),
+    .io_spi_ss(spiCtrl_io_spi_ss),
+    .io_spi_sclk(spiCtrl_io_spi_sclk),
+    .io_spi_mosi(spiCtrl_io_spi_mosi),
+    .io_spi_miso(io_spi_miso),
+    .toplevel_main_clk(toplevel_main_clk),
+    .toplevel_main_reset_(toplevel_main_reset_) 
+  );
+  StreamFifo bridge_cmdLogic_streamUnbuffered_queueWithAvailability ( 
+    .io_push_valid(bridge_cmdLogic_streamUnbuffered_valid),
+    .io_push_ready(bridge_cmdLogic_streamUnbuffered_queueWithAvailability_io_push_ready),
+    .io_push_payload_mode(bridge_cmdLogic_streamUnbuffered_payload_mode),
+    .io_push_payload_args(bridge_cmdLogic_streamUnbuffered_payload_args),
+    .io_pop_valid(bridge_cmdLogic_streamUnbuffered_queueWithAvailability_io_pop_valid),
+    .io_pop_ready(spiCtrl_io_cmd_ready),
+    .io_pop_payload_mode(bridge_cmdLogic_streamUnbuffered_queueWithAvailability_io_pop_payload_mode),
+    .io_pop_payload_args(bridge_cmdLogic_streamUnbuffered_queueWithAvailability_io_pop_payload_args),
+    .io_flush(_zz_Apb3SpiMasterCtrl_11_),
+    .io_occupancy(bridge_cmdLogic_streamUnbuffered_queueWithAvailability_io_occupancy),
+    .io_availability(bridge_cmdLogic_streamUnbuffered_queueWithAvailability_io_availability),
+    .toplevel_main_clk(toplevel_main_clk),
+    .toplevel_main_reset_(toplevel_main_reset_) 
+  );
+  StreamFifo_1_ spiCtrl_io_rsp_queueWithOccupancy ( 
+    .io_push_valid(spiCtrl_io_rsp_valid),
+    .io_push_ready(spiCtrl_io_rsp_queueWithOccupancy_io_push_ready),
+    .io_push_payload(spiCtrl_io_rsp_payload),
+    .io_pop_valid(spiCtrl_io_rsp_queueWithOccupancy_io_pop_valid),
+    .io_pop_ready(_zz_Apb3SpiMasterCtrl_12_),
+    .io_pop_payload(spiCtrl_io_rsp_queueWithOccupancy_io_pop_payload),
+    .io_flush(_zz_Apb3SpiMasterCtrl_13_),
+    .io_occupancy(spiCtrl_io_rsp_queueWithOccupancy_io_occupancy),
+    .io_availability(spiCtrl_io_rsp_queueWithOccupancy_io_availability),
+    .toplevel_main_clk(toplevel_main_clk),
+    .toplevel_main_reset_(toplevel_main_reset_) 
+  );
+  `ifndef SYNTHESIS
+  always @(*) begin
+    case(bridge_cmdLogic_streamUnbuffered_payload_mode)
+      `SpiMasterCtrlCmdMode_defaultEncoding_DATA : bridge_cmdLogic_streamUnbuffered_payload_mode_string = "DATA";
+      `SpiMasterCtrlCmdMode_defaultEncoding_SS : bridge_cmdLogic_streamUnbuffered_payload_mode_string = "SS  ";
+      default : bridge_cmdLogic_streamUnbuffered_payload_mode_string = "????";
+    endcase
+  end
+  always @(*) begin
+    case(_zz_Apb3SpiMasterCtrl_9_)
+      `SpiMasterCtrlCmdMode_defaultEncoding_DATA : _zz_Apb3SpiMasterCtrl_9__string = "DATA";
+      `SpiMasterCtrlCmdMode_defaultEncoding_SS : _zz_Apb3SpiMasterCtrl_9__string = "SS  ";
+      default : _zz_Apb3SpiMasterCtrl_9__string = "????";
+    endcase
+  end
+  `endif
+
+  assign io_spi_ss = spiCtrl_io_spi_ss;
+  assign io_spi_sclk = spiCtrl_io_spi_sclk;
+  assign io_spi_mosi = spiCtrl_io_spi_mosi;
+  assign io_apb_PREADY = 1'b1;
+  always @ (*) begin
+    io_apb_PRDATA = (32'b00000000000000000000000000000000);
+    _zz_Apb3SpiMasterCtrl_1_ = 1'b0;
+    _zz_Apb3SpiMasterCtrl_12_ = 1'b0;
+    case(io_apb_PADDR)
+      8'b00000000 : begin
+        if(busCtrl_doWrite)begin
+          _zz_Apb3SpiMasterCtrl_1_ = 1'b1;
+        end
+        if(busCtrl_doRead)begin
+          _zz_Apb3SpiMasterCtrl_12_ = 1'b1;
+        end
+        io_apb_PRDATA[31 : 31] = spiCtrl_io_rsp_queueWithOccupancy_io_pop_valid;
+        io_apb_PRDATA[7 : 0] = spiCtrl_io_rsp_queueWithOccupancy_io_pop_payload;
+        io_apb_PRDATA[21 : 16] = spiCtrl_io_rsp_queueWithOccupancy_io_occupancy;
+      end
+      8'b00000100 : begin
+        io_apb_PRDATA[21 : 16] = bridge_cmdLogic_streamUnbuffered_queueWithAvailability_io_availability;
+        io_apb_PRDATA[0 : 0] = bridge_interruptCtrl_cmdIntEnable;
+        io_apb_PRDATA[1 : 1] = bridge_interruptCtrl_rspIntEnable;
+        io_apb_PRDATA[8 : 8] = bridge_interruptCtrl_cmdInt;
+        io_apb_PRDATA[9 : 9] = bridge_interruptCtrl_rspInt;
+      end
+      8'b00001000 : begin
+      end
+      8'b00001100 : begin
+      end
+      8'b00010000 : begin
+      end
+      8'b00010100 : begin
+      end
+      8'b00011000 : begin
+      end
+      default : begin
+      end
+    endcase
+  end
+
+  assign busCtrl_askWrite = ((io_apb_PSEL[0] && io_apb_PENABLE) && io_apb_PWRITE);
+  assign busCtrl_askRead = ((io_apb_PSEL[0] && io_apb_PENABLE) && (! io_apb_PWRITE));
+  assign busCtrl_doWrite = (((io_apb_PSEL[0] && io_apb_PENABLE) && io_apb_PREADY) && io_apb_PWRITE);
+  assign busCtrl_doRead = (((io_apb_PSEL[0] && io_apb_PENABLE) && io_apb_PREADY) && (! io_apb_PWRITE));
+  assign bridge_cmdLogic_streamUnbuffered_valid = _zz_Apb3SpiMasterCtrl_1_;
+  always @ (*) begin
+    case(bridge_cmdLogic_streamUnbuffered_payload_mode)
+      `SpiMasterCtrlCmdMode_defaultEncoding_DATA : begin
+        bridge_cmdLogic_streamUnbuffered_payload_args = {bridge_cmdLogic_dataCmd_read,bridge_cmdLogic_dataCmd_data};
+      end
+      default : begin
+        bridge_cmdLogic_streamUnbuffered_payload_args = {8'd0, _zz_Apb3SpiMasterCtrl_14_};
+      end
+    endcase
+  end
+
+  assign bridge_cmdLogic_streamUnbuffered_ready = bridge_cmdLogic_streamUnbuffered_queueWithAvailability_io_push_ready;
+  assign bridge_interruptCtrl_cmdInt = (bridge_interruptCtrl_cmdIntEnable && (! bridge_cmdLogic_streamUnbuffered_queueWithAvailability_io_pop_valid));
+  assign bridge_interruptCtrl_rspInt = (bridge_interruptCtrl_rspIntEnable && spiCtrl_io_rsp_queueWithOccupancy_io_pop_valid);
+  assign bridge_interruptCtrl_interrupt = (bridge_interruptCtrl_rspInt || bridge_interruptCtrl_cmdInt);
+  assign io_interrupt = bridge_interruptCtrl_interrupt;
+  assign bridge_cmdLogic_dataCmd_data = io_apb_PWDATA[7 : 0];
+  assign bridge_cmdLogic_dataCmd_read = _zz_Apb3SpiMasterCtrl_16_[0];
+  assign _zz_Apb3SpiMasterCtrl_9_ = io_apb_PWDATA[28 : 28];
+  assign bridge_cmdLogic_streamUnbuffered_payload_mode = _zz_Apb3SpiMasterCtrl_9_;
+  assign _zz_Apb3SpiMasterCtrl_10_ = io_apb_PWDATA[1 : 0];
+  assign _zz_Apb3SpiMasterCtrl_11_ = 1'b0;
+  assign _zz_Apb3SpiMasterCtrl_13_ = 1'b0;
+  always @ (posedge toplevel_main_clk) begin
+    if(!toplevel_main_reset_) begin
+      bridge_interruptCtrl_cmdIntEnable <= 1'b0;
+      bridge_interruptCtrl_rspIntEnable <= 1'b0;
+      _zz_Apb3SpiMasterCtrl_5_ <= (1'b0);
+    end else begin
+      case(io_apb_PADDR)
+        8'b00000000 : begin
+        end
+        8'b00000100 : begin
+          if(busCtrl_doWrite)begin
+            bridge_interruptCtrl_cmdIntEnable <= _zz_Apb3SpiMasterCtrl_17_[0];
+            bridge_interruptCtrl_rspIntEnable <= _zz_Apb3SpiMasterCtrl_18_[0];
+          end
+        end
+        8'b00001000 : begin
+          if(busCtrl_doWrite)begin
+            _zz_Apb3SpiMasterCtrl_5_ <= io_apb_PWDATA[4 : 4];
+          end
+        end
+        8'b00001100 : begin
+        end
+        8'b00010000 : begin
+        end
+        8'b00010100 : begin
+        end
+        8'b00011000 : begin
+        end
+        default : begin
+        end
+      endcase
+    end
+  end
+
+  always @ (posedge toplevel_main_clk) begin
+    case(io_apb_PADDR)
+      8'b00000000 : begin
+      end
+      8'b00000100 : begin
+      end
+      8'b00001000 : begin
+        if(busCtrl_doWrite)begin
+          _zz_Apb3SpiMasterCtrl_2_ <= _zz_Apb3SpiMasterCtrl_19_[0];
+          _zz_Apb3SpiMasterCtrl_3_ <= _zz_Apb3SpiMasterCtrl_20_[0];
+        end
+      end
+      8'b00001100 : begin
+        if(busCtrl_doWrite)begin
+          _zz_Apb3SpiMasterCtrl_4_ <= io_apb_PWDATA[15 : 0];
+        end
+      end
+      8'b00010000 : begin
+        if(busCtrl_doWrite)begin
+          _zz_Apb3SpiMasterCtrl_6_ <= io_apb_PWDATA[15 : 0];
+        end
+      end
+      8'b00010100 : begin
+        if(busCtrl_doWrite)begin
+          _zz_Apb3SpiMasterCtrl_7_ <= io_apb_PWDATA[15 : 0];
+        end
+      end
+      8'b00011000 : begin
+        if(busCtrl_doWrite)begin
+          _zz_Apb3SpiMasterCtrl_8_ <= io_apb_PWDATA[15 : 0];
+        end
+      end
+      default : begin
+      end
+    endcase
+  end
+
+endmodule
+
 module PanoCore (
       output  io_led_red,
       output  io_led_green,
@@ -7312,39 +8957,46 @@ module PanoCore (
       output [7:0] io_vo_r,
       output [7:0] io_vo_g,
       output [7:0] io_vo_b,
+      output [0:0] io_spi_ss,
+      output  io_spi_sclk,
+      output  io_spi_mosi,
+      input   io_spi_miso,
       input   toplevel_main_clk,
       input   toplevel_main_reset_,
       input   toplevel_u_vo_clk_gen_vo_clk,
       input   toplevel_u_vo_clk_gen_vo_reset_);
-  wire  _zz_PanoCore_10_;
-  reg [31:0] _zz_PanoCore_11_;
-  wire  _zz_PanoCore_12_;
-  reg  _zz_PanoCore_13_;
-  reg [31:0] _zz_PanoCore_14_;
-  wire  _zz_PanoCore_15_;
-  wire  _zz_PanoCore_16_;
-  reg [31:0] _zz_PanoCore_17_;
-  wire  _zz_PanoCore_18_;
-  reg  _zz_PanoCore_19_;
-  reg  _zz_PanoCore_20_;
-  reg [12:0] _zz_PanoCore_21_;
-  wire [7:0] _zz_PanoCore_22_;
-  wire  _zz_PanoCore_23_;
-  wire  _zz_PanoCore_24_;
-  wire  _zz_PanoCore_25_;
-  wire  _zz_PanoCore_26_;
-  reg  _zz_PanoCore_27_;
-  reg  _zz_PanoCore_28_;
-  reg [8:0] _zz_PanoCore_29_;
-  wire [7:0] _zz_PanoCore_30_;
-  wire [0:0] _zz_PanoCore_31_;
-  wire  _zz_PanoCore_32_;
-  wire  _zz_PanoCore_33_;
-  wire  _zz_PanoCore_34_;
-  wire  _zz_PanoCore_35_;
-  wire  _zz_PanoCore_36_;
-  reg [2:0] _zz_PanoCore_37_;
-  reg [1:0] _zz_PanoCore_38_;
+  wire  _zz_PanoCore_41_;
+  reg [31:0] _zz_PanoCore_42_;
+  wire  _zz_PanoCore_43_;
+  reg  _zz_PanoCore_44_;
+  reg [31:0] _zz_PanoCore_45_;
+  wire  _zz_PanoCore_46_;
+  wire  _zz_PanoCore_47_;
+  reg [31:0] _zz_PanoCore_48_;
+  wire  _zz_PanoCore_49_;
+  reg  _zz_PanoCore_50_;
+  reg  _zz_PanoCore_51_;
+  reg [12:0] _zz_PanoCore_52_;
+  wire [7:0] _zz_PanoCore_53_;
+  wire  _zz_PanoCore_54_;
+  wire  _zz_PanoCore_55_;
+  wire  _zz_PanoCore_56_;
+  wire  _zz_PanoCore_57_;
+  wire  _zz_PanoCore_58_;
+  wire  _zz_PanoCore_59_;
+  reg  _zz_PanoCore_60_;
+  reg  _zz_PanoCore_61_;
+  reg [8:0] _zz_PanoCore_62_;
+  wire [7:0] _zz_PanoCore_63_;
+  wire [0:0] _zz_PanoCore_64_;
+  wire [5:0] _zz_PanoCore_65_;
+  wire  _zz_PanoCore_66_;
+  wire  _zz_PanoCore_67_;
+  wire  _zz_PanoCore_68_;
+  wire  _zz_PanoCore_69_;
+  wire  _zz_PanoCore_70_;
+  reg [2:0] _zz_PanoCore_71_;
+  reg [1:0] _zz_PanoCore_72_;
   wire [3:0] u_cpu_top_io_led_ctrl_apb_PADDR;
   wire [0:0] u_cpu_top_io_led_ctrl_apb_PSEL;
   wire  u_cpu_top_io_led_ctrl_apb_PENABLE;
@@ -7380,24 +9032,29 @@ module PanoCore (
   wire  u_cpu_top_io_usb_host_apb_PENABLE;
   wire  u_cpu_top_io_usb_host_apb_PWRITE;
   wire [31:0] u_cpu_top_io_usb_host_apb_PWDATA;
+  wire [7:0] u_cpu_top_io_spi_flash_ctrl_apb_PADDR;
+  wire [0:0] u_cpu_top_io_spi_flash_ctrl_apb_PSEL;
+  wire  u_cpu_top_io_spi_flash_ctrl_apb_PENABLE;
+  wire  u_cpu_top_io_spi_flash_ctrl_apb_PWRITE;
+  wire [31:0] u_cpu_top_io_spi_flash_ctrl_apb_PWDATA;
   wire  vo_area_u_vi_gen_io_pixel_out_vsync;
   wire  vo_area_u_vi_gen_io_pixel_out_req;
-  wire  vo_area_u_vi_gen_io_pixel_out_eol;
-  wire  vo_area_u_vi_gen_io_pixel_out_eof;
+  wire  vo_area_u_vi_gen_io_pixel_out_last_col;
+  wire  vo_area_u_vi_gen_io_pixel_out_last_line;
   wire [7:0] vo_area_u_vi_gen_io_pixel_out_pixel_r;
   wire [7:0] vo_area_u_vi_gen_io_pixel_out_pixel_g;
   wire [7:0] vo_area_u_vi_gen_io_pixel_out_pixel_b;
   wire  vo_area_u_test_patt_io_pixel_out_vsync;
   wire  vo_area_u_test_patt_io_pixel_out_req;
-  wire  vo_area_u_test_patt_io_pixel_out_eol;
-  wire  vo_area_u_test_patt_io_pixel_out_eof;
+  wire  vo_area_u_test_patt_io_pixel_out_last_col;
+  wire  vo_area_u_test_patt_io_pixel_out_last_line;
   wire [7:0] vo_area_u_test_patt_io_pixel_out_pixel_r;
   wire [7:0] vo_area_u_test_patt_io_pixel_out_pixel_g;
   wire [7:0] vo_area_u_test_patt_io_pixel_out_pixel_b;
   wire  vo_area_u_txt_gen_io_pixel_out_vsync;
   wire  vo_area_u_txt_gen_io_pixel_out_req;
-  wire  vo_area_u_txt_gen_io_pixel_out_eol;
-  wire  vo_area_u_txt_gen_io_pixel_out_eof;
+  wire  vo_area_u_txt_gen_io_pixel_out_last_col;
+  wire  vo_area_u_txt_gen_io_pixel_out_last_line;
   wire [7:0] vo_area_u_txt_gen_io_pixel_out_pixel_r;
   wire [7:0] vo_area_u_txt_gen_io_pixel_out_pixel_g;
   wire [7:0] vo_area_u_txt_gen_io_pixel_out_pixel_b;
@@ -7409,118 +9066,108 @@ module PanoCore (
   wire [7:0] vo_area_u_vo_io_vga_out_r;
   wire [7:0] vo_area_u_vo_io_vga_out_g;
   wire [7:0] vo_area_u_vo_io_vga_out_b;
-  wire  u_gmii_ctrl_io_apb_PREADY;
-  wire [31:0] u_gmii_ctrl_io_apb_PRDATA;
-  wire  u_gmii_ctrl_io_apb_PSLVERROR;
-  wire  u_gmii_ctrl_io_gmii_tx_en;
-  wire  u_gmii_ctrl_io_gmii_tx_er;
-  wire [7:0] u_gmii_ctrl_io_gmii_tx_d;
-  wire  u_gmii_ctrl_io_gmii_mdio_mdc;
-  wire  u_gmii_ctrl_io_gmii_mdio_mdio_write;
-  wire  u_gmii_ctrl_io_gmii_mdio_mdio_writeEnable;
-  wire [7:0] u_ulpi_ctrl_io_ulpi_data_write;
-  wire [7:0] u_ulpi_ctrl_io_ulpi_data_writeEnable;
-  wire  u_ulpi_ctrl_io_ulpi_stp;
-  wire  u_ulpi_ctrl_io_ulpi_reset;
-  wire  u_ulpi_ctrl_io_tx_data_ready;
-  wire  u_ulpi_ctrl_io_rx_data_valid;
-  wire [8:0] u_ulpi_ctrl_io_rx_data_payload;
-  wire  u_ulpi_ctrl_io_rx_cmd_changed;
-  wire [7:0] u_ulpi_ctrl_io_rx_cmd;
-  wire [7:0] u_ulpi_ctrl_io_reg_rd_data;
-  wire  u_ulpi_ctrl_io_reg_done;
-  wire  u_ulpi_ctrl_ulpi_reset__1_;
-  wire  ulpi_ctrl_apb_regs_u_reg_cmd_fifo_io_push_ready;
-  wire  ulpi_ctrl_apb_regs_u_reg_cmd_fifo_io_pop_valid;
-  wire  ulpi_ctrl_apb_regs_u_reg_cmd_fifo_io_pop_payload;
-  wire [1:0] ulpi_ctrl_apb_regs_u_reg_cmd_fifo_io_pushOccupancy;
-  wire [1:0] ulpi_ctrl_apb_regs_u_reg_cmd_fifo_io_popOccupancy;
-  wire  ulpi_ctrl_apb_regs_u_sync_pulse_rx_cmd_changed_io_pulseOut;
-  wire  ulpi_ctrl_apb_regs_u_tx_data_fifo_io_push_ready;
-  wire  ulpi_ctrl_apb_regs_u_tx_data_fifo_io_pop_valid;
-  wire [7:0] ulpi_ctrl_apb_regs_u_tx_data_fifo_io_pop_payload;
-  wire [10:0] ulpi_ctrl_apb_regs_u_tx_data_fifo_io_pushOccupancy;
-  wire [10:0] ulpi_ctrl_apb_regs_u_tx_data_fifo_io_popOccupancy;
-  wire  ulpi_ctrl_apb_regs_u_sync_pulse_tx_start_io_pulseOut;
-  wire  bufferCC_12__io_dataOut;
-  wire  u_apb2usb_host_io_src_PREADY;
-  wire [31:0] u_apb2usb_host_io_src_PRDATA;
-  wire  u_apb2usb_host_io_src_PSLVERROR;
-  wire [6:0] u_apb2usb_host_io_dest_PADDR;
-  wire [0:0] u_apb2usb_host_io_dest_PSEL;
-  wire  u_apb2usb_host_io_dest_PENABLE;
-  wire  u_apb2usb_host_io_dest_PWRITE;
-  wire [31:0] u_apb2usb_host_io_dest_PWDATA;
-  wire  usb_host_domain_u_usb_host_io_cpu_fifo_bus_cmd_ready;
-  wire  usb_host_domain_u_usb_host_io_cpu_fifo_bus_rsp_valid;
-  wire [7:0] usb_host_domain_u_usb_host_io_cpu_fifo_bus_rsp_payload_data;
-  wire  usb_host_domain_u_usb_host_io_send_buf_avail;
-  wire [0:0] usb_host_domain_u_usb_host_io_send_buf_avail_nr;
-  wire `HostXferResult_defaultEncoding_type usb_host_domain_u_usb_host_io_xfer_result;
-  wire  usb_host_domain_u_usb_host_io_cur_send_data_toggle;
-  wire  usb_host_domain_u_usb_host_io_cur_rcv_data_toggle;
-  wire  usb_host_domain_u_usb_host_io_ulpi_rx_cmd_changed;
-  wire [7:0] usb_host_domain_u_usb_host_io_ulpi_rx_cmd;
-  wire  usb_host_domain_u_usb_host_io_ulpi_tx_data_valid;
-  wire [7:0] usb_host_domain_u_usb_host_io_ulpi_tx_data_payload;
+  wire  gmiiCtrl_1__io_apb_PREADY;
+  wire [31:0] gmiiCtrl_1__io_apb_PRDATA;
+  wire  gmiiCtrl_1__io_apb_PSLVERROR;
+  wire  gmiiCtrl_1__io_gmii_tx_en;
+  wire  gmiiCtrl_1__io_gmii_tx_er;
+  wire [7:0] gmiiCtrl_1__io_gmii_tx_d;
+  wire  gmiiCtrl_1__io_gmii_mdio_mdc;
+  wire  gmiiCtrl_1__io_gmii_mdio_mdio_write;
+  wire  gmiiCtrl_1__io_gmii_mdio_mdio_writeEnable;
+  wire [7:0] ulpiCtrl_1__io_ulpi_data_write;
+  wire [7:0] ulpiCtrl_1__io_ulpi_data_writeEnable;
+  wire  ulpiCtrl_1__io_ulpi_stp;
+  wire  ulpiCtrl_1__io_ulpi_reset;
+  wire  ulpiCtrl_1__io_tx_data_ready;
+  wire  ulpiCtrl_1__io_rx_data_valid;
+  wire [8:0] ulpiCtrl_1__io_rx_data_payload;
+  wire  ulpiCtrl_1__io_rx_cmd_changed;
+  wire [7:0] ulpiCtrl_1__io_rx_cmd;
+  wire [7:0] ulpiCtrl_1__io_reg_rd_data;
+  wire  ulpiCtrl_1__io_reg_done;
+  wire  ulpiCtrl_1__ulpi_reset__1_;
+  wire  streamFifoCC_5__io_push_ready;
+  wire  streamFifoCC_5__io_pop_valid;
+  wire  streamFifoCC_5__io_pop_payload;
+  wire [1:0] streamFifoCC_5__io_pushOccupancy;
+  wire [1:0] streamFifoCC_5__io_popOccupancy;
+  wire  pulseCCByToggle_4__io_pulseOut;
+  wire  streamFifoCC_6__io_push_ready;
+  wire  streamFifoCC_6__io_pop_valid;
+  wire [7:0] streamFifoCC_6__io_pop_payload;
+  wire [10:0] streamFifoCC_6__io_pushOccupancy;
+  wire [10:0] streamFifoCC_6__io_popOccupancy;
+  wire  pulseCCByToggle_5__io_pulseOut;
+  wire  bufferCC_18__io_dataOut;
+  wire  apb3CC_1__io_src_PREADY;
+  wire [31:0] apb3CC_1__io_src_PRDATA;
+  wire  apb3CC_1__io_src_PSLVERROR;
+  wire [6:0] apb3CC_1__io_dest_PADDR;
+  wire [0:0] apb3CC_1__io_dest_PSEL;
+  wire  apb3CC_1__io_dest_PENABLE;
+  wire  apb3CC_1__io_dest_PWRITE;
+  wire [31:0] apb3CC_1__io_dest_PWDATA;
+  wire  usbHost_1__io_cpu_fifo_bus_cmd_ready;
+  wire  usbHost_1__io_cpu_fifo_bus_rsp_valid;
+  wire [7:0] usbHost_1__io_cpu_fifo_bus_rsp_payload_data;
+  wire  usbHost_1__io_send_buf_avail;
+  wire [0:0] usbHost_1__io_send_buf_avail_nr;
+  wire `HostXferResult_defaultEncoding_type usbHost_1__io_xfer_result;
+  wire  usbHost_1__io_cur_send_data_toggle;
+  wire  usbHost_1__io_cur_rcv_data_toggle;
+  wire  usbHost_1__io_ulpi_rx_cmd_changed;
+  wire [7:0] usbHost_1__io_ulpi_rx_cmd;
+  wire  usbHost_1__io_ulpi_tx_data_valid;
+  wire [7:0] usbHost_1__io_ulpi_tx_data_payload;
   wire  u_led_ctrl_io_apb_PREADY;
   wire [31:0] u_led_ctrl_io_apb_PRDATA;
   wire  u_led_ctrl_io_apb_PSLVERROR;
   wire [2:0] u_led_ctrl_io_gpio_write;
   wire [2:0] u_led_ctrl_io_gpio_writeEnable;
   wire [2:0] u_led_ctrl_io_value;
-  wire  u_dvi_ctrl_io_apb_PREADY;
-  wire [31:0] u_dvi_ctrl_io_apb_PRDATA;
-  wire  u_dvi_ctrl_io_apb_PSLVERROR;
-  wire [1:0] u_dvi_ctrl_io_gpio_write;
-  wire [1:0] u_dvi_ctrl_io_gpio_writeEnable;
-  wire [11:0] _zz_PanoCore_39_;
-  wire [11:0] _zz_PanoCore_40_;
-  wire [11:0] _zz_PanoCore_41_;
-  wire [11:0] _zz_PanoCore_42_;
-  wire [11:0] _zz_PanoCore_43_;
-  wire [11:0] _zz_PanoCore_44_;
-  wire [11:0] _zz_PanoCore_45_;
-  wire [10:0] _zz_PanoCore_46_;
-  wire [10:0] _zz_PanoCore_47_;
-  wire [10:0] _zz_PanoCore_48_;
-  wire [10:0] _zz_PanoCore_49_;
-  wire [10:0] _zz_PanoCore_50_;
-  wire [10:0] _zz_PanoCore_51_;
-  wire [10:0] _zz_PanoCore_52_;
-  wire [15:0] _zz_PanoCore_53_;
-  wire [14:0] _zz_PanoCore_54_;
-  wire [15:0] _zz_PanoCore_55_;
-  wire [14:0] _zz_PanoCore_56_;
-  wire [15:0] _zz_PanoCore_57_;
-  wire [0:0] _zz_PanoCore_58_;
-  wire [0:0] _zz_PanoCore_59_;
+  wire  cCGpio_1__io_apb_PREADY;
+  wire [31:0] cCGpio_1__io_apb_PRDATA;
+  wire  cCGpio_1__io_apb_PSLVERROR;
+  wire [1:0] cCGpio_1__io_gpio_write;
+  wire [1:0] cCGpio_1__io_gpio_writeEnable;
+  wire  u_spi_flash_io_apb_PREADY;
+  wire [31:0] u_spi_flash_io_apb_PRDATA;
+  wire  u_spi_flash_io_spi_sclk;
+  wire  u_spi_flash_io_spi_mosi;
+  wire [0:0] u_spi_flash_io_spi_ss;
+  wire  u_spi_flash_io_interrupt;
+  wire [15:0] _zz_PanoCore_73_;
+  wire [14:0] _zz_PanoCore_74_;
+  wire [15:0] _zz_PanoCore_75_;
+  wire [14:0] _zz_PanoCore_76_;
+  wire [0:0] _zz_PanoCore_77_;
+  wire [15:0] _zz_PanoCore_78_;
+  wire [0:0] _zz_PanoCore_79_;
   reg [23:0] leds_led_cntr;
   wire [23:0] _zz_PanoCore_1_;
-  reg  ulpi_reset_ = 1'b0;
+  reg  _zz_PanoCore_2_ = 1'b0;
   wire [11:0] vo_area_timings_h_active;
   wire [8:0] vo_area_timings_h_fp;
   wire [8:0] vo_area_timings_h_sync;
   wire [8:0] vo_area_timings_h_bp;
   wire  vo_area_timings_h_sync_positive;
-  wire [11:0] vo_area_timings_h_total_m1;
   wire [10:0] vo_area_timings_v_active;
   wire [8:0] vo_area_timings_v_fp;
   wire [8:0] vo_area_timings_v_sync;
   wire [8:0] vo_area_timings_v_bp;
   wire  vo_area_timings_v_sync_positive;
-  wire [11:0] vo_area_timings_v_total_m1;
   wire  vo_area_vi_gen_pixel_out_vsync;
   wire  vo_area_vi_gen_pixel_out_req;
-  wire  vo_area_vi_gen_pixel_out_eol;
-  wire  vo_area_vi_gen_pixel_out_eof;
+  wire  vo_area_vi_gen_pixel_out_last_col;
+  wire  vo_area_vi_gen_pixel_out_last_line;
   wire [7:0] vo_area_vi_gen_pixel_out_pixel_r;
   wire [7:0] vo_area_vi_gen_pixel_out_pixel_g;
   wire [7:0] vo_area_vi_gen_pixel_out_pixel_b;
   wire  vo_area_test_patt_pixel_out_vsync;
   wire  vo_area_test_patt_pixel_out_req;
-  wire  vo_area_test_patt_pixel_out_eol;
-  wire  vo_area_test_patt_pixel_out_eof;
+  wire  vo_area_test_patt_pixel_out_last_col;
+  wire  vo_area_test_patt_pixel_out_last_line;
   wire [7:0] vo_area_test_patt_pixel_out_pixel_r;
   wire [7:0] vo_area_test_patt_pixel_out_pixel_g;
   wire [7:0] vo_area_test_patt_pixel_out_pixel_b;
@@ -7534,8 +9181,8 @@ module PanoCore (
   reg [7:0] vo_area_test_patt_ctrl_apb_regs_const_color_b;
   wire  vo_area_txt_gen_pixel_out_vsync;
   wire  vo_area_txt_gen_pixel_out_req;
-  wire  vo_area_txt_gen_pixel_out_eol;
-  wire  vo_area_txt_gen_pixel_out_eof;
+  wire  vo_area_txt_gen_pixel_out_last_col;
+  wire  vo_area_txt_gen_pixel_out_last_line;
   wire [7:0] vo_area_txt_gen_pixel_out_pixel_r;
   wire [7:0] vo_area_txt_gen_pixel_out_pixel_g;
   wire [7:0] vo_area_txt_gen_pixel_out_pixel_b;
@@ -7545,94 +9192,58 @@ module PanoCore (
   wire  vo_area_txt_gen_ctrl_busCtrl_doRead;
   wire [12:0] vo_area_txt_gen_ctrl_apb_regs_txt_buf_rd_addr;
   wire [12:0] vo_area_txt_gen_ctrl_apb_regs_txt_buf_wr_addr;
-  reg  _zz_PanoCore_2_;
-  reg [0:0] _zz_PanoCore_3_;
+  reg  _zz_PanoCore_3_;
   reg [0:0] _zz_PanoCore_4_;
-  wire  _zz_PanoCore_5_;
-  wire  ulpi_ctrl_busCtrl_askWrite;
-  wire  ulpi_ctrl_busCtrl_askRead;
-  wire  ulpi_ctrl_busCtrl_doWrite;
-  wire  ulpi_ctrl_busCtrl_doRead;
-  reg [5:0] ulpi_ctrl_apb_regs_reg_addr;
-  reg [7:0] ulpi_ctrl_apb_regs_reg_wr_data;
-  reg  ulpi_ctrl_apb_regs_reg_wr;
-  wire  ulpi_ctrl_apb_regs_reg_cmd_fifo_wr_valid;
-  wire  ulpi_ctrl_apb_regs_reg_cmd_fifo_wr_ready;
-  wire  ulpi_ctrl_apb_regs_reg_cmd_fifo_wr_payload;
-  wire  ulpi_ctrl_apb_regs_reg_cmd_fifo_rd_valid;
-  wire  ulpi_ctrl_apb_regs_reg_cmd_fifo_rd_ready;
-  wire  ulpi_ctrl_apb_regs_reg_cmd_fifo_rd_payload;
-  reg  _zz_PanoCore_6_;
-  reg  _zz_PanoCore_6__regNext;
-  wire [8:0] ulpi_ctrl_apb_regs_status;
-  wire  ulpi_ctrl_apb_regs_reg_pending;
-  wire  ulpi_ctrl_apb_regs_rx_cmd_changed_sync;
-  reg  ulpi_ctrl_apb_regs_rx_cmd_changed_sticky;
-  reg  _zz_PanoCore_7_;
-  reg  ulpi_ctrl_apb_regs_tx_data_reg_valid;
-  wire [7:0] ulpi_ctrl_apb_regs_tx_data_reg_payload;
-  reg  ulpi_ctrl_apb_regs_tx_start_reg_valid;
-  wire  ulpi_ctrl_apb_regs_tx_start_reg_payload;
-  wire  ulpi_ctrl_apb_regs_tx_data_fifo_empty;
-  wire [6:0] usb_host_apb_PADDR;
-  wire [0:0] usb_host_apb_PSEL;
-  wire  usb_host_apb_PENABLE;
-  wire  usb_host_apb_PREADY;
-  wire  usb_host_apb_PWRITE;
-  wire [31:0] usb_host_apb_PWDATA;
-  reg [31:0] usb_host_apb_PRDATA;
-  wire  usb_host_apb_PSLVERROR;
-  wire  usb_host_domain_busCtrl_askWrite;
-  wire  usb_host_domain_busCtrl_askRead;
-  wire  usb_host_domain_busCtrl_doWrite;
-  wire  usb_host_domain_busCtrl_doRead;
-  reg [6:0] usb_host_domain_apb_regs_periph_addr_periph_addr;
-  reg [5:0] usb_host_domain_apb_regs_send_fifo_wr_ptr;
-  wire [8:0] usb_host_domain_apb_regs_send_fifo_wr_addr;
-  reg  usb_host_domain_apb_regs_send_byte_count_send_byte_count_valid;
-  wire [5:0] usb_host_domain_apb_regs_send_byte_count_send_byte_count_payload;
-  reg [2:0] usb_host_domain_apb_regs_setup_fifo_wr_ptr;
-  reg [8:0] usb_host_domain_apb_regs_setup_fifo_wr_addr;
-  reg  usb_host_domain_apb_regs_hirq_sndbavirq;
-  reg  usb_host_domain_apb_regs_hctl_rcv_tog_valid;
-  wire [1:0] usb_host_domain_apb_regs_hctl_rcv_tog_payload;
-  reg  usb_host_domain_apb_regs_hctl_send_tog_valid;
-  wire [1:0] usb_host_domain_apb_regs_hctl_send_tog_payload;
-  reg [3:0] usb_host_domain_apb_regs_hxfr_endpoint;
-  reg  usb_host_domain_apb_regs_hxfr_xfer_type_valid;
-  wire `HostXferType_staticEncoding_type usb_host_domain_apb_regs_hxfr_xfer_type_payload;
-  reg `HostXferResult_defaultEncoding_type usb_host_domain_apb_regs_hrsl_xfer_result;
-  reg  usb_host_domain_apb_regs_hrsl_send_data_toggle;
-  reg  usb_host_domain_apb_regs_hrsl_rcv_data_toggle;
-  wire [23:0] _zz_PanoCore_8_;
-  wire `HostXferType_staticEncoding_type _zz_PanoCore_9_;
+  reg [0:0] _zz_PanoCore_5_;
+  wire  _zz_PanoCore_6_;
+  wire  _zz_PanoCore_7_;
+  wire  _zz_PanoCore_8_;
+  reg [5:0] _zz_PanoCore_9_;
+  reg [7:0] _zz_PanoCore_10_;
+  reg  _zz_PanoCore_11_;
+  wire  _zz_PanoCore_12_;
+  wire  _zz_PanoCore_13_;
+  reg  _zz_PanoCore_14_;
+  reg  _zz_PanoCore_14__regNext;
+  reg  _zz_PanoCore_15_;
+  reg  _zz_PanoCore_16_;
+  reg  _zz_PanoCore_17_;
+  reg  _zz_PanoCore_18_;
+  wire [31:0] _zz_PanoCore_19_;
+  reg [31:0] _zz_PanoCore_20_;
+  wire  _zz_PanoCore_21_;
+  reg [6:0] _zz_PanoCore_22_;
+  reg [5:0] _zz_PanoCore_23_;
+  reg  _zz_PanoCore_24_;
+  reg [2:0] _zz_PanoCore_25_;
+  reg [8:0] _zz_PanoCore_26_;
+  reg  _zz_PanoCore_27_;
+  reg  _zz_PanoCore_28_;
+  wire [1:0] _zz_PanoCore_29_;
+  reg  _zz_PanoCore_30_;
+  wire [1:0] _zz_PanoCore_31_;
+  reg [3:0] _zz_PanoCore_32_;
+  reg  _zz_PanoCore_33_;
+  wire `HostXferType_staticEncoding_type _zz_PanoCore_34_;
+  reg `HostXferResult_defaultEncoding_type _zz_PanoCore_35_;
+  reg  _zz_PanoCore_36_;
+  reg  _zz_PanoCore_37_;
+  wire [23:0] _zz_PanoCore_38_;
+  wire [7:0] _zz_PanoCore_39_;
+  wire `HostXferType_staticEncoding_type _zz_PanoCore_40_;
   `ifndef SYNTHESIS
-  reg [63:0] usb_host_domain_apb_regs_hxfr_xfer_type_payload_string;
-  reg [63:0] usb_host_domain_apb_regs_hrsl_xfer_result_string;
-  reg [63:0] _zz_PanoCore_9__string;
+  reg [63:0] _zz_PanoCore_34__string;
+  reg [63:0] _zz_PanoCore_35__string;
+  reg [63:0] _zz_PanoCore_40__string;
   `endif
 
-  assign _zz_PanoCore_39_ = (_zz_PanoCore_40_ - (12'b000000000001));
-  assign _zz_PanoCore_40_ = (_zz_PanoCore_41_ + _zz_PanoCore_45_);
-  assign _zz_PanoCore_41_ = (_zz_PanoCore_42_ + _zz_PanoCore_44_);
-  assign _zz_PanoCore_42_ = (vo_area_timings_h_active + _zz_PanoCore_43_);
-  assign _zz_PanoCore_43_ = {3'd0, vo_area_timings_h_fp};
-  assign _zz_PanoCore_44_ = {3'd0, vo_area_timings_h_sync};
-  assign _zz_PanoCore_45_ = {3'd0, vo_area_timings_h_bp};
-  assign _zz_PanoCore_46_ = (_zz_PanoCore_47_ - (11'b00000000001));
-  assign _zz_PanoCore_47_ = (_zz_PanoCore_48_ + _zz_PanoCore_52_);
-  assign _zz_PanoCore_48_ = (_zz_PanoCore_49_ + _zz_PanoCore_51_);
-  assign _zz_PanoCore_49_ = (vo_area_timings_v_active + _zz_PanoCore_50_);
-  assign _zz_PanoCore_50_ = {2'd0, vo_area_timings_v_fp};
-  assign _zz_PanoCore_51_ = {2'd0, vo_area_timings_v_sync};
-  assign _zz_PanoCore_52_ = {2'd0, vo_area_timings_v_bp};
-  assign _zz_PanoCore_53_ = (u_cpu_top_io_txt_gen_apb_PADDR & (16'b0111111111111111));
-  assign _zz_PanoCore_54_ = _zz_PanoCore_53_[14:0];
-  assign _zz_PanoCore_55_ = (u_cpu_top_io_txt_gen_apb_PADDR & (16'b0111111111111111));
-  assign _zz_PanoCore_56_ = _zz_PanoCore_55_[14:0];
-  assign _zz_PanoCore_57_ = (16'b1000000000000000);
-  assign _zz_PanoCore_58_ = u_cpu_top_io_ulpi_apb_PWDATA[0 : 0];
-  assign _zz_PanoCore_59_ = u_cpu_top_io_ulpi_apb_PWDATA[31 : 31];
+  assign _zz_PanoCore_73_ = (u_cpu_top_io_txt_gen_apb_PADDR & (16'b0111111111111111));
+  assign _zz_PanoCore_74_ = _zz_PanoCore_73_[14:0];
+  assign _zz_PanoCore_75_ = (u_cpu_top_io_txt_gen_apb_PADDR & (16'b0111111111111111));
+  assign _zz_PanoCore_76_ = _zz_PanoCore_75_[14:0];
+  assign _zz_PanoCore_77_ = u_cpu_top_io_ulpi_apb_PWDATA[0 : 0];
+  assign _zz_PanoCore_78_ = (16'b1000000000000000);
+  assign _zz_PanoCore_79_ = u_cpu_top_io_ulpi_apb_PWDATA[31 : 31];
   CpuTop u_cpu_top ( 
     .io_led_ctrl_apb_PADDR(u_cpu_top_io_led_ctrl_apb_PADDR),
     .io_led_ctrl_apb_PSEL(u_cpu_top_io_led_ctrl_apb_PSEL),
@@ -7645,51 +9256,58 @@ module PanoCore (
     .io_dvi_ctrl_apb_PADDR(u_cpu_top_io_dvi_ctrl_apb_PADDR),
     .io_dvi_ctrl_apb_PSEL(u_cpu_top_io_dvi_ctrl_apb_PSEL),
     .io_dvi_ctrl_apb_PENABLE(u_cpu_top_io_dvi_ctrl_apb_PENABLE),
-    .io_dvi_ctrl_apb_PREADY(u_dvi_ctrl_io_apb_PREADY),
+    .io_dvi_ctrl_apb_PREADY(cCGpio_1__io_apb_PREADY),
     .io_dvi_ctrl_apb_PWRITE(u_cpu_top_io_dvi_ctrl_apb_PWRITE),
     .io_dvi_ctrl_apb_PWDATA(u_cpu_top_io_dvi_ctrl_apb_PWDATA),
-    .io_dvi_ctrl_apb_PRDATA(u_dvi_ctrl_io_apb_PRDATA),
-    .io_dvi_ctrl_apb_PSLVERROR(u_dvi_ctrl_io_apb_PSLVERROR),
+    .io_dvi_ctrl_apb_PRDATA(cCGpio_1__io_apb_PRDATA),
+    .io_dvi_ctrl_apb_PSLVERROR(cCGpio_1__io_apb_PSLVERROR),
     .io_gmii_ctrl_apb_PADDR(u_cpu_top_io_gmii_ctrl_apb_PADDR),
     .io_gmii_ctrl_apb_PSEL(u_cpu_top_io_gmii_ctrl_apb_PSEL),
     .io_gmii_ctrl_apb_PENABLE(u_cpu_top_io_gmii_ctrl_apb_PENABLE),
-    .io_gmii_ctrl_apb_PREADY(u_gmii_ctrl_io_apb_PREADY),
+    .io_gmii_ctrl_apb_PREADY(gmiiCtrl_1__io_apb_PREADY),
     .io_gmii_ctrl_apb_PWRITE(u_cpu_top_io_gmii_ctrl_apb_PWRITE),
     .io_gmii_ctrl_apb_PWDATA(u_cpu_top_io_gmii_ctrl_apb_PWDATA),
-    .io_gmii_ctrl_apb_PRDATA(u_gmii_ctrl_io_apb_PRDATA),
-    .io_gmii_ctrl_apb_PSLVERROR(u_gmii_ctrl_io_apb_PSLVERROR),
+    .io_gmii_ctrl_apb_PRDATA(gmiiCtrl_1__io_apb_PRDATA),
+    .io_gmii_ctrl_apb_PSLVERROR(gmiiCtrl_1__io_apb_PSLVERROR),
     .io_test_patt_apb_PADDR(u_cpu_top_io_test_patt_apb_PADDR),
     .io_test_patt_apb_PSEL(u_cpu_top_io_test_patt_apb_PSEL),
     .io_test_patt_apb_PENABLE(u_cpu_top_io_test_patt_apb_PENABLE),
-    .io_test_patt_apb_PREADY(_zz_PanoCore_10_),
+    .io_test_patt_apb_PREADY(_zz_PanoCore_41_),
     .io_test_patt_apb_PWRITE(u_cpu_top_io_test_patt_apb_PWRITE),
     .io_test_patt_apb_PWDATA(u_cpu_top_io_test_patt_apb_PWDATA),
-    .io_test_patt_apb_PRDATA(_zz_PanoCore_11_),
-    .io_test_patt_apb_PSLVERROR(_zz_PanoCore_12_),
+    .io_test_patt_apb_PRDATA(_zz_PanoCore_42_),
+    .io_test_patt_apb_PSLVERROR(_zz_PanoCore_43_),
     .io_txt_gen_apb_PADDR(u_cpu_top_io_txt_gen_apb_PADDR),
     .io_txt_gen_apb_PSEL(u_cpu_top_io_txt_gen_apb_PSEL),
     .io_txt_gen_apb_PENABLE(u_cpu_top_io_txt_gen_apb_PENABLE),
-    .io_txt_gen_apb_PREADY(_zz_PanoCore_13_),
+    .io_txt_gen_apb_PREADY(_zz_PanoCore_44_),
     .io_txt_gen_apb_PWRITE(u_cpu_top_io_txt_gen_apb_PWRITE),
     .io_txt_gen_apb_PWDATA(u_cpu_top_io_txt_gen_apb_PWDATA),
-    .io_txt_gen_apb_PRDATA(_zz_PanoCore_14_),
-    .io_txt_gen_apb_PSLVERROR(_zz_PanoCore_15_),
+    .io_txt_gen_apb_PRDATA(_zz_PanoCore_45_),
+    .io_txt_gen_apb_PSLVERROR(_zz_PanoCore_46_),
     .io_ulpi_apb_PADDR(u_cpu_top_io_ulpi_apb_PADDR),
     .io_ulpi_apb_PSEL(u_cpu_top_io_ulpi_apb_PSEL),
     .io_ulpi_apb_PENABLE(u_cpu_top_io_ulpi_apb_PENABLE),
-    .io_ulpi_apb_PREADY(_zz_PanoCore_16_),
+    .io_ulpi_apb_PREADY(_zz_PanoCore_47_),
     .io_ulpi_apb_PWRITE(u_cpu_top_io_ulpi_apb_PWRITE),
     .io_ulpi_apb_PWDATA(u_cpu_top_io_ulpi_apb_PWDATA),
-    .io_ulpi_apb_PRDATA(_zz_PanoCore_17_),
-    .io_ulpi_apb_PSLVERROR(_zz_PanoCore_18_),
+    .io_ulpi_apb_PRDATA(_zz_PanoCore_48_),
+    .io_ulpi_apb_PSLVERROR(_zz_PanoCore_49_),
     .io_usb_host_apb_PADDR(u_cpu_top_io_usb_host_apb_PADDR),
     .io_usb_host_apb_PSEL(u_cpu_top_io_usb_host_apb_PSEL),
     .io_usb_host_apb_PENABLE(u_cpu_top_io_usb_host_apb_PENABLE),
-    .io_usb_host_apb_PREADY(u_apb2usb_host_io_src_PREADY),
+    .io_usb_host_apb_PREADY(apb3CC_1__io_src_PREADY),
     .io_usb_host_apb_PWRITE(u_cpu_top_io_usb_host_apb_PWRITE),
     .io_usb_host_apb_PWDATA(u_cpu_top_io_usb_host_apb_PWDATA),
-    .io_usb_host_apb_PRDATA(u_apb2usb_host_io_src_PRDATA),
-    .io_usb_host_apb_PSLVERROR(u_apb2usb_host_io_src_PSLVERROR),
+    .io_usb_host_apb_PRDATA(apb3CC_1__io_src_PRDATA),
+    .io_usb_host_apb_PSLVERROR(apb3CC_1__io_src_PSLVERROR),
+    .io_spi_flash_ctrl_apb_PADDR(u_cpu_top_io_spi_flash_ctrl_apb_PADDR),
+    .io_spi_flash_ctrl_apb_PSEL(u_cpu_top_io_spi_flash_ctrl_apb_PSEL),
+    .io_spi_flash_ctrl_apb_PENABLE(u_cpu_top_io_spi_flash_ctrl_apb_PENABLE),
+    .io_spi_flash_ctrl_apb_PREADY(u_spi_flash_io_apb_PREADY),
+    .io_spi_flash_ctrl_apb_PWRITE(u_cpu_top_io_spi_flash_ctrl_apb_PWRITE),
+    .io_spi_flash_ctrl_apb_PWDATA(u_cpu_top_io_spi_flash_ctrl_apb_PWDATA),
+    .io_spi_flash_ctrl_apb_PRDATA(u_spi_flash_io_apb_PRDATA),
     .io_switch_(io_switch_),
     .toplevel_main_clk(toplevel_main_clk),
     .toplevel_main_reset_(toplevel_main_reset_) 
@@ -7700,17 +9318,15 @@ module PanoCore (
     .io_timings_h_sync(vo_area_timings_h_sync),
     .io_timings_h_bp(vo_area_timings_h_bp),
     .io_timings_h_sync_positive(vo_area_timings_h_sync_positive),
-    .io_timings_h_total_m1(vo_area_timings_h_total_m1),
     .io_timings_v_active(vo_area_timings_v_active),
     .io_timings_v_fp(vo_area_timings_v_fp),
     .io_timings_v_sync(vo_area_timings_v_sync),
     .io_timings_v_bp(vo_area_timings_v_bp),
     .io_timings_v_sync_positive(vo_area_timings_v_sync_positive),
-    .io_timings_v_total_m1(vo_area_timings_v_total_m1),
     .io_pixel_out_vsync(vo_area_u_vi_gen_io_pixel_out_vsync),
     .io_pixel_out_req(vo_area_u_vi_gen_io_pixel_out_req),
-    .io_pixel_out_eol(vo_area_u_vi_gen_io_pixel_out_eol),
-    .io_pixel_out_eof(vo_area_u_vi_gen_io_pixel_out_eof),
+    .io_pixel_out_last_col(vo_area_u_vi_gen_io_pixel_out_last_col),
+    .io_pixel_out_last_line(vo_area_u_vi_gen_io_pixel_out_last_line),
     .io_pixel_out_pixel_r(vo_area_u_vi_gen_io_pixel_out_pixel_r),
     .io_pixel_out_pixel_g(vo_area_u_vi_gen_io_pixel_out_pixel_g),
     .io_pixel_out_pixel_b(vo_area_u_vi_gen_io_pixel_out_pixel_b),
@@ -7723,24 +9339,22 @@ module PanoCore (
     .io_timings_h_sync(vo_area_timings_h_sync),
     .io_timings_h_bp(vo_area_timings_h_bp),
     .io_timings_h_sync_positive(vo_area_timings_h_sync_positive),
-    .io_timings_h_total_m1(vo_area_timings_h_total_m1),
     .io_timings_v_active(vo_area_timings_v_active),
     .io_timings_v_fp(vo_area_timings_v_fp),
     .io_timings_v_sync(vo_area_timings_v_sync),
     .io_timings_v_bp(vo_area_timings_v_bp),
     .io_timings_v_sync_positive(vo_area_timings_v_sync_positive),
-    .io_timings_v_total_m1(vo_area_timings_v_total_m1),
     .io_pixel_in_vsync(vo_area_vi_gen_pixel_out_vsync),
     .io_pixel_in_req(vo_area_vi_gen_pixel_out_req),
-    .io_pixel_in_eol(vo_area_vi_gen_pixel_out_eol),
-    .io_pixel_in_eof(vo_area_vi_gen_pixel_out_eof),
+    .io_pixel_in_last_col(vo_area_vi_gen_pixel_out_last_col),
+    .io_pixel_in_last_line(vo_area_vi_gen_pixel_out_last_line),
     .io_pixel_in_pixel_r(vo_area_vi_gen_pixel_out_pixel_r),
     .io_pixel_in_pixel_g(vo_area_vi_gen_pixel_out_pixel_g),
     .io_pixel_in_pixel_b(vo_area_vi_gen_pixel_out_pixel_b),
     .io_pixel_out_vsync(vo_area_u_test_patt_io_pixel_out_vsync),
     .io_pixel_out_req(vo_area_u_test_patt_io_pixel_out_req),
-    .io_pixel_out_eol(vo_area_u_test_patt_io_pixel_out_eol),
-    .io_pixel_out_eof(vo_area_u_test_patt_io_pixel_out_eof),
+    .io_pixel_out_last_col(vo_area_u_test_patt_io_pixel_out_last_col),
+    .io_pixel_out_last_line(vo_area_u_test_patt_io_pixel_out_last_line),
     .io_pixel_out_pixel_r(vo_area_u_test_patt_io_pixel_out_pixel_r),
     .io_pixel_out_pixel_g(vo_area_u_test_patt_io_pixel_out_pixel_g),
     .io_pixel_out_pixel_b(vo_area_u_test_patt_io_pixel_out_pixel_b),
@@ -7754,22 +9368,22 @@ module PanoCore (
   VideoTxtGen vo_area_u_txt_gen ( 
     .io_pixel_in_vsync(vo_area_test_patt_pixel_out_vsync),
     .io_pixel_in_req(vo_area_test_patt_pixel_out_req),
-    .io_pixel_in_eol(vo_area_test_patt_pixel_out_eol),
-    .io_pixel_in_eof(vo_area_test_patt_pixel_out_eof),
+    .io_pixel_in_last_col(vo_area_test_patt_pixel_out_last_col),
+    .io_pixel_in_last_line(vo_area_test_patt_pixel_out_last_line),
     .io_pixel_in_pixel_r(vo_area_test_patt_pixel_out_pixel_r),
     .io_pixel_in_pixel_g(vo_area_test_patt_pixel_out_pixel_g),
     .io_pixel_in_pixel_b(vo_area_test_patt_pixel_out_pixel_b),
     .io_pixel_out_vsync(vo_area_u_txt_gen_io_pixel_out_vsync),
     .io_pixel_out_req(vo_area_u_txt_gen_io_pixel_out_req),
-    .io_pixel_out_eol(vo_area_u_txt_gen_io_pixel_out_eol),
-    .io_pixel_out_eof(vo_area_u_txt_gen_io_pixel_out_eof),
+    .io_pixel_out_last_col(vo_area_u_txt_gen_io_pixel_out_last_col),
+    .io_pixel_out_last_line(vo_area_u_txt_gen_io_pixel_out_last_line),
     .io_pixel_out_pixel_r(vo_area_u_txt_gen_io_pixel_out_pixel_r),
     .io_pixel_out_pixel_g(vo_area_u_txt_gen_io_pixel_out_pixel_g),
     .io_pixel_out_pixel_b(vo_area_u_txt_gen_io_pixel_out_pixel_b),
-    .io_txt_buf_wr(_zz_PanoCore_19_),
-    .io_txt_buf_rd(_zz_PanoCore_20_),
-    .io_txt_buf_addr(_zz_PanoCore_21_),
-    .io_txt_buf_wr_data(_zz_PanoCore_22_),
+    .io_txt_buf_wr(_zz_PanoCore_50_),
+    .io_txt_buf_rd(_zz_PanoCore_51_),
+    .io_txt_buf_addr(_zz_PanoCore_52_),
+    .io_txt_buf_wr_data(_zz_PanoCore_53_),
     .io_txt_buf_rd_data(vo_area_u_txt_gen_io_txt_buf_rd_data),
     .toplevel_u_vo_clk_gen_vo_clk(toplevel_u_vo_clk_gen_vo_clk),
     .toplevel_u_vo_clk_gen_vo_reset_(toplevel_u_vo_clk_gen_vo_reset_),
@@ -7782,17 +9396,15 @@ module PanoCore (
     .io_timings_h_sync(vo_area_timings_h_sync),
     .io_timings_h_bp(vo_area_timings_h_bp),
     .io_timings_h_sync_positive(vo_area_timings_h_sync_positive),
-    .io_timings_h_total_m1(vo_area_timings_h_total_m1),
     .io_timings_v_active(vo_area_timings_v_active),
     .io_timings_v_fp(vo_area_timings_v_fp),
     .io_timings_v_sync(vo_area_timings_v_sync),
     .io_timings_v_bp(vo_area_timings_v_bp),
     .io_timings_v_sync_positive(vo_area_timings_v_sync_positive),
-    .io_timings_v_total_m1(vo_area_timings_v_total_m1),
     .io_pixel_in_vsync(vo_area_txt_gen_pixel_out_vsync),
     .io_pixel_in_req(vo_area_txt_gen_pixel_out_req),
-    .io_pixel_in_eol(vo_area_txt_gen_pixel_out_eol),
-    .io_pixel_in_eof(vo_area_txt_gen_pixel_out_eof),
+    .io_pixel_in_last_col(vo_area_txt_gen_pixel_out_last_col),
+    .io_pixel_in_last_line(vo_area_txt_gen_pixel_out_last_line),
     .io_pixel_in_pixel_r(vo_area_txt_gen_pixel_out_pixel_r),
     .io_pixel_in_pixel_g(vo_area_txt_gen_pixel_out_pixel_g),
     .io_pixel_in_pixel_b(vo_area_txt_gen_pixel_out_pixel_b),
@@ -7806,162 +9418,162 @@ module PanoCore (
     .toplevel_u_vo_clk_gen_vo_clk(toplevel_u_vo_clk_gen_vo_clk),
     .toplevel_u_vo_clk_gen_vo_reset_(toplevel_u_vo_clk_gen_vo_reset_) 
   );
-  GmiiCtrl u_gmii_ctrl ( 
+  GmiiCtrl gmiiCtrl_1_ ( 
     .io_apb_PADDR(u_cpu_top_io_gmii_ctrl_apb_PADDR),
     .io_apb_PSEL(u_cpu_top_io_gmii_ctrl_apb_PSEL),
     .io_apb_PENABLE(u_cpu_top_io_gmii_ctrl_apb_PENABLE),
-    .io_apb_PREADY(u_gmii_ctrl_io_apb_PREADY),
+    .io_apb_PREADY(gmiiCtrl_1__io_apb_PREADY),
     .io_apb_PWRITE(u_cpu_top_io_gmii_ctrl_apb_PWRITE),
     .io_apb_PWDATA(u_cpu_top_io_gmii_ctrl_apb_PWDATA),
-    .io_apb_PRDATA(u_gmii_ctrl_io_apb_PRDATA),
-    .io_apb_PSLVERROR(u_gmii_ctrl_io_apb_PSLVERROR),
+    .io_apb_PRDATA(gmiiCtrl_1__io_apb_PRDATA),
+    .io_apb_PSLVERROR(gmiiCtrl_1__io_apb_PSLVERROR),
     .io_gmii_rx_clk(io_gmii_rx_clk),
     .io_gmii_rx_dv(io_gmii_rx_dv),
     .io_gmii_rx_er(io_gmii_rx_er),
     .io_gmii_rx_d(io_gmii_rx_d),
     .io_gmii_tx_gclk(io_gmii_tx_gclk),
     .io_gmii_tx_clk(io_gmii_tx_clk),
-    .io_gmii_tx_en(u_gmii_ctrl_io_gmii_tx_en),
-    .io_gmii_tx_er(u_gmii_ctrl_io_gmii_tx_er),
-    .io_gmii_tx_d(u_gmii_ctrl_io_gmii_tx_d),
+    .io_gmii_tx_en(gmiiCtrl_1__io_gmii_tx_en),
+    .io_gmii_tx_er(gmiiCtrl_1__io_gmii_tx_er),
+    .io_gmii_tx_d(gmiiCtrl_1__io_gmii_tx_d),
     .io_gmii_col(io_gmii_col),
     .io_gmii_crs(io_gmii_crs),
-    .io_gmii_mdio_mdc(u_gmii_ctrl_io_gmii_mdio_mdc),
+    .io_gmii_mdio_mdc(gmiiCtrl_1__io_gmii_mdio_mdc),
     .io_gmii_mdio_mdio_read(io_gmii_mdio_mdio_read),
-    .io_gmii_mdio_mdio_write(u_gmii_ctrl_io_gmii_mdio_mdio_write),
-    .io_gmii_mdio_mdio_writeEnable(u_gmii_ctrl_io_gmii_mdio_mdio_writeEnable),
+    .io_gmii_mdio_mdio_write(gmiiCtrl_1__io_gmii_mdio_mdio_write),
+    .io_gmii_mdio_mdio_writeEnable(gmiiCtrl_1__io_gmii_mdio_mdio_writeEnable),
     .toplevel_main_clk(toplevel_main_clk),
     .toplevel_main_reset_(toplevel_main_reset_) 
   );
-  UlpiCtrl u_ulpi_ctrl ( 
+  UlpiCtrl ulpiCtrl_1_ ( 
     .io_ulpi_clk(io_ulpi_clk),
     .io_ulpi_data_read(io_ulpi_data_read),
-    .io_ulpi_data_write(u_ulpi_ctrl_io_ulpi_data_write),
-    .io_ulpi_data_writeEnable(u_ulpi_ctrl_io_ulpi_data_writeEnable),
+    .io_ulpi_data_write(ulpiCtrl_1__io_ulpi_data_write),
+    .io_ulpi_data_writeEnable(ulpiCtrl_1__io_ulpi_data_writeEnable),
     .io_ulpi_direction(io_ulpi_direction),
-    .io_ulpi_stp(u_ulpi_ctrl_io_ulpi_stp),
+    .io_ulpi_stp(ulpiCtrl_1__io_ulpi_stp),
     .io_ulpi_nxt(io_ulpi_nxt),
-    .io_ulpi_reset(u_ulpi_ctrl_io_ulpi_reset),
-    .io_tx_start(ulpi_ctrl_apb_regs_u_sync_pulse_tx_start_io_pulseOut),
-    .io_tx_data_valid(ulpi_ctrl_apb_regs_u_tx_data_fifo_io_pop_valid),
-    .io_tx_data_ready(u_ulpi_ctrl_io_tx_data_ready),
-    .io_tx_data_payload(ulpi_ctrl_apb_regs_u_tx_data_fifo_io_pop_payload),
-    .io_rx_data_valid(u_ulpi_ctrl_io_rx_data_valid),
-    .io_rx_data_payload(u_ulpi_ctrl_io_rx_data_payload),
-    .io_rx_cmd_changed(u_ulpi_ctrl_io_rx_cmd_changed),
-    .io_rx_cmd(u_ulpi_ctrl_io_rx_cmd),
-    .io_reg_rd(_zz_PanoCore_23_),
-    .io_reg_wr(_zz_PanoCore_24_),
-    .io_reg_addr(ulpi_ctrl_apb_regs_reg_addr),
-    .io_reg_wr_data(ulpi_ctrl_apb_regs_reg_wr_data),
-    .io_reg_rd_data(u_ulpi_ctrl_io_reg_rd_data),
-    .io_reg_done(u_ulpi_ctrl_io_reg_done),
-    .ulpi_reset__1_(u_ulpi_ctrl_ulpi_reset__1_) 
+    .io_ulpi_reset(ulpiCtrl_1__io_ulpi_reset),
+    .io_tx_start(pulseCCByToggle_5__io_pulseOut),
+    .io_tx_data_valid(streamFifoCC_6__io_pop_valid),
+    .io_tx_data_ready(ulpiCtrl_1__io_tx_data_ready),
+    .io_tx_data_payload(streamFifoCC_6__io_pop_payload),
+    .io_rx_data_valid(ulpiCtrl_1__io_rx_data_valid),
+    .io_rx_data_payload(ulpiCtrl_1__io_rx_data_payload),
+    .io_rx_cmd_changed(ulpiCtrl_1__io_rx_cmd_changed),
+    .io_rx_cmd(ulpiCtrl_1__io_rx_cmd),
+    .io_reg_rd(_zz_PanoCore_54_),
+    .io_reg_wr(_zz_PanoCore_55_),
+    .io_reg_addr(_zz_PanoCore_9_),
+    .io_reg_wr_data(_zz_PanoCore_10_),
+    .io_reg_rd_data(ulpiCtrl_1__io_reg_rd_data),
+    .io_reg_done(ulpiCtrl_1__io_reg_done),
+    .ulpi_reset__1_(ulpiCtrl_1__ulpi_reset__1_) 
   );
-  StreamFifoCC_1_ ulpi_ctrl_apb_regs_u_reg_cmd_fifo ( 
-    .io_push_valid(ulpi_ctrl_apb_regs_reg_cmd_fifo_wr_valid),
-    .io_push_ready(ulpi_ctrl_apb_regs_u_reg_cmd_fifo_io_push_ready),
-    .io_push_payload(ulpi_ctrl_apb_regs_reg_cmd_fifo_wr_payload),
-    .io_pop_valid(ulpi_ctrl_apb_regs_u_reg_cmd_fifo_io_pop_valid),
-    .io_pop_ready(ulpi_ctrl_apb_regs_reg_cmd_fifo_rd_ready),
-    .io_pop_payload(ulpi_ctrl_apb_regs_u_reg_cmd_fifo_io_pop_payload),
-    .io_pushOccupancy(ulpi_ctrl_apb_regs_u_reg_cmd_fifo_io_pushOccupancy),
-    .io_popOccupancy(ulpi_ctrl_apb_regs_u_reg_cmd_fifo_io_popOccupancy),
+  StreamFifoCC_3_ streamFifoCC_5_ ( 
+    .io_push_valid(_zz_PanoCore_14__regNext),
+    .io_push_ready(streamFifoCC_5__io_push_ready),
+    .io_push_payload(_zz_PanoCore_11_),
+    .io_pop_valid(streamFifoCC_5__io_pop_valid),
+    .io_pop_ready(ulpiCtrl_1__io_reg_done),
+    .io_pop_payload(streamFifoCC_5__io_pop_payload),
+    .io_pushOccupancy(streamFifoCC_5__io_pushOccupancy),
+    .io_popOccupancy(streamFifoCC_5__io_popOccupancy),
     .toplevel_main_clk(toplevel_main_clk),
     .toplevel_main_reset_(toplevel_main_reset_),
-    .u_ulpi_ctrl_io_ulpi_clk(io_ulpi_clk),
-    .u_ulpi_ctrl_ulpi_reset_(u_ulpi_ctrl_ulpi_reset__1_) 
+    ._zz_StreamFifoCC_3__5_(io_ulpi_clk),
+    ._zz_StreamFifoCC_3__6_(ulpiCtrl_1__ulpi_reset__1_) 
   );
-  PulseCCByToggle_2_ ulpi_ctrl_apb_regs_u_sync_pulse_rx_cmd_changed ( 
-    .io_pulseIn(u_ulpi_ctrl_io_rx_cmd_changed),
-    .io_pulseOut(ulpi_ctrl_apb_regs_u_sync_pulse_rx_cmd_changed_io_pulseOut),
-    .u_ulpi_ctrl_io_ulpi_clk(io_ulpi_clk),
-    .u_ulpi_ctrl_ulpi_reset_(u_ulpi_ctrl_ulpi_reset__1_),
+  PulseCCByToggle_2_ pulseCCByToggle_4_ ( 
+    .io_pulseIn(ulpiCtrl_1__io_rx_cmd_changed),
+    .io_pulseOut(pulseCCByToggle_4__io_pulseOut),
+    ._zz_PulseCCByToggle_2__1_(io_ulpi_clk),
+    ._zz_PulseCCByToggle_2__2_(ulpiCtrl_1__ulpi_reset__1_),
     .toplevel_main_clk(toplevel_main_clk),
     .toplevel_main_reset_(toplevel_main_reset_) 
   );
-  StreamFifoCC_2_ ulpi_ctrl_apb_regs_u_tx_data_fifo ( 
-    .io_push_valid(ulpi_ctrl_apb_regs_tx_data_reg_valid),
-    .io_push_ready(ulpi_ctrl_apb_regs_u_tx_data_fifo_io_push_ready),
-    .io_push_payload(ulpi_ctrl_apb_regs_tx_data_reg_payload),
-    .io_pop_valid(ulpi_ctrl_apb_regs_u_tx_data_fifo_io_pop_valid),
-    .io_pop_ready(u_ulpi_ctrl_io_tx_data_ready),
-    .io_pop_payload(ulpi_ctrl_apb_regs_u_tx_data_fifo_io_pop_payload),
-    .io_pushOccupancy(ulpi_ctrl_apb_regs_u_tx_data_fifo_io_pushOccupancy),
-    .io_popOccupancy(ulpi_ctrl_apb_regs_u_tx_data_fifo_io_popOccupancy),
+  StreamFifoCC_4_ streamFifoCC_6_ ( 
+    .io_push_valid(_zz_PanoCore_17_),
+    .io_push_ready(streamFifoCC_6__io_push_ready),
+    .io_push_payload(_zz_PanoCore_39_),
+    .io_pop_valid(streamFifoCC_6__io_pop_valid),
+    .io_pop_ready(ulpiCtrl_1__io_tx_data_ready),
+    .io_pop_payload(streamFifoCC_6__io_pop_payload),
+    .io_pushOccupancy(streamFifoCC_6__io_pushOccupancy),
+    .io_popOccupancy(streamFifoCC_6__io_popOccupancy),
     .toplevel_main_clk(toplevel_main_clk),
     .toplevel_main_reset_(toplevel_main_reset_),
-    .u_ulpi_ctrl_io_ulpi_clk(io_ulpi_clk),
-    .u_ulpi_ctrl_ulpi_reset_(u_ulpi_ctrl_ulpi_reset__1_) 
+    ._zz_StreamFifoCC_4__23_(io_ulpi_clk),
+    ._zz_StreamFifoCC_4__24_(ulpiCtrl_1__ulpi_reset__1_) 
   );
-  PulseCCByToggle_3_ ulpi_ctrl_apb_regs_u_sync_pulse_tx_start ( 
-    .io_pulseIn(_zz_PanoCore_25_),
-    .io_pulseOut(ulpi_ctrl_apb_regs_u_sync_pulse_tx_start_io_pulseOut),
+  PulseCCByToggle_3_ pulseCCByToggle_5_ ( 
+    .io_pulseIn(_zz_PanoCore_56_),
+    .io_pulseOut(pulseCCByToggle_5__io_pulseOut),
     .toplevel_main_clk(toplevel_main_clk),
     .toplevel_main_reset_(toplevel_main_reset_),
-    .u_ulpi_ctrl_io_ulpi_clk(io_ulpi_clk),
-    .u_ulpi_ctrl_ulpi_reset_(u_ulpi_ctrl_ulpi_reset__1_) 
+    ._zz_PulseCCByToggle_3__1_(io_ulpi_clk),
+    ._zz_PulseCCByToggle_3__2_(ulpiCtrl_1__ulpi_reset__1_) 
   );
-  BufferCC_2_ bufferCC_12_ ( 
-    .io_initial(_zz_PanoCore_26_),
-    .io_dataIn(ulpi_ctrl_apb_regs_u_tx_data_fifo_io_pop_valid),
-    .io_dataOut(bufferCC_12__io_dataOut),
+  BufferCC_6_ bufferCC_18_ ( 
+    .io_initial(_zz_PanoCore_57_),
+    .io_dataIn(streamFifoCC_6__io_pop_valid),
+    .io_dataOut(bufferCC_18__io_dataOut),
     .toplevel_main_clk(toplevel_main_clk),
     .toplevel_main_reset_(toplevel_main_reset_) 
   );
-  Apb3CC u_apb2usb_host ( 
+  Apb3CC apb3CC_1_ ( 
     .io_src_PADDR(u_cpu_top_io_usb_host_apb_PADDR),
     .io_src_PSEL(u_cpu_top_io_usb_host_apb_PSEL),
     .io_src_PENABLE(u_cpu_top_io_usb_host_apb_PENABLE),
-    .io_src_PREADY(u_apb2usb_host_io_src_PREADY),
+    .io_src_PREADY(apb3CC_1__io_src_PREADY),
     .io_src_PWRITE(u_cpu_top_io_usb_host_apb_PWRITE),
     .io_src_PWDATA(u_cpu_top_io_usb_host_apb_PWDATA),
-    .io_src_PRDATA(u_apb2usb_host_io_src_PRDATA),
-    .io_src_PSLVERROR(u_apb2usb_host_io_src_PSLVERROR),
-    .io_dest_PADDR(u_apb2usb_host_io_dest_PADDR),
-    .io_dest_PSEL(u_apb2usb_host_io_dest_PSEL),
-    .io_dest_PENABLE(u_apb2usb_host_io_dest_PENABLE),
-    .io_dest_PREADY(usb_host_apb_PREADY),
-    .io_dest_PWRITE(u_apb2usb_host_io_dest_PWRITE),
-    .io_dest_PWDATA(u_apb2usb_host_io_dest_PWDATA),
-    .io_dest_PRDATA(usb_host_apb_PRDATA),
-    .io_dest_PSLVERROR(usb_host_apb_PSLVERROR),
+    .io_src_PRDATA(apb3CC_1__io_src_PRDATA),
+    .io_src_PSLVERROR(apb3CC_1__io_src_PSLVERROR),
+    .io_dest_PADDR(apb3CC_1__io_dest_PADDR),
+    .io_dest_PSEL(apb3CC_1__io_dest_PSEL),
+    .io_dest_PENABLE(apb3CC_1__io_dest_PENABLE),
+    .io_dest_PREADY(_zz_PanoCore_58_),
+    .io_dest_PWRITE(apb3CC_1__io_dest_PWRITE),
+    .io_dest_PWDATA(apb3CC_1__io_dest_PWDATA),
+    .io_dest_PRDATA(_zz_PanoCore_20_),
+    .io_dest_PSLVERROR(_zz_PanoCore_59_),
     .toplevel_main_clk(toplevel_main_clk),
     .toplevel_main_reset_(toplevel_main_reset_),
     .core_u_pano_core_io_ulpi_clk(io_ulpi_clk),
-    .core_u_pano_core_ulpi_reset_(ulpi_reset_) 
+    ._zz_Apb3CC_2_(_zz_PanoCore_2_) 
   );
-  UsbHost usb_host_domain_u_usb_host ( 
-    .io_cpu_fifo_bus_cmd_valid(_zz_PanoCore_27_),
-    .io_cpu_fifo_bus_cmd_ready(usb_host_domain_u_usb_host_io_cpu_fifo_bus_cmd_ready),
-    .io_cpu_fifo_bus_cmd_payload_write(_zz_PanoCore_28_),
-    .io_cpu_fifo_bus_cmd_payload_address(_zz_PanoCore_29_),
-    .io_cpu_fifo_bus_cmd_payload_data(_zz_PanoCore_30_),
-    .io_cpu_fifo_bus_cmd_payload_mask(_zz_PanoCore_31_),
-    .io_cpu_fifo_bus_rsp_valid(usb_host_domain_u_usb_host_io_cpu_fifo_bus_rsp_valid),
-    .io_cpu_fifo_bus_rsp_payload_data(usb_host_domain_u_usb_host_io_cpu_fifo_bus_rsp_payload_data),
-    .io_periph_addr(usb_host_domain_apb_regs_periph_addr_periph_addr),
-    .io_endpoint(usb_host_domain_apb_regs_hxfr_endpoint),
-    .io_send_buf_avail(usb_host_domain_u_usb_host_io_send_buf_avail),
-    .io_send_buf_avail_nr(usb_host_domain_u_usb_host_io_send_buf_avail_nr),
-    .io_send_byte_count_valid(usb_host_domain_apb_regs_send_byte_count_send_byte_count_valid),
-    .io_send_byte_count_payload(usb_host_domain_apb_regs_send_byte_count_send_byte_count_payload),
-    .io_xfer_type_valid(usb_host_domain_apb_regs_hxfr_xfer_type_valid),
-    .io_xfer_type_payload(usb_host_domain_apb_regs_hxfr_xfer_type_payload),
-    .io_xfer_result(usb_host_domain_u_usb_host_io_xfer_result),
-    .io_cur_send_data_toggle(usb_host_domain_u_usb_host_io_cur_send_data_toggle),
-    .io_cur_rcv_data_toggle(usb_host_domain_u_usb_host_io_cur_rcv_data_toggle),
-    .io_set_send_data_toggle_valid(_zz_PanoCore_32_),
-    .io_set_send_data_toggle_payload(_zz_PanoCore_33_),
-    .io_set_rcv_data_toggle_valid(_zz_PanoCore_34_),
-    .io_set_rcv_data_toggle_payload(_zz_PanoCore_35_),
-    .io_ulpi_rx_cmd_changed(usb_host_domain_u_usb_host_io_ulpi_rx_cmd_changed),
-    .io_ulpi_rx_cmd(usb_host_domain_u_usb_host_io_ulpi_rx_cmd),
-    .io_ulpi_tx_data_valid(usb_host_domain_u_usb_host_io_ulpi_tx_data_valid),
-    .io_ulpi_tx_data_ready(_zz_PanoCore_36_),
-    .io_ulpi_tx_data_payload(usb_host_domain_u_usb_host_io_ulpi_tx_data_payload),
+  UsbHost usbHost_1_ ( 
+    .io_cpu_fifo_bus_cmd_valid(_zz_PanoCore_60_),
+    .io_cpu_fifo_bus_cmd_ready(usbHost_1__io_cpu_fifo_bus_cmd_ready),
+    .io_cpu_fifo_bus_cmd_payload_write(_zz_PanoCore_61_),
+    .io_cpu_fifo_bus_cmd_payload_address(_zz_PanoCore_62_),
+    .io_cpu_fifo_bus_cmd_payload_data(_zz_PanoCore_63_),
+    .io_cpu_fifo_bus_cmd_payload_mask(_zz_PanoCore_64_),
+    .io_cpu_fifo_bus_rsp_valid(usbHost_1__io_cpu_fifo_bus_rsp_valid),
+    .io_cpu_fifo_bus_rsp_payload_data(usbHost_1__io_cpu_fifo_bus_rsp_payload_data),
+    .io_periph_addr(_zz_PanoCore_22_),
+    .io_endpoint(_zz_PanoCore_32_),
+    .io_send_buf_avail(usbHost_1__io_send_buf_avail),
+    .io_send_buf_avail_nr(usbHost_1__io_send_buf_avail_nr),
+    .io_send_byte_count_valid(_zz_PanoCore_24_),
+    .io_send_byte_count_payload(_zz_PanoCore_65_),
+    .io_xfer_type_valid(_zz_PanoCore_33_),
+    .io_xfer_type_payload(_zz_PanoCore_34_),
+    .io_xfer_result(usbHost_1__io_xfer_result),
+    .io_cur_send_data_toggle(usbHost_1__io_cur_send_data_toggle),
+    .io_cur_rcv_data_toggle(usbHost_1__io_cur_rcv_data_toggle),
+    .io_set_send_data_toggle_valid(_zz_PanoCore_66_),
+    .io_set_send_data_toggle_payload(_zz_PanoCore_67_),
+    .io_set_rcv_data_toggle_valid(_zz_PanoCore_68_),
+    .io_set_rcv_data_toggle_payload(_zz_PanoCore_69_),
+    .io_ulpi_rx_cmd_changed(usbHost_1__io_ulpi_rx_cmd_changed),
+    .io_ulpi_rx_cmd(usbHost_1__io_ulpi_rx_cmd),
+    .io_ulpi_tx_data_valid(usbHost_1__io_ulpi_tx_data_valid),
+    .io_ulpi_tx_data_ready(_zz_PanoCore_70_),
+    .io_ulpi_tx_data_payload(usbHost_1__io_ulpi_tx_data_payload),
     .core_u_pano_core_io_ulpi_clk(io_ulpi_clk),
-    .core_u_pano_core_ulpi_reset_(ulpi_reset_) 
+    ._zz_UsbHost_12_(_zz_PanoCore_2_) 
   );
   Apb3Gpio u_led_ctrl ( 
     .io_apb_PADDR(u_cpu_top_io_led_ctrl_apb_PADDR),
@@ -7972,72 +9584,88 @@ module PanoCore (
     .io_apb_PWDATA(u_cpu_top_io_led_ctrl_apb_PWDATA),
     .io_apb_PRDATA(u_led_ctrl_io_apb_PRDATA),
     .io_apb_PSLVERROR(u_led_ctrl_io_apb_PSLVERROR),
-    .io_gpio_read(_zz_PanoCore_37_),
+    .io_gpio_read(_zz_PanoCore_71_),
     .io_gpio_write(u_led_ctrl_io_gpio_write),
     .io_gpio_writeEnable(u_led_ctrl_io_gpio_writeEnable),
     .io_value(u_led_ctrl_io_value),
     .toplevel_main_clk(toplevel_main_clk),
     .toplevel_main_reset_(toplevel_main_reset_) 
   );
-  CCGpio u_dvi_ctrl ( 
+  CCGpio cCGpio_1_ ( 
     .io_apb_PADDR(u_cpu_top_io_dvi_ctrl_apb_PADDR),
     .io_apb_PSEL(u_cpu_top_io_dvi_ctrl_apb_PSEL),
     .io_apb_PENABLE(u_cpu_top_io_dvi_ctrl_apb_PENABLE),
-    .io_apb_PREADY(u_dvi_ctrl_io_apb_PREADY),
+    .io_apb_PREADY(cCGpio_1__io_apb_PREADY),
     .io_apb_PWRITE(u_cpu_top_io_dvi_ctrl_apb_PWRITE),
     .io_apb_PWDATA(u_cpu_top_io_dvi_ctrl_apb_PWDATA),
-    .io_apb_PRDATA(u_dvi_ctrl_io_apb_PRDATA),
-    .io_apb_PSLVERROR(u_dvi_ctrl_io_apb_PSLVERROR),
-    .io_gpio_read(_zz_PanoCore_38_),
-    .io_gpio_write(u_dvi_ctrl_io_gpio_write),
-    .io_gpio_writeEnable(u_dvi_ctrl_io_gpio_writeEnable),
+    .io_apb_PRDATA(cCGpio_1__io_apb_PRDATA),
+    .io_apb_PSLVERROR(cCGpio_1__io_apb_PSLVERROR),
+    .io_gpio_read(_zz_PanoCore_72_),
+    .io_gpio_write(cCGpio_1__io_gpio_write),
+    .io_gpio_writeEnable(cCGpio_1__io_gpio_writeEnable),
+    .toplevel_main_clk(toplevel_main_clk),
+    .toplevel_main_reset_(toplevel_main_reset_) 
+  );
+  Apb3SpiMasterCtrl u_spi_flash ( 
+    .io_apb_PADDR(u_cpu_top_io_spi_flash_ctrl_apb_PADDR),
+    .io_apb_PSEL(u_cpu_top_io_spi_flash_ctrl_apb_PSEL),
+    .io_apb_PENABLE(u_cpu_top_io_spi_flash_ctrl_apb_PENABLE),
+    .io_apb_PREADY(u_spi_flash_io_apb_PREADY),
+    .io_apb_PWRITE(u_cpu_top_io_spi_flash_ctrl_apb_PWRITE),
+    .io_apb_PWDATA(u_cpu_top_io_spi_flash_ctrl_apb_PWDATA),
+    .io_apb_PRDATA(u_spi_flash_io_apb_PRDATA),
+    .io_spi_ss(u_spi_flash_io_spi_ss),
+    .io_spi_sclk(u_spi_flash_io_spi_sclk),
+    .io_spi_mosi(u_spi_flash_io_spi_mosi),
+    .io_spi_miso(io_spi_miso),
+    .io_interrupt(u_spi_flash_io_interrupt),
     .toplevel_main_clk(toplevel_main_clk),
     .toplevel_main_reset_(toplevel_main_reset_) 
   );
   `ifndef SYNTHESIS
   always @(*) begin
-    case(usb_host_domain_apb_regs_hxfr_xfer_type_payload)
-      `HostXferType_staticEncoding_SETUP : usb_host_domain_apb_regs_hxfr_xfer_type_payload_string = "SETUP   ";
-      `HostXferType_staticEncoding_BULK_IN : usb_host_domain_apb_regs_hxfr_xfer_type_payload_string = "BULK_IN ";
-      `HostXferType_staticEncoding_BULK_OUT : usb_host_domain_apb_regs_hxfr_xfer_type_payload_string = "BULK_OUT";
-      `HostXferType_staticEncoding_HS_IN : usb_host_domain_apb_regs_hxfr_xfer_type_payload_string = "HS_IN   ";
-      `HostXferType_staticEncoding_HS_OUT : usb_host_domain_apb_regs_hxfr_xfer_type_payload_string = "HS_OUT  ";
-      `HostXferType_staticEncoding_ISO_IN : usb_host_domain_apb_regs_hxfr_xfer_type_payload_string = "ISO_IN  ";
-      `HostXferType_staticEncoding_ISO_OUT : usb_host_domain_apb_regs_hxfr_xfer_type_payload_string = "ISO_OUT ";
-      default : usb_host_domain_apb_regs_hxfr_xfer_type_payload_string = "????????";
+    case(_zz_PanoCore_34_)
+      `HostXferType_staticEncoding_SETUP : _zz_PanoCore_34__string = "SETUP   ";
+      `HostXferType_staticEncoding_BULK_IN : _zz_PanoCore_34__string = "BULK_IN ";
+      `HostXferType_staticEncoding_BULK_OUT : _zz_PanoCore_34__string = "BULK_OUT";
+      `HostXferType_staticEncoding_HS_IN : _zz_PanoCore_34__string = "HS_IN   ";
+      `HostXferType_staticEncoding_HS_OUT : _zz_PanoCore_34__string = "HS_OUT  ";
+      `HostXferType_staticEncoding_ISO_IN : _zz_PanoCore_34__string = "ISO_IN  ";
+      `HostXferType_staticEncoding_ISO_OUT : _zz_PanoCore_34__string = "ISO_OUT ";
+      default : _zz_PanoCore_34__string = "????????";
     endcase
   end
   always @(*) begin
-    case(usb_host_domain_apb_regs_hrsl_xfer_result)
-      `HostXferResult_defaultEncoding_SUCCESS : usb_host_domain_apb_regs_hrsl_xfer_result_string = "SUCCESS ";
-      `HostXferResult_defaultEncoding_BUSY : usb_host_domain_apb_regs_hrsl_xfer_result_string = "BUSY    ";
-      `HostXferResult_defaultEncoding_BADREQ : usb_host_domain_apb_regs_hrsl_xfer_result_string = "BADREQ  ";
-      `HostXferResult_defaultEncoding_UNDEF : usb_host_domain_apb_regs_hrsl_xfer_result_string = "UNDEF   ";
-      `HostXferResult_defaultEncoding_NAK : usb_host_domain_apb_regs_hrsl_xfer_result_string = "NAK     ";
-      `HostXferResult_defaultEncoding_STALL : usb_host_domain_apb_regs_hrsl_xfer_result_string = "STALL   ";
-      `HostXferResult_defaultEncoding_TOGERR : usb_host_domain_apb_regs_hrsl_xfer_result_string = "TOGERR  ";
-      `HostXferResult_defaultEncoding_WRONGPID : usb_host_domain_apb_regs_hrsl_xfer_result_string = "WRONGPID";
-      `HostXferResult_defaultEncoding_BADBC : usb_host_domain_apb_regs_hrsl_xfer_result_string = "BADBC   ";
-      `HostXferResult_defaultEncoding_PIDERR : usb_host_domain_apb_regs_hrsl_xfer_result_string = "PIDERR  ";
-      `HostXferResult_defaultEncoding_PKTERR : usb_host_domain_apb_regs_hrsl_xfer_result_string = "PKTERR  ";
-      `HostXferResult_defaultEncoding_CRCERR : usb_host_domain_apb_regs_hrsl_xfer_result_string = "CRCERR  ";
-      `HostXferResult_defaultEncoding_KERR : usb_host_domain_apb_regs_hrsl_xfer_result_string = "KERR    ";
-      `HostXferResult_defaultEncoding_JERR : usb_host_domain_apb_regs_hrsl_xfer_result_string = "JERR    ";
-      `HostXferResult_defaultEncoding_TIMEOUT : usb_host_domain_apb_regs_hrsl_xfer_result_string = "TIMEOUT ";
-      `HostXferResult_defaultEncoding_BABBLE : usb_host_domain_apb_regs_hrsl_xfer_result_string = "BABBLE  ";
-      default : usb_host_domain_apb_regs_hrsl_xfer_result_string = "????????";
+    case(_zz_PanoCore_35_)
+      `HostXferResult_defaultEncoding_SUCCESS : _zz_PanoCore_35__string = "SUCCESS ";
+      `HostXferResult_defaultEncoding_BUSY : _zz_PanoCore_35__string = "BUSY    ";
+      `HostXferResult_defaultEncoding_BADREQ : _zz_PanoCore_35__string = "BADREQ  ";
+      `HostXferResult_defaultEncoding_UNDEF : _zz_PanoCore_35__string = "UNDEF   ";
+      `HostXferResult_defaultEncoding_NAK : _zz_PanoCore_35__string = "NAK     ";
+      `HostXferResult_defaultEncoding_STALL : _zz_PanoCore_35__string = "STALL   ";
+      `HostXferResult_defaultEncoding_TOGERR : _zz_PanoCore_35__string = "TOGERR  ";
+      `HostXferResult_defaultEncoding_WRONGPID : _zz_PanoCore_35__string = "WRONGPID";
+      `HostXferResult_defaultEncoding_BADBC : _zz_PanoCore_35__string = "BADBC   ";
+      `HostXferResult_defaultEncoding_PIDERR : _zz_PanoCore_35__string = "PIDERR  ";
+      `HostXferResult_defaultEncoding_PKTERR : _zz_PanoCore_35__string = "PKTERR  ";
+      `HostXferResult_defaultEncoding_CRCERR : _zz_PanoCore_35__string = "CRCERR  ";
+      `HostXferResult_defaultEncoding_KERR : _zz_PanoCore_35__string = "KERR    ";
+      `HostXferResult_defaultEncoding_JERR : _zz_PanoCore_35__string = "JERR    ";
+      `HostXferResult_defaultEncoding_TIMEOUT : _zz_PanoCore_35__string = "TIMEOUT ";
+      `HostXferResult_defaultEncoding_BABBLE : _zz_PanoCore_35__string = "BABBLE  ";
+      default : _zz_PanoCore_35__string = "????????";
     endcase
   end
   always @(*) begin
-    case(_zz_PanoCore_9_)
-      `HostXferType_staticEncoding_SETUP : _zz_PanoCore_9__string = "SETUP   ";
-      `HostXferType_staticEncoding_BULK_IN : _zz_PanoCore_9__string = "BULK_IN ";
-      `HostXferType_staticEncoding_BULK_OUT : _zz_PanoCore_9__string = "BULK_OUT";
-      `HostXferType_staticEncoding_HS_IN : _zz_PanoCore_9__string = "HS_IN   ";
-      `HostXferType_staticEncoding_HS_OUT : _zz_PanoCore_9__string = "HS_OUT  ";
-      `HostXferType_staticEncoding_ISO_IN : _zz_PanoCore_9__string = "ISO_IN  ";
-      `HostXferType_staticEncoding_ISO_OUT : _zz_PanoCore_9__string = "ISO_OUT ";
-      default : _zz_PanoCore_9__string = "????????";
+    case(_zz_PanoCore_40_)
+      `HostXferType_staticEncoding_SETUP : _zz_PanoCore_40__string = "SETUP   ";
+      `HostXferType_staticEncoding_BULK_IN : _zz_PanoCore_40__string = "BULK_IN ";
+      `HostXferType_staticEncoding_BULK_OUT : _zz_PanoCore_40__string = "BULK_OUT";
+      `HostXferType_staticEncoding_HS_IN : _zz_PanoCore_40__string = "HS_IN   ";
+      `HostXferType_staticEncoding_HS_OUT : _zz_PanoCore_40__string = "HS_OUT  ";
+      `HostXferType_staticEncoding_ISO_IN : _zz_PanoCore_40__string = "ISO_IN  ";
+      `HostXferType_staticEncoding_ISO_OUT : _zz_PanoCore_40__string = "ISO_OUT ";
+      default : _zz_PanoCore_40__string = "????????";
     endcase
   end
   `endif
@@ -8049,90 +9677,88 @@ module PanoCore (
   assign vo_area_timings_h_sync = (9'b000101100);
   assign vo_area_timings_h_bp = (9'b010010100);
   assign vo_area_timings_h_sync_positive = 1'b1;
-  assign vo_area_timings_h_total_m1 = _zz_PanoCore_39_;
   assign vo_area_timings_v_active = (11'b10000111000);
   assign vo_area_timings_v_fp = (9'b000000100);
   assign vo_area_timings_v_sync = (9'b000000101);
   assign vo_area_timings_v_bp = (9'b000100100);
   assign vo_area_timings_v_sync_positive = 1'b1;
-  assign vo_area_timings_v_total_m1 = {1'd0, _zz_PanoCore_46_};
   assign vo_area_vi_gen_pixel_out_vsync = vo_area_u_vi_gen_io_pixel_out_vsync;
   assign vo_area_vi_gen_pixel_out_req = vo_area_u_vi_gen_io_pixel_out_req;
-  assign vo_area_vi_gen_pixel_out_eol = vo_area_u_vi_gen_io_pixel_out_eol;
-  assign vo_area_vi_gen_pixel_out_eof = vo_area_u_vi_gen_io_pixel_out_eof;
+  assign vo_area_vi_gen_pixel_out_last_col = vo_area_u_vi_gen_io_pixel_out_last_col;
+  assign vo_area_vi_gen_pixel_out_last_line = vo_area_u_vi_gen_io_pixel_out_last_line;
   assign vo_area_vi_gen_pixel_out_pixel_r = vo_area_u_vi_gen_io_pixel_out_pixel_r;
   assign vo_area_vi_gen_pixel_out_pixel_g = vo_area_u_vi_gen_io_pixel_out_pixel_g;
   assign vo_area_vi_gen_pixel_out_pixel_b = vo_area_u_vi_gen_io_pixel_out_pixel_b;
   assign vo_area_test_patt_pixel_out_vsync = vo_area_u_test_patt_io_pixel_out_vsync;
   assign vo_area_test_patt_pixel_out_req = vo_area_u_test_patt_io_pixel_out_req;
-  assign vo_area_test_patt_pixel_out_eol = vo_area_u_test_patt_io_pixel_out_eol;
-  assign vo_area_test_patt_pixel_out_eof = vo_area_u_test_patt_io_pixel_out_eof;
+  assign vo_area_test_patt_pixel_out_last_col = vo_area_u_test_patt_io_pixel_out_last_col;
+  assign vo_area_test_patt_pixel_out_last_line = vo_area_u_test_patt_io_pixel_out_last_line;
   assign vo_area_test_patt_pixel_out_pixel_r = vo_area_u_test_patt_io_pixel_out_pixel_r;
   assign vo_area_test_patt_pixel_out_pixel_g = vo_area_u_test_patt_io_pixel_out_pixel_g;
   assign vo_area_test_patt_pixel_out_pixel_b = vo_area_u_test_patt_io_pixel_out_pixel_b;
-  assign _zz_PanoCore_10_ = 1'b1;
+  assign _zz_PanoCore_41_ = 1'b1;
   always @ (*) begin
-    _zz_PanoCore_11_ = (32'b00000000000000000000000000000000);
+    _zz_PanoCore_42_ = (32'b00000000000000000000000000000000);
     case(u_cpu_top_io_test_patt_apb_PADDR)
       5'b00000 : begin
-        _zz_PanoCore_11_[3 : 0] = vo_area_test_patt_ctrl_apb_regs_pattern_nr;
+        _zz_PanoCore_42_[3 : 0] = vo_area_test_patt_ctrl_apb_regs_pattern_nr;
       end
       5'b00100 : begin
-        _zz_PanoCore_11_[23 : 0] = {vo_area_test_patt_ctrl_apb_regs_const_color_b,{vo_area_test_patt_ctrl_apb_regs_const_color_g,vo_area_test_patt_ctrl_apb_regs_const_color_r}};
+        _zz_PanoCore_42_[23 : 0] = {vo_area_test_patt_ctrl_apb_regs_const_color_b,{vo_area_test_patt_ctrl_apb_regs_const_color_g,vo_area_test_patt_ctrl_apb_regs_const_color_r}};
       end
       default : begin
       end
     endcase
   end
 
-  assign _zz_PanoCore_12_ = 1'b0;
+  assign _zz_PanoCore_43_ = 1'b0;
   assign vo_area_test_patt_ctrl_busCtrl_askWrite = ((u_cpu_top_io_test_patt_apb_PSEL[0] && u_cpu_top_io_test_patt_apb_PENABLE) && u_cpu_top_io_test_patt_apb_PWRITE);
   assign vo_area_test_patt_ctrl_busCtrl_askRead = ((u_cpu_top_io_test_patt_apb_PSEL[0] && u_cpu_top_io_test_patt_apb_PENABLE) && (! u_cpu_top_io_test_patt_apb_PWRITE));
-  assign vo_area_test_patt_ctrl_busCtrl_doWrite = (((u_cpu_top_io_test_patt_apb_PSEL[0] && u_cpu_top_io_test_patt_apb_PENABLE) && _zz_PanoCore_10_) && u_cpu_top_io_test_patt_apb_PWRITE);
-  assign vo_area_test_patt_ctrl_busCtrl_doRead = (((u_cpu_top_io_test_patt_apb_PSEL[0] && u_cpu_top_io_test_patt_apb_PENABLE) && _zz_PanoCore_10_) && (! u_cpu_top_io_test_patt_apb_PWRITE));
+  assign vo_area_test_patt_ctrl_busCtrl_doWrite = (((u_cpu_top_io_test_patt_apb_PSEL[0] && u_cpu_top_io_test_patt_apb_PENABLE) && _zz_PanoCore_41_) && u_cpu_top_io_test_patt_apb_PWRITE);
+  assign vo_area_test_patt_ctrl_busCtrl_doRead = (((u_cpu_top_io_test_patt_apb_PSEL[0] && u_cpu_top_io_test_patt_apb_PENABLE) && _zz_PanoCore_41_) && (! u_cpu_top_io_test_patt_apb_PWRITE));
   assign vo_area_txt_gen_pixel_out_vsync = vo_area_u_txt_gen_io_pixel_out_vsync;
   assign vo_area_txt_gen_pixel_out_req = vo_area_u_txt_gen_io_pixel_out_req;
-  assign vo_area_txt_gen_pixel_out_eol = vo_area_u_txt_gen_io_pixel_out_eol;
-  assign vo_area_txt_gen_pixel_out_eof = vo_area_u_txt_gen_io_pixel_out_eof;
+  assign vo_area_txt_gen_pixel_out_last_col = vo_area_u_txt_gen_io_pixel_out_last_col;
+  assign vo_area_txt_gen_pixel_out_last_line = vo_area_u_txt_gen_io_pixel_out_last_line;
   assign vo_area_txt_gen_pixel_out_pixel_r = vo_area_u_txt_gen_io_pixel_out_pixel_r;
   assign vo_area_txt_gen_pixel_out_pixel_g = vo_area_u_txt_gen_io_pixel_out_pixel_g;
   assign vo_area_txt_gen_pixel_out_pixel_b = vo_area_u_txt_gen_io_pixel_out_pixel_b;
   always @ (*) begin
-    _zz_PanoCore_13_ = 1'b1;
-    _zz_PanoCore_14_ = (32'b00000000000000000000000000000000);
-    _zz_PanoCore_19_ = 1'b0;
-    _zz_PanoCore_20_ = 1'b0;
-    _zz_PanoCore_21_ = vo_area_txt_gen_ctrl_apb_regs_txt_buf_wr_addr;
-    _zz_PanoCore_2_ = 1'b0;
-    if(((u_cpu_top_io_txt_gen_apb_PADDR & _zz_PanoCore_57_) == (16'b0000000000000000)))begin
+    _zz_PanoCore_44_ = 1'b1;
+    _zz_PanoCore_45_ = (32'b00000000000000000000000000000000);
+    _zz_PanoCore_50_ = 1'b0;
+    _zz_PanoCore_51_ = 1'b0;
+    _zz_PanoCore_52_ = vo_area_txt_gen_ctrl_apb_regs_txt_buf_wr_addr;
+    _zz_PanoCore_3_ = 1'b0;
+    if(((u_cpu_top_io_txt_gen_apb_PADDR & _zz_PanoCore_78_) == (16'b0000000000000000)))begin
       if(vo_area_txt_gen_ctrl_busCtrl_doWrite)begin
-        _zz_PanoCore_19_ = 1'b1;
-        _zz_PanoCore_21_ = vo_area_txt_gen_ctrl_apb_regs_txt_buf_wr_addr;
+        _zz_PanoCore_50_ = 1'b1;
+        _zz_PanoCore_52_ = vo_area_txt_gen_ctrl_apb_regs_txt_buf_wr_addr;
       end
       if(vo_area_txt_gen_ctrl_busCtrl_askRead)begin
-        _zz_PanoCore_2_ = 1'b1;
-        if((! _zz_PanoCore_5_))begin
-          _zz_PanoCore_13_ = 1'b0;
+        _zz_PanoCore_3_ = 1'b1;
+        if((! _zz_PanoCore_6_))begin
+          _zz_PanoCore_44_ = 1'b0;
         end
-        _zz_PanoCore_20_ = 1'b1;
-        _zz_PanoCore_21_ = vo_area_txt_gen_ctrl_apb_regs_txt_buf_rd_addr;
+        _zz_PanoCore_51_ = 1'b1;
+        _zz_PanoCore_52_ = vo_area_txt_gen_ctrl_apb_regs_txt_buf_rd_addr;
       end
-      _zz_PanoCore_14_[7 : 0] = vo_area_u_txt_gen_io_txt_buf_rd_data;
+      _zz_PanoCore_45_[7 : 0] = vo_area_u_txt_gen_io_txt_buf_rd_data;
     end
   end
 
-  assign _zz_PanoCore_15_ = 1'b0;
+  assign _zz_PanoCore_46_ = 1'b0;
   assign vo_area_txt_gen_ctrl_busCtrl_askWrite = ((u_cpu_top_io_txt_gen_apb_PSEL[0] && u_cpu_top_io_txt_gen_apb_PENABLE) && u_cpu_top_io_txt_gen_apb_PWRITE);
   assign vo_area_txt_gen_ctrl_busCtrl_askRead = ((u_cpu_top_io_txt_gen_apb_PSEL[0] && u_cpu_top_io_txt_gen_apb_PENABLE) && (! u_cpu_top_io_txt_gen_apb_PWRITE));
-  assign vo_area_txt_gen_ctrl_busCtrl_doWrite = (((u_cpu_top_io_txt_gen_apb_PSEL[0] && u_cpu_top_io_txt_gen_apb_PENABLE) && _zz_PanoCore_13_) && u_cpu_top_io_txt_gen_apb_PWRITE);
-  assign vo_area_txt_gen_ctrl_busCtrl_doRead = (((u_cpu_top_io_txt_gen_apb_PSEL[0] && u_cpu_top_io_txt_gen_apb_PENABLE) && _zz_PanoCore_13_) && (! u_cpu_top_io_txt_gen_apb_PWRITE));
-  assign vo_area_txt_gen_ctrl_apb_regs_txt_buf_rd_addr = (_zz_PanoCore_54_ >>> 2);
-  assign vo_area_txt_gen_ctrl_apb_regs_txt_buf_wr_addr = (_zz_PanoCore_56_ >>> 2);
-  assign _zz_PanoCore_5_ = (_zz_PanoCore_4_ == (1'b1));
+  assign vo_area_txt_gen_ctrl_busCtrl_doWrite = (((u_cpu_top_io_txt_gen_apb_PSEL[0] && u_cpu_top_io_txt_gen_apb_PENABLE) && _zz_PanoCore_44_) && u_cpu_top_io_txt_gen_apb_PWRITE);
+  assign vo_area_txt_gen_ctrl_busCtrl_doRead = (((u_cpu_top_io_txt_gen_apb_PSEL[0] && u_cpu_top_io_txt_gen_apb_PENABLE) && _zz_PanoCore_44_) && (! u_cpu_top_io_txt_gen_apb_PWRITE));
+  assign vo_area_txt_gen_ctrl_apb_regs_txt_buf_rd_addr = (_zz_PanoCore_74_ >>> 2);
+  assign vo_area_txt_gen_ctrl_apb_regs_txt_buf_wr_addr = (_zz_PanoCore_76_ >>> 2);
+  assign _zz_PanoCore_6_ = (_zz_PanoCore_5_ == (1'b1));
   always @ (*) begin
-    _zz_PanoCore_3_ = (_zz_PanoCore_4_ + _zz_PanoCore_2_);
+    _zz_PanoCore_4_ = (_zz_PanoCore_5_ + _zz_PanoCore_3_);
     if(1'b0)begin
-      _zz_PanoCore_3_ = (1'b0);
+      _zz_PanoCore_4_ = (1'b0);
     end
   end
 
@@ -8143,210 +9769,194 @@ module PanoCore (
   assign io_vo_r = vo_area_u_vo_io_vga_out_r;
   assign io_vo_g = vo_area_u_vo_io_vga_out_g;
   assign io_vo_b = vo_area_u_vo_io_vga_out_b;
-  assign io_gmii_tx_en = u_gmii_ctrl_io_gmii_tx_en;
-  assign io_gmii_tx_er = u_gmii_ctrl_io_gmii_tx_er;
-  assign io_gmii_tx_d = u_gmii_ctrl_io_gmii_tx_d;
-  assign io_gmii_mdio_mdc = u_gmii_ctrl_io_gmii_mdio_mdc;
-  assign io_gmii_mdio_mdio_write = u_gmii_ctrl_io_gmii_mdio_mdio_write;
-  assign io_gmii_mdio_mdio_writeEnable = u_gmii_ctrl_io_gmii_mdio_mdio_writeEnable;
-  assign io_ulpi_data_write = u_ulpi_ctrl_io_ulpi_data_write;
-  assign io_ulpi_data_writeEnable = u_ulpi_ctrl_io_ulpi_data_writeEnable;
-  assign io_ulpi_stp = u_ulpi_ctrl_io_ulpi_stp;
-  assign io_ulpi_reset = u_ulpi_ctrl_io_ulpi_reset;
-  assign _zz_PanoCore_16_ = 1'b1;
+  assign io_gmii_tx_en = gmiiCtrl_1__io_gmii_tx_en;
+  assign io_gmii_tx_er = gmiiCtrl_1__io_gmii_tx_er;
+  assign io_gmii_tx_d = gmiiCtrl_1__io_gmii_tx_d;
+  assign io_gmii_mdio_mdc = gmiiCtrl_1__io_gmii_mdio_mdc;
+  assign io_gmii_mdio_mdio_write = gmiiCtrl_1__io_gmii_mdio_mdio_write;
+  assign io_gmii_mdio_mdio_writeEnable = gmiiCtrl_1__io_gmii_mdio_mdio_writeEnable;
+  assign io_ulpi_data_write = ulpiCtrl_1__io_ulpi_data_write;
+  assign io_ulpi_data_writeEnable = ulpiCtrl_1__io_ulpi_data_writeEnable;
+  assign io_ulpi_stp = ulpiCtrl_1__io_ulpi_stp;
+  assign io_ulpi_reset = ulpiCtrl_1__io_ulpi_reset;
+  assign _zz_PanoCore_47_ = 1'b1;
   always @ (*) begin
-    _zz_PanoCore_17_ = (32'b00000000000000000000000000000000);
-    _zz_PanoCore_6_ = 1'b0;
-    _zz_PanoCore_7_ = 1'b0;
-    ulpi_ctrl_apb_regs_tx_data_reg_valid = 1'b0;
-    ulpi_ctrl_apb_regs_tx_start_reg_valid = 1'b0;
+    _zz_PanoCore_48_ = (32'b00000000000000000000000000000000);
+    _zz_PanoCore_14_ = 1'b0;
+    _zz_PanoCore_16_ = 1'b0;
+    _zz_PanoCore_17_ = 1'b0;
+    _zz_PanoCore_18_ = 1'b0;
     case(u_cpu_top_io_ulpi_apb_PADDR)
       6'b000000 : begin
-        if(ulpi_ctrl_busCtrl_doWrite)begin
-          _zz_PanoCore_6_ = 1'b1;
+        if(_zz_PanoCore_7_)begin
+          _zz_PanoCore_14_ = 1'b1;
         end
-        _zz_PanoCore_17_[5 : 0] = ulpi_ctrl_apb_regs_reg_addr;
-        _zz_PanoCore_17_[15 : 8] = ulpi_ctrl_apb_regs_reg_wr_data;
-        _zz_PanoCore_17_[31 : 31] = ulpi_ctrl_apb_regs_reg_wr;
+        _zz_PanoCore_48_[5 : 0] = _zz_PanoCore_9_;
+        _zz_PanoCore_48_[15 : 8] = _zz_PanoCore_10_;
+        _zz_PanoCore_48_[31 : 31] = _zz_PanoCore_11_;
       end
       6'b000100 : begin
-        _zz_PanoCore_17_[7 : 0] = u_ulpi_ctrl_io_reg_rd_data;
-        _zz_PanoCore_17_[8 : 8] = ulpi_ctrl_apb_regs_reg_pending;
+        _zz_PanoCore_48_[7 : 0] = ulpiCtrl_1__io_reg_rd_data;
+        _zz_PanoCore_48_[8 : 8] = ((2'b00) < streamFifoCC_5__io_pushOccupancy);
       end
       6'b001000 : begin
-        if(ulpi_ctrl_busCtrl_doRead)begin
-          _zz_PanoCore_7_ = 1'b1;
+        if(_zz_PanoCore_8_)begin
+          _zz_PanoCore_16_ = 1'b1;
         end
-        _zz_PanoCore_17_[7 : 0] = u_ulpi_ctrl_io_rx_cmd;
-        _zz_PanoCore_17_[8 : 8] = ulpi_ctrl_apb_regs_rx_cmd_changed_sticky;
+        _zz_PanoCore_48_[7 : 0] = ulpiCtrl_1__io_rx_cmd;
+        _zz_PanoCore_48_[8 : 8] = _zz_PanoCore_15_;
       end
       6'b001100 : begin
-        if(ulpi_ctrl_busCtrl_doWrite)begin
-          ulpi_ctrl_apb_regs_tx_data_reg_valid = 1'b1;
+        if(_zz_PanoCore_7_)begin
+          _zz_PanoCore_17_ = 1'b1;
         end
       end
       6'b010000 : begin
-        if(ulpi_ctrl_busCtrl_doWrite)begin
-          ulpi_ctrl_apb_regs_tx_start_reg_valid = 1'b1;
+        if(_zz_PanoCore_7_)begin
+          _zz_PanoCore_18_ = 1'b1;
         end
       end
       6'b010100 : begin
-        _zz_PanoCore_17_[10 : 0] = ulpi_ctrl_apb_regs_u_tx_data_fifo_io_pushOccupancy;
-        _zz_PanoCore_17_[16 : 16] = ulpi_ctrl_apb_regs_u_tx_data_fifo_io_push_ready;
-        _zz_PanoCore_17_[17 : 17] = ulpi_ctrl_apb_regs_tx_data_fifo_empty;
+        _zz_PanoCore_48_[10 : 0] = streamFifoCC_6__io_pushOccupancy;
+        _zz_PanoCore_48_[16 : 16] = streamFifoCC_6__io_push_ready;
+        _zz_PanoCore_48_[17 : 17] = (! bufferCC_18__io_dataOut);
       end
       default : begin
       end
     endcase
   end
 
-  assign _zz_PanoCore_18_ = 1'b0;
-  assign ulpi_ctrl_busCtrl_askWrite = ((u_cpu_top_io_ulpi_apb_PSEL[0] && u_cpu_top_io_ulpi_apb_PENABLE) && u_cpu_top_io_ulpi_apb_PWRITE);
-  assign ulpi_ctrl_busCtrl_askRead = ((u_cpu_top_io_ulpi_apb_PSEL[0] && u_cpu_top_io_ulpi_apb_PENABLE) && (! u_cpu_top_io_ulpi_apb_PWRITE));
-  assign ulpi_ctrl_busCtrl_doWrite = (((u_cpu_top_io_ulpi_apb_PSEL[0] && u_cpu_top_io_ulpi_apb_PENABLE) && _zz_PanoCore_16_) && u_cpu_top_io_ulpi_apb_PWRITE);
-  assign ulpi_ctrl_busCtrl_doRead = (((u_cpu_top_io_ulpi_apb_PSEL[0] && u_cpu_top_io_ulpi_apb_PENABLE) && _zz_PanoCore_16_) && (! u_cpu_top_io_ulpi_apb_PWRITE));
-  assign ulpi_ctrl_apb_regs_reg_cmd_fifo_wr_valid = _zz_PanoCore_6__regNext;
-  assign ulpi_ctrl_apb_regs_reg_cmd_fifo_wr_payload = ulpi_ctrl_apb_regs_reg_wr;
-  assign ulpi_ctrl_apb_regs_reg_cmd_fifo_wr_ready = ulpi_ctrl_apb_regs_u_reg_cmd_fifo_io_push_ready;
-  assign ulpi_ctrl_apb_regs_reg_cmd_fifo_rd_valid = ulpi_ctrl_apb_regs_u_reg_cmd_fifo_io_pop_valid;
-  assign ulpi_ctrl_apb_regs_reg_cmd_fifo_rd_payload = ulpi_ctrl_apb_regs_u_reg_cmd_fifo_io_pop_payload;
-  assign _zz_PanoCore_24_ = (ulpi_ctrl_apb_regs_reg_cmd_fifo_rd_valid && ulpi_ctrl_apb_regs_reg_cmd_fifo_rd_payload);
-  assign _zz_PanoCore_23_ = (ulpi_ctrl_apb_regs_reg_cmd_fifo_rd_valid && (! ulpi_ctrl_apb_regs_reg_cmd_fifo_rd_payload));
-  assign ulpi_ctrl_apb_regs_reg_cmd_fifo_rd_ready = u_ulpi_ctrl_io_reg_done;
-  assign ulpi_ctrl_apb_regs_status = {ulpi_ctrl_apb_regs_reg_cmd_fifo_rd_valid,u_ulpi_ctrl_io_reg_rd_data};
-  assign ulpi_ctrl_apb_regs_reg_pending = ((2'b00) < ulpi_ctrl_apb_regs_u_reg_cmd_fifo_io_pushOccupancy);
-  assign ulpi_ctrl_apb_regs_rx_cmd_changed_sync = ulpi_ctrl_apb_regs_u_sync_pulse_rx_cmd_changed_io_pulseOut;
-  assign _zz_PanoCore_25_ = (ulpi_ctrl_apb_regs_tx_start_reg_valid && ulpi_ctrl_apb_regs_tx_start_reg_payload);
-  assign _zz_PanoCore_26_ = 1'b0;
-  assign ulpi_ctrl_apb_regs_tx_data_fifo_empty = (! bufferCC_12__io_dataOut);
-  assign usb_host_apb_PADDR = u_apb2usb_host_io_dest_PADDR;
-  assign usb_host_apb_PSEL = u_apb2usb_host_io_dest_PSEL;
-  assign usb_host_apb_PENABLE = u_apb2usb_host_io_dest_PENABLE;
-  assign usb_host_apb_PWRITE = u_apb2usb_host_io_dest_PWRITE;
-  assign usb_host_apb_PWDATA = u_apb2usb_host_io_dest_PWDATA;
-  assign usb_host_apb_PREADY = 1'b1;
+  assign _zz_PanoCore_49_ = 1'b0;
+  assign _zz_PanoCore_7_ = (((u_cpu_top_io_ulpi_apb_PSEL[0] && u_cpu_top_io_ulpi_apb_PENABLE) && _zz_PanoCore_47_) && u_cpu_top_io_ulpi_apb_PWRITE);
+  assign _zz_PanoCore_8_ = (((u_cpu_top_io_ulpi_apb_PSEL[0] && u_cpu_top_io_ulpi_apb_PENABLE) && _zz_PanoCore_47_) && (! u_cpu_top_io_ulpi_apb_PWRITE));
+  assign _zz_PanoCore_12_ = streamFifoCC_5__io_pop_valid;
+  assign _zz_PanoCore_13_ = streamFifoCC_5__io_pop_payload;
+  assign _zz_PanoCore_55_ = (_zz_PanoCore_12_ && _zz_PanoCore_13_);
+  assign _zz_PanoCore_54_ = (_zz_PanoCore_12_ && (! _zz_PanoCore_13_));
+  assign _zz_PanoCore_56_ = (_zz_PanoCore_18_ && _zz_PanoCore_77_[0]);
+  assign _zz_PanoCore_57_ = 1'b0;
+  assign _zz_PanoCore_58_ = 1'b1;
+  assign _zz_PanoCore_19_ = apb3CC_1__io_dest_PWDATA;
+  assign _zz_PanoCore_59_ = 1'b0;
   always @ (*) begin
-    usb_host_apb_PRDATA = (32'b00000000000000000000000000000000);
-    _zz_PanoCore_27_ = 1'b0;
+    _zz_PanoCore_20_ = (32'b00000000000000000000000000000000);
+    _zz_PanoCore_60_ = 1'b0;
+    _zz_PanoCore_61_ = 1'b0;
+    _zz_PanoCore_62_ = (9'b000000000);
+    _zz_PanoCore_24_ = 1'b0;
     _zz_PanoCore_28_ = 1'b0;
-    _zz_PanoCore_29_ = (9'b000000000);
-    usb_host_domain_apb_regs_send_byte_count_send_byte_count_valid = 1'b0;
-    usb_host_domain_apb_regs_hctl_rcv_tog_valid = 1'b0;
-    usb_host_domain_apb_regs_hctl_send_tog_valid = 1'b0;
-    usb_host_domain_apb_regs_hxfr_xfer_type_valid = 1'b0;
-    case(usb_host_apb_PADDR)
+    _zz_PanoCore_30_ = 1'b0;
+    _zz_PanoCore_33_ = 1'b0;
+    case(apb3CC_1__io_dest_PADDR)
       7'b1110000 : begin
-        usb_host_apb_PRDATA[6 : 0] = usb_host_domain_apb_regs_periph_addr_periph_addr;
+        _zz_PanoCore_20_[6 : 0] = _zz_PanoCore_22_;
       end
       7'b0001000 : begin
-        if(usb_host_domain_busCtrl_doWrite)begin
-          _zz_PanoCore_27_ = 1'b1;
-          _zz_PanoCore_28_ = 1'b1;
-          _zz_PanoCore_29_ = usb_host_domain_apb_regs_send_fifo_wr_addr;
+        if(_zz_PanoCore_21_)begin
+          _zz_PanoCore_60_ = 1'b1;
+          _zz_PanoCore_61_ = 1'b1;
+          _zz_PanoCore_62_ = {{(2'b01),usbHost_1__io_send_buf_avail_nr},_zz_PanoCore_23_};
         end
       end
       7'b0011100 : begin
-        if(usb_host_domain_busCtrl_doWrite)begin
-          usb_host_domain_apb_regs_send_byte_count_send_byte_count_valid = 1'b1;
+        if(_zz_PanoCore_21_)begin
+          _zz_PanoCore_24_ = 1'b1;
         end
       end
       7'b0010000 : begin
-        if(usb_host_domain_busCtrl_doWrite)begin
-          _zz_PanoCore_27_ = 1'b1;
-          _zz_PanoCore_28_ = 1'b1;
-          _zz_PanoCore_29_ = usb_host_domain_apb_regs_setup_fifo_wr_addr;
+        if(_zz_PanoCore_21_)begin
+          _zz_PanoCore_60_ = 1'b1;
+          _zz_PanoCore_61_ = 1'b1;
+          _zz_PanoCore_62_ = _zz_PanoCore_26_;
         end
       end
       7'b1100100 : begin
-        usb_host_apb_PRDATA[3 : 3] = usb_host_domain_apb_regs_hirq_sndbavirq;
+        _zz_PanoCore_20_[3 : 3] = _zz_PanoCore_27_;
       end
       7'b1110100 : begin
-        if(usb_host_domain_busCtrl_doWrite)begin
-          usb_host_domain_apb_regs_hctl_rcv_tog_valid = 1'b1;
-          usb_host_domain_apb_regs_hctl_send_tog_valid = 1'b1;
+        if(_zz_PanoCore_21_)begin
+          _zz_PanoCore_28_ = 1'b1;
+          _zz_PanoCore_30_ = 1'b1;
         end
       end
       7'b1111000 : begin
-        if(usb_host_domain_busCtrl_doWrite)begin
-          usb_host_domain_apb_regs_hxfr_xfer_type_valid = 1'b1;
+        if(_zz_PanoCore_21_)begin
+          _zz_PanoCore_33_ = 1'b1;
         end
       end
       7'b1111100 : begin
-        usb_host_apb_PRDATA[3 : 0] = usb_host_domain_apb_regs_hrsl_xfer_result;
-        usb_host_apb_PRDATA[5 : 5] = usb_host_domain_apb_regs_hrsl_send_data_toggle;
-        usb_host_apb_PRDATA[4 : 4] = usb_host_domain_apb_regs_hrsl_rcv_data_toggle;
+        _zz_PanoCore_20_[3 : 0] = _zz_PanoCore_35_;
+        _zz_PanoCore_20_[5 : 5] = _zz_PanoCore_36_;
+        _zz_PanoCore_20_[4 : 4] = _zz_PanoCore_37_;
       end
       default : begin
       end
     endcase
   end
 
-  assign usb_host_apb_PSLVERROR = 1'b0;
-  assign usb_host_domain_busCtrl_askWrite = ((usb_host_apb_PSEL[0] && usb_host_apb_PENABLE) && usb_host_apb_PWRITE);
-  assign usb_host_domain_busCtrl_askRead = ((usb_host_apb_PSEL[0] && usb_host_apb_PENABLE) && (! usb_host_apb_PWRITE));
-  assign usb_host_domain_busCtrl_doWrite = (((usb_host_apb_PSEL[0] && usb_host_apb_PENABLE) && usb_host_apb_PREADY) && usb_host_apb_PWRITE);
-  assign usb_host_domain_busCtrl_doRead = (((usb_host_apb_PSEL[0] && usb_host_apb_PENABLE) && usb_host_apb_PREADY) && (! usb_host_apb_PWRITE));
-  assign usb_host_domain_apb_regs_send_fifo_wr_addr = {{(2'b01),usb_host_domain_u_usb_host_io_send_buf_avail_nr},usb_host_domain_apb_regs_send_fifo_wr_ptr};
+  assign _zz_PanoCore_21_ = (((apb3CC_1__io_dest_PSEL[0] && apb3CC_1__io_dest_PENABLE) && 1'b1) && apb3CC_1__io_dest_PWRITE);
+  assign _zz_PanoCore_65_ = _zz_PanoCore_19_[5 : 0];
   always @ (*) begin
-    usb_host_domain_apb_regs_setup_fifo_wr_addr = (9'b000000000);
-    usb_host_domain_apb_regs_setup_fifo_wr_addr[8 : 6] = (3'b100);
-    usb_host_domain_apb_regs_setup_fifo_wr_addr[2 : 0] = usb_host_domain_apb_regs_setup_fifo_wr_ptr;
+    _zz_PanoCore_26_ = (9'b000000000);
+    _zz_PanoCore_26_[8 : 6] = (3'b100);
+    _zz_PanoCore_26_[2 : 0] = _zz_PanoCore_25_;
   end
 
-  assign _zz_PanoCore_34_ = ((usb_host_domain_apb_regs_hctl_rcv_tog_valid && (usb_host_domain_apb_regs_hctl_rcv_tog_payload != (2'b00))) && (usb_host_domain_apb_regs_hctl_rcv_tog_payload != (2'b11)));
-  assign _zz_PanoCore_35_ = usb_host_domain_apb_regs_hctl_rcv_tog_payload[1];
-  assign _zz_PanoCore_32_ = ((usb_host_domain_apb_regs_hctl_send_tog_valid && (usb_host_domain_apb_regs_hctl_send_tog_payload != (2'b00))) && (usb_host_domain_apb_regs_hctl_send_tog_payload != (2'b11)));
-  assign _zz_PanoCore_33_ = usb_host_domain_apb_regs_hctl_send_tog_payload[1];
+  assign _zz_PanoCore_68_ = ((_zz_PanoCore_28_ && (_zz_PanoCore_29_ != (2'b00))) && (_zz_PanoCore_29_ != (2'b11)));
+  assign _zz_PanoCore_69_ = _zz_PanoCore_29_[1];
+  assign _zz_PanoCore_66_ = ((_zz_PanoCore_30_ && (_zz_PanoCore_31_ != (2'b00))) && (_zz_PanoCore_31_ != (2'b11)));
+  assign _zz_PanoCore_67_ = _zz_PanoCore_31_[1];
   assign io_led_green = u_led_ctrl_io_gpio_write[0];
+  always @ (*) begin
+    _zz_PanoCore_71_[0] = io_led_green;
+    _zz_PanoCore_71_[1] = io_led_blue;
+    _zz_PanoCore_71_[2] = 1'b0;
+  end
+
   assign io_led_blue = u_led_ctrl_io_gpio_write[1];
+  assign io_dvi_ctrl_scl_writeEnable = (! cCGpio_1__io_gpio_write[0]);
+  assign io_dvi_ctrl_scl_write = cCGpio_1__io_gpio_write[0];
   always @ (*) begin
-    _zz_PanoCore_37_[0] = io_led_green;
-    _zz_PanoCore_37_[1] = io_led_blue;
-    _zz_PanoCore_37_[2] = 1'b0;
+    _zz_PanoCore_72_[0] = io_dvi_ctrl_scl_read;
+    _zz_PanoCore_72_[1] = io_dvi_ctrl_sda_read;
   end
 
-  assign io_dvi_ctrl_scl_writeEnable = (! u_dvi_ctrl_io_gpio_write[0]);
-  assign io_dvi_ctrl_scl_write = u_dvi_ctrl_io_gpio_write[0];
-  always @ (*) begin
-    _zz_PanoCore_38_[0] = io_dvi_ctrl_scl_read;
-    _zz_PanoCore_38_[1] = io_dvi_ctrl_sda_read;
-  end
-
-  assign io_dvi_ctrl_sda_writeEnable = (! u_dvi_ctrl_io_gpio_write[1]);
-  assign io_dvi_ctrl_sda_write = u_dvi_ctrl_io_gpio_write[1];
-  assign _zz_PanoCore_8_ = u_cpu_top_io_test_patt_apb_PWDATA[23 : 0];
-  assign _zz_PanoCore_22_ = u_cpu_top_io_txt_gen_apb_PWDATA[7 : 0];
-  assign ulpi_ctrl_apb_regs_tx_data_reg_payload = u_cpu_top_io_ulpi_apb_PWDATA[7 : 0];
-  assign ulpi_ctrl_apb_regs_tx_start_reg_payload = _zz_PanoCore_58_[0];
-  assign _zz_PanoCore_30_ = usb_host_apb_PWDATA[7 : 0];
-  assign usb_host_domain_apb_regs_send_byte_count_send_byte_count_payload = usb_host_apb_PWDATA[5 : 0];
-  assign usb_host_domain_apb_regs_hctl_rcv_tog_payload = usb_host_apb_PWDATA[5 : 4];
-  assign usb_host_domain_apb_regs_hctl_send_tog_payload = usb_host_apb_PWDATA[7 : 6];
-  assign _zz_PanoCore_9_ = usb_host_apb_PWDATA[7 : 4];
-  assign usb_host_domain_apb_regs_hxfr_xfer_type_payload = _zz_PanoCore_9_;
+  assign io_dvi_ctrl_sda_writeEnable = (! cCGpio_1__io_gpio_write[1]);
+  assign io_dvi_ctrl_sda_write = cCGpio_1__io_gpio_write[1];
+  assign io_spi_ss = u_spi_flash_io_spi_ss;
+  assign io_spi_sclk = u_spi_flash_io_spi_sclk;
+  assign io_spi_mosi = u_spi_flash_io_spi_mosi;
+  assign _zz_PanoCore_38_ = u_cpu_top_io_test_patt_apb_PWDATA[23 : 0];
+  assign _zz_PanoCore_53_ = u_cpu_top_io_txt_gen_apb_PWDATA[7 : 0];
+  assign _zz_PanoCore_39_ = u_cpu_top_io_ulpi_apb_PWDATA[7 : 0];
+  assign _zz_PanoCore_63_ = _zz_PanoCore_19_[7 : 0];
+  assign _zz_PanoCore_29_ = _zz_PanoCore_19_[5 : 4];
+  assign _zz_PanoCore_31_ = _zz_PanoCore_19_[7 : 6];
+  assign _zz_PanoCore_40_ = _zz_PanoCore_19_[7 : 4];
+  assign _zz_PanoCore_34_ = _zz_PanoCore_40_;
   always @ (posedge toplevel_main_clk) begin
     if(!toplevel_main_reset_) begin
       leds_led_cntr <= (24'b000000000000000000000000);
       vo_area_test_patt_ctrl_apb_regs_pattern_nr <= (4'b0000);
-      _zz_PanoCore_4_ <= (1'b0);
-      ulpi_ctrl_apb_regs_reg_addr <= (6'b000000);
-      ulpi_ctrl_apb_regs_reg_wr_data <= (8'b00000000);
-      ulpi_ctrl_apb_regs_reg_wr <= 1'b0;
-      _zz_PanoCore_6__regNext <= 1'b0;
-      ulpi_ctrl_apb_regs_rx_cmd_changed_sticky <= 1'b0;
+      _zz_PanoCore_5_ <= (1'b0);
+      _zz_PanoCore_9_ <= (6'b000000);
+      _zz_PanoCore_10_ <= (8'b00000000);
+      _zz_PanoCore_11_ <= 1'b0;
+      _zz_PanoCore_14__regNext <= 1'b0;
+      _zz_PanoCore_15_ <= 1'b0;
     end else begin
       if((leds_led_cntr == _zz_PanoCore_1_))begin
         leds_led_cntr <= (24'b000000000000000000000000);
       end else begin
         leds_led_cntr <= (leds_led_cntr + (24'b000000000000000000000001));
       end
-      _zz_PanoCore_4_ <= _zz_PanoCore_3_;
-      _zz_PanoCore_6__regNext <= _zz_PanoCore_6_;
-      if(_zz_PanoCore_7_)begin
-        ulpi_ctrl_apb_regs_rx_cmd_changed_sticky <= 1'b0;
+      _zz_PanoCore_5_ <= _zz_PanoCore_4_;
+      _zz_PanoCore_14__regNext <= _zz_PanoCore_14_;
+      if(_zz_PanoCore_16_)begin
+        _zz_PanoCore_15_ <= 1'b0;
       end
-      if(ulpi_ctrl_apb_regs_rx_cmd_changed_sync)begin
-        ulpi_ctrl_apb_regs_rx_cmd_changed_sticky <= 1'b1;
+      if(pulseCCByToggle_4__io_pulseOut)begin
+        _zz_PanoCore_15_ <= 1'b1;
       end
       case(u_cpu_top_io_test_patt_apb_PADDR)
         5'b00000 : begin
@@ -8361,10 +9971,10 @@ module PanoCore (
       endcase
       case(u_cpu_top_io_ulpi_apb_PADDR)
         6'b000000 : begin
-          if(ulpi_ctrl_busCtrl_doWrite)begin
-            ulpi_ctrl_apb_regs_reg_addr <= u_cpu_top_io_ulpi_apb_PWDATA[5 : 0];
-            ulpi_ctrl_apb_regs_reg_wr_data <= u_cpu_top_io_ulpi_apb_PWDATA[15 : 8];
-            ulpi_ctrl_apb_regs_reg_wr <= _zz_PanoCore_59_[0];
+          if(_zz_PanoCore_7_)begin
+            _zz_PanoCore_9_ <= u_cpu_top_io_ulpi_apb_PWDATA[5 : 0];
+            _zz_PanoCore_10_ <= u_cpu_top_io_ulpi_apb_PWDATA[15 : 8];
+            _zz_PanoCore_11_ <= _zz_PanoCore_79_[0];
           end
         end
         6'b000100 : begin
@@ -8384,27 +9994,27 @@ module PanoCore (
   end
 
   always @ (posedge io_ulpi_clk) begin
-    ulpi_reset_ <= 1'b1;
+    _zz_PanoCore_2_ <= 1'b1;
   end
 
   always @ (posedge io_ulpi_clk) begin
-    if(!ulpi_reset_) begin
-      usb_host_domain_apb_regs_send_fifo_wr_ptr <= (6'b000000);
-      usb_host_domain_apb_regs_setup_fifo_wr_ptr <= (3'b000);
+    if(!_zz_PanoCore_2_) begin
+      _zz_PanoCore_23_ <= (6'b000000);
+      _zz_PanoCore_25_ <= (3'b000);
     end else begin
-      case(usb_host_apb_PADDR)
+      case(apb3CC_1__io_dest_PADDR)
         7'b1110000 : begin
         end
         7'b0001000 : begin
-          if(usb_host_domain_busCtrl_doWrite)begin
-            usb_host_domain_apb_regs_send_fifo_wr_ptr <= (usb_host_domain_apb_regs_send_fifo_wr_ptr + (6'b000001));
+          if(_zz_PanoCore_21_)begin
+            _zz_PanoCore_23_ <= (_zz_PanoCore_23_ + (6'b000001));
           end
         end
         7'b0011100 : begin
         end
         7'b0010000 : begin
-          if(usb_host_domain_busCtrl_doWrite)begin
-            usb_host_domain_apb_regs_setup_fifo_wr_ptr <= (usb_host_domain_apb_regs_setup_fifo_wr_ptr + (3'b001));
+          if(_zz_PanoCore_21_)begin
+            _zz_PanoCore_25_ <= (_zz_PanoCore_25_ + (3'b001));
           end
         end
         7'b1100100 : begin
@@ -8422,14 +10032,14 @@ module PanoCore (
   end
 
   always @ (posedge io_ulpi_clk) begin
-    usb_host_domain_apb_regs_hirq_sndbavirq <= usb_host_domain_u_usb_host_io_send_buf_avail;
-    usb_host_domain_apb_regs_hrsl_xfer_result <= usb_host_domain_u_usb_host_io_xfer_result;
-    usb_host_domain_apb_regs_hrsl_send_data_toggle <= usb_host_domain_u_usb_host_io_cur_send_data_toggle;
-    usb_host_domain_apb_regs_hrsl_rcv_data_toggle <= usb_host_domain_u_usb_host_io_cur_rcv_data_toggle;
-    case(usb_host_apb_PADDR)
+    _zz_PanoCore_27_ <= usbHost_1__io_send_buf_avail;
+    _zz_PanoCore_35_ <= usbHost_1__io_xfer_result;
+    _zz_PanoCore_36_ <= usbHost_1__io_cur_send_data_toggle;
+    _zz_PanoCore_37_ <= usbHost_1__io_cur_rcv_data_toggle;
+    case(apb3CC_1__io_dest_PADDR)
       7'b1110000 : begin
-        if(usb_host_domain_busCtrl_doWrite)begin
-          usb_host_domain_apb_regs_periph_addr_periph_addr <= usb_host_apb_PWDATA[6 : 0];
+        if(_zz_PanoCore_21_)begin
+          _zz_PanoCore_22_ <= _zz_PanoCore_19_[6 : 0];
         end
       end
       7'b0001000 : begin
@@ -8443,8 +10053,8 @@ module PanoCore (
       7'b1110100 : begin
       end
       7'b1111000 : begin
-        if(usb_host_domain_busCtrl_doWrite)begin
-          usb_host_domain_apb_regs_hxfr_endpoint <= usb_host_apb_PWDATA[3 : 0];
+        if(_zz_PanoCore_21_)begin
+          _zz_PanoCore_32_ <= _zz_PanoCore_19_[3 : 0];
         end
       end
       7'b1111100 : begin
@@ -8460,9 +10070,9 @@ module PanoCore (
       end
       5'b00100 : begin
         if(vo_area_test_patt_ctrl_busCtrl_doWrite)begin
-          vo_area_test_patt_ctrl_apb_regs_const_color_r <= _zz_PanoCore_8_[7 : 0];
-          vo_area_test_patt_ctrl_apb_regs_const_color_g <= _zz_PanoCore_8_[15 : 8];
-          vo_area_test_patt_ctrl_apb_regs_const_color_b <= _zz_PanoCore_8_[23 : 16];
+          vo_area_test_patt_ctrl_apb_regs_const_color_r <= _zz_PanoCore_38_[7 : 0];
+          vo_area_test_patt_ctrl_apb_regs_const_color_g <= _zz_PanoCore_38_[15 : 8];
+          vo_area_test_patt_ctrl_apb_regs_const_color_b <= _zz_PanoCore_38_[23 : 16];
         end
       end
       default : begin
@@ -9516,6 +11126,10 @@ module Pano (
       output  ulpi_stp,
       input   ulpi_nxt,
       output  ulpi_reset,
+      output [0:0] spi_ss,
+      output  spi_sclk,
+      output  spi_mosi,
+      input   spi_miso,
       inout  dvi_spc,
       inout  dvi_spd,
       inout  gmii_mdio_mdio,
@@ -9539,16 +11153,19 @@ module Pano (
   wire  u_main_clk_gen_u_main_clk_pll_CLKFX180;
   wire  u_main_clk_gen_u_main_clk_pll_CLKFXDV;
   wire  u_main_clk_gen_u_main_clk_pll_LOCKED;
+  wire [1:0] u_main_clk_gen_u_main_clk_pll_STATUS;
   wire  u_main_clk_gen_u_main_clk_pll_PROGDONE;
   wire  u_vo_clk_gen_u_vo_clk_pll_CLKFX;
   wire  u_vo_clk_gen_u_vo_clk_pll_CLKFX180;
   wire  u_vo_clk_gen_u_vo_clk_pll_CLKFXDV;
   wire  u_vo_clk_gen_u_vo_clk_pll_LOCKED;
+  wire [1:0] u_vo_clk_gen_u_vo_clk_pll_STATUS;
   wire  u_vo_clk_gen_u_vo_clk_pll_PROGDONE;
   wire  u_usb_clk_gen_u_usb_clk_pll_CLKFX;
   wire  u_usb_clk_gen_u_usb_clk_pll_CLKFX180;
   wire  u_usb_clk_gen_u_usb_clk_pll_CLKFXDV;
   wire  u_usb_clk_gen_u_usb_clk_pll_LOCKED;
+  wire [1:0] u_usb_clk_gen_u_usb_clk_pll_STATUS;
   wire  u_usb_clk_gen_u_usb_clk_pll_PROGDONE;
   wire  core_u_pano_core_io_led_red;
   wire  core_u_pano_core_io_led_green;
@@ -9574,6 +11191,9 @@ module Pano (
   wire [7:0] core_u_pano_core_io_vo_r;
   wire [7:0] core_u_pano_core_io_vo_g;
   wire [7:0] core_u_pano_core_io_vo_b;
+  wire  core_u_pano_core_io_spi_sclk;
+  wire  core_u_pano_core_io_spi_mosi;
+  wire [0:0] core_u_pano_core_io_spi_ss;
   wire  core_u_dvi_io_pads_reset_;
   wire  core_u_dvi_io_pads_xclk_p;
   wire  core_u_dvi_io_pads_xclk_n;
@@ -9652,6 +11272,7 @@ module Pano (
     .RST(_zz_Pano_26_),
     .FREEZEDCM(_zz_Pano_27_),
     .LOCKED(u_main_clk_gen_u_main_clk_pll_LOCKED),
+    .STATUS(u_main_clk_gen_u_main_clk_pll_STATUS),
     .PROGCLK(_zz_Pano_28_),
     .PROGDATA(_zz_Pano_29_),
     .PROGEN(_zz_Pano_30_),
@@ -9673,6 +11294,7 @@ module Pano (
     .RST(_zz_Pano_31_),
     .FREEZEDCM(_zz_Pano_32_),
     .LOCKED(u_vo_clk_gen_u_vo_clk_pll_LOCKED),
+    .STATUS(u_vo_clk_gen_u_vo_clk_pll_STATUS),
     .PROGCLK(_zz_Pano_33_),
     .PROGDATA(_zz_Pano_34_),
     .PROGEN(_zz_Pano_35_),
@@ -9694,6 +11316,7 @@ module Pano (
     .RST(_zz_Pano_36_),
     .FREEZEDCM(_zz_Pano_37_),
     .LOCKED(u_usb_clk_gen_u_usb_clk_pll_LOCKED),
+    .STATUS(u_usb_clk_gen_u_usb_clk_pll_STATUS),
     .PROGCLK(_zz_Pano_38_),
     .PROGDATA(_zz_Pano_39_),
     .PROGEN(_zz_Pano_40_),
@@ -9740,6 +11363,10 @@ module Pano (
     .io_vo_r(core_u_pano_core_io_vo_r),
     .io_vo_g(core_u_pano_core_io_vo_g),
     .io_vo_b(core_u_pano_core_io_vo_b),
+    .io_spi_ss(core_u_pano_core_io_spi_ss),
+    .io_spi_sclk(core_u_pano_core_io_spi_sclk),
+    .io_spi_mosi(core_u_pano_core_io_spi_mosi),
+    .io_spi_miso(spi_miso),
     .toplevel_main_clk(main_clk),
     .toplevel_main_reset_(main_reset_),
     .toplevel_u_vo_clk_gen_vo_clk(u_vo_clk_gen_vo_clk),
@@ -9929,6 +11556,9 @@ module Pano (
   assign core_vo_r = core_u_pano_core_io_vo_r;
   assign core_vo_g = core_u_pano_core_io_vo_g;
   assign core_vo_b = core_u_pano_core_io_vo_b;
+  assign spi_ss = core_u_pano_core_io_spi_ss;
+  assign spi_sclk = core_u_pano_core_io_spi_sclk;
+  assign spi_mosi = core_u_pano_core_io_spi_mosi;
   assign dvi_reset_ = core_u_dvi_io_pads_reset_;
   assign dvi_xclk_p = core_u_dvi_io_pads_xclk_p;
   assign dvi_xclk_n = core_u_dvi_io_pads_xclk_n;
