@@ -9,6 +9,7 @@ import spinal.lib.bus.amba4.axi._
 import spinal.lib.bus.misc.SizeMapping
 import scala.collection.mutable.ArrayBuffer
 import spinal.lib.com.uart._
+import spinal.lib.com.spi._
 
 import cc._
 import gmii._
@@ -32,8 +33,10 @@ class PanoCore(voClkDomain: ClockDomain, panoConfig: PanoConfig) extends Compone
 
         val vo                  = out(VgaData())
 
-	val axi1 = master(Axi4(Axi4Config(addressWidth = 32, dataWidth = 32, idWidth = 4)))
-	val axi2 = master(Axi4(Axi4Config(addressWidth = 32, dataWidth = 32, idWidth = 4)))
+        val axi1                = master(Axi4(Axi4Config(addressWidth = 32, dataWidth = 32, idWidth = 4)))
+        val axi2                = master(Axi4(Axi4Config(addressWidth = 32, dataWidth = 32, idWidth = 4)))
+
+        val spi                 = master(SpiMaster())
     }
 
 
@@ -234,6 +237,19 @@ class PanoCore(voClkDomain: ClockDomain, panoConfig: PanoConfig) extends Compone
         uartCtrl.io.uart.txd    <> io.led_blue
         uartCtrl.io.uart.rxd    := True
     }
+
+    val u_spi_flash = Apb3SpiMasterCtrl(
+        generics = SpiMasterCtrlMemoryMappedConfig(
+            ctrlGenerics = SpiMasterCtrlGenerics(
+                ssWidth = 1,
+                timerWidth = 16,
+                dataWidth = 8),
+            cmdFifoDepth = 32,
+            rspFifoDepth = 32
+        )
+    )
+    u_spi_flash.io.spi <> io.spi
+    u_spi_flash.io.apb <> u_cpu_top.io.spi_flash_ctrl_apb
 
 }
 

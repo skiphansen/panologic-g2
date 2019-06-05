@@ -2,31 +2,34 @@
 # VCCAUX is 2.5 Volts
 CONFIG VCCAUX = "2.5";
 
-# 125 MHz System Clock (25 MHz when GMII chip is in reset)
-NET "osc_clk"               LOC = Y13 | IOSTANDARD = LVCMOS33;
 
+# 125 MHz System Clock (25 MHz when GMII chip is in reset)
 TIMESPEC TS_OSC_CLK = PERIOD "osc_clk" 125 MHz HIGH 50%;
 NET "osc_clk" TNM_NET = osc_clk;
 
+# GMII RX input, driven by GMII chip.
 TIMESPEC TS_GMII_RX_CLK = PERIOD "gmii_rx_clk" 125 MHz HIGH 50%;
 NET "gmii_rx_clk" TNM_NET = gmii_rx_clk;
 
+# 60 MHz clock driven by ULPI chip.
 TIMESPEC TS_ULPI_CLK = PERIOD "ulpi_clk" 60 MHz HIGH 50%;
 NET "ulpi_clk" TNM_NET = ulpi_clk;
 
-#TIMESPEC TS_MAIN_CLK = PERIOD "_zz_Pano_25_" 25 MHz HIGH 50%;
-#NET "_zz_Pano_25_" TNM_NET = _zz_Pano_25_;
-#
-#TIMESPEC TS_VO_CLK = PERIOD "_zz_Pano_30_" 150 MHz HIGH 50%;
-#NET "_zz_Pano_30_" TNM_NET = _zz_Pano_30_;
+# Configuration registers main clk and vo clk.
+# Without this, we get masasive timing violations.
+TIMESPEC TS_MAIN_CLK_TO_VO_CLK_FALSE_PATH = FROM "u_main_clk_gen_u_main_clk_pll_CLKFX" TO "u_vo_clk_gen_u_vo_clk_pll_CLKFX" TIG;
 
 # Reset Signals
-#NET "SYSRST_N" LOC = AB14 | IOSTANDARD = LVCMOS33;
+#NET "SYSRST_N" LOC = AB14   | IOSTANDARD = LVCMOS33;
 #NET "RESET_OUT_N" LOC = AA6 | IOSTANDARD = LVCMOS33;
 
 # Power Management
-#NET "SLEEP_REQ" LOC = C13 | IOSTANDARD = LVCMOS33;
+#NET "SLEEP_REQ" LOC = C13   | IOSTANDARD = LVCMOS33;
 #NET "POWER_SLEEP" LOC = C10 | IOSTANDARD = LVCMOS33;
+
+# 125 MHz System Clock (25 MHz when GMII chip is in reset)
+# This net is driven by the GMII chip.
+NET "osc_clk"               LOC = Y13 | IOSTANDARD = LVCMOS33;
 
 # USB Clock Generation
 NET "usb_reset_"            LOC = W11 | IOSTANDARD = LVCMOS33;
@@ -151,6 +154,12 @@ NET "gmii_crs"              LOC = W4    | IOSTANDARD = LVCMOS33;
 
 #NET "ENET_LINK_ACTIVE_N" LOC = AA4 | IOSTANDARD = LVCMOS33;
 
+# SPI Flash
+NET "spi_ss"   LOC = T5   | IOSTANDARD = LVCMOS33;
+NET "spi_sclk" LOC = Y21  | IOSTANDARD = LVCMOS33;
+NET "spi_mosi" LOC = AB20 | IOSTANDARD = LVCMOS33;
+NET "spi_miso" LOC = AA20 | IOSTANDARD = LVCMOS33;
+
 # DDR2 SDRAM Interface A
 NET "ddr2a_d[0]" LOC = N20 | IOSTANDARD = SSTL18_II | IN_TERM = UNTUNED_SPLIT_25;
 NET "ddr2a_d[1]" LOC = N22 | IOSTANDARD = SSTL18_II | IN_TERM = UNTUNED_SPLIT_25;
@@ -253,6 +262,7 @@ INST "core_u_pano_core/u_cpu_top/u_cpu/ram/Mram_ram_symbol3" LOC = RAMB16_X3Y80;
 
 NET "core_u_pano_core/vo_area_test_patt_ctrl_apb_regs_pattern_nr[*]" TIG;
 NET "core_u_pano_core/vo_area_test_patt_ctrl_apb_regs_const_color*" TIG;
+
 INST "mig_1_/memc1_wrapper_inst/mcb_ui_top_inst/mcb_raw_wrapper_inst/samc_0" LOC = MCB_X1Y1;
 INST "mig_1_/memc1_infrastructure_inst/BUFPLL_MCB1" LOC = BUFPLL_MCB_X2Y5;
 INST "mig_1_/memc1_infrastructure_inst/u_pll_adv" LOC = PLL_ADV_X0Y2;
@@ -262,3 +272,4 @@ INST "mig_1_/memc3_infrastructure_inst/u_pll_adv" LOC = PLL_ADV_X0Y3;
 
 PIN "mig_1_/memc1_infrastructure_inst/u_pll_adv.CLKIN1" CLOCK_DEDICATED_ROUTE = FALSE;
 PIN "mig_1_/memc3_infrastructure_inst/u_pll_adv.CLKIN1" CLOCK_DEDICATED_ROUTE = FALSE;
+

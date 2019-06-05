@@ -5,6 +5,7 @@ import spinal.core._
 
 import spinal.lib._
 import spinal.lib.io._
+import spinal.lib.com.spi.SpiMaster
 
 import spartan6._
 
@@ -55,8 +56,10 @@ class Pano(config : PanoConfig) extends Component {
         // ULPI Interface
         val ulpi                = if (config.includeUlpi) slave(Ulpi()) else null
 
-	val ddr2a = master(DDRIntfc())
-	val ddr2b = master(DDRIntfc())
+        val ddr2a               = master(DDRIntfc())
+        val ddr2b               = master(DDRIntfc())
+
+        val spi                 = master(SpiMaster())
     }
 
     noIoPrefix()
@@ -279,6 +282,7 @@ class Pano(config : PanoConfig) extends Component {
         }
 
         u_pano_core.io.vo           <> vo
+        u_pano_core.io.spi          <> io.spi
 
         //============================================================
         // Chrontel Pads DVI

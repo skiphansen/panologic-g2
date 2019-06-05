@@ -70,28 +70,59 @@ int main() {
     print("Code at github.com/tomverbeure/panologic-g2\n");
 #endif
 
-    ulpi_print_id();
-
-    ulpi_reset_bus();
-
-    ulpi_monitor_rx_cmd();
-
 #if 0
+    // Basis ULPI bus monitoring.
+    ulpi_print_id();
+    ulpi_reset_bus();
+    ulpi_monitor_rx_cmd();      // This is an endless loop
+#endif
+
+#if 1
+    // Basic test that dumps received packets on the GMII interface
     gmii_mdio_init();
     gmii_reg_dump(0);
     gmii_print_phy_id(0);
     gmii_wait_auto_neg_complete(0);
-#endif
-#if 0
     gmii_reg_dump(0);
-#endif
-#if 0
-    gmii_monitor_regs(0);
-#endif
-#if 0
+
     gmii_dump_packets(0);
 #endif
+#if 1
+    // SPI Flash test (read first 256 bytes)
+    uint32_t address = 0x00000000;
+    *(volatile uint32_t*)0x80000708 = 0x00000000; // config
+    *(volatile uint32_t*)0x8000070C = 0x00000000; // clockDivider = 1 (25MHz / 2)
+    *(volatile uint32_t*)0x80000710 = 0x00000001; // ssSetup time
+    *(volatile uint32_t*)0x80000714 = 0x00000001; // ssHold time
+    *(volatile uint32_t*)0x80000718 = 0x00000001; // ssDisable time
 
+    do {
+        *(volatile uint32_t*)0x80000700 = 0x11000000; // SS Enable
+        *(volatile uint32_t*)0x80000700 = 0x00000003; // READ DATA BYTES
+        *(volatile uint32_t*)0x80000700 = (address >> 16) & 0xFF; // A[23-16]
+        *(volatile uint32_t*)0x80000700 = (address >> 8) & 0xFF; // A[15-8]
+        *(volatile uint32_t*)0x80000700 = address & 0xFF; // A[7-0]
+
+        for (int i=0; i<16; i++) {
+            *(volatile uint32_t*)0x80000700 = 0x01000000; // Read Data
+	}
+
+        *(volatile uint32_t*)0x80000700 = 0x10000000; // SS Disable
+
+        print("SPI Flash: ");
+        for (int i=0; i<16; i++) {
+            uint32_t spiRd = 0;
+            while (((spiRd = *(volatile uint32_t*)0x80000700) & 0x80000000) == 0) {}
+            print_byte(spiRd & 0xFF, 1);
+            print(" ");
+        }
+        print("\n");
+        address += 16;
+    } while (address < 256);
+#endif
+
+#if 0
+    // This test simply loops through test patterns.
     int pattern_nr = 0;
     int const_color_nr = 0;
 
@@ -112,6 +143,7 @@ int main() {
             }
         }
     }
+#endif
 
     while(1){
         if (!button_pressed()){
