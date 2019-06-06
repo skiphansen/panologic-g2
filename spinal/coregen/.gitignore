@@ -1,0 +1,13 @@
+*.v
+*.pdf
+*.tcl
+*.txt
+*.xmsgs
+*.cgc
+*.cgp
+*.xml
+*.gise
+*.xise
+*.veo
+MIG/example_design/
+MIG/user_design/

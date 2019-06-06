@@ -1,6 +1,6 @@
 <?xml version='1.0' encoding='UTF-8'?>
 <Project NoOfControllers="2" >
-    <ModuleName>mig_v3_92_0</ModuleName>
+    <ModuleName>MIG</ModuleName>
     <TargetFPGA>xc6slx150-fgg484/-2</TargetFPGA>
     <Version>3.92</Version>
     <Controller number="1" >
