@@ -170,7 +170,8 @@ The table below is based on
 
   That's right: there are 2 SDRAM chips on this board! Each one has 512Mbit in x16 configuration, good for 64MByte per DRAM and 128MByte total.
 
-  Theoretical peak BW is 3.2GByte/s, which is pretty decent.
+  Theoretical peak BW is 3.2GByte/s, which is pretty decent. Actual bandwidth appears to be 2.5GBytes/s as the Spartan-6 memory controller tops out at 312.5 MHz (DDR2-625)
+  for speedgrade -2 without additional "Extended Performance" VCCINT, and even then only goes to 333 MHz maximum.
   
   1920x1200x24@60 requires an average BW of only 3.3 Gbit/s, or 6.6Gbit/s with 2 screen attached. So there's definitely
   way more BW available than strictly needed.

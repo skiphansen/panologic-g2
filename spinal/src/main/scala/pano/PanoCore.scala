@@ -196,7 +196,7 @@ class PanoCore(voClkDomain: ClockDomain, panoConfig: PanoConfig) extends Compone
         u_led_ctrl.io.gpio.read(1)          := io.led_blue
     }
 
-    u_led_ctrl.io.gpio.read(2)              := False
+    u_led_ctrl.io.gpio.read(2)              := io.switch_
 
 
     if (panoConfig.includeDviI2C){

@@ -3,21 +3,41 @@
 CONFIG VCCAUX = "2.5";
 
 
+# Note: There are separate TNM_NETs specified for the clocks due to a stupid quirk where ISE won't look
+# at derived constraints if you add anything but a PERIOD. We create a second TNM_NET for TIG or delays
+
 # 125 MHz System Clock (25 MHz when GMII chip is in reset)
-TIMESPEC TS_OSC_CLK = PERIOD "osc_clk" 125 MHz HIGH 50%;
-NET "osc_clk" TNM_NET = osc_clk;
+TIMESPEC TS_OSC_CLK = PERIOD "osc_clk" 125 MHz HIGH 50 %;
+NET "osc_clk" TNM_NET = "osc_clk";
 
 # GMII RX input, driven by GMII chip.
-TIMESPEC TS_GMII_RX_CLK = PERIOD "gmii_rx_clk" 125 MHz HIGH 50%;
-NET "gmii_rx_clk" TNM_NET = gmii_rx_clk;
+TIMESPEC TS_GMII_RX_CLK = PERIOD "gmii_rx_clk_period" 125 MHz HIGH 50 %;
+NET "gmii_rx_clk" TNM_NET = "gmii_rx_clk_period";
+NET "gmii_rx_clk" TNM_NET = "gmii_rx_clk_tnm";
 
 # 60 MHz clock driven by ULPI chip.
-TIMESPEC TS_ULPI_CLK = PERIOD "ulpi_clk" 60 MHz HIGH 50%;
-NET "ulpi_clk" TNM_NET = ulpi_clk;
+TIMESPEC TS_ULPI_CLK = PERIOD "ulpi_clk_period" 60 MHz HIGH 50 %;
+NET "ulpi_clk" TNM_NET = "ulpi_clk_period";
+NET "ulpi_clk" TNM_NET = "ulpi_clk_tnm";
+
+# Main clock (processor/IO peripherals) - Derived from 125Mhz (/5 = 25MHz)
+NET "u_main_clk_gen_u_main_clk_pll_CLKFX" TNM_NET = "main_clk_period";
+NET "u_main_clk_gen_u_main_clk_pll_CLKFX" TNM_NET = "main_clk_tnm";
+
+# Video clock 148 MHz
+NET "u_vo_clk_gen_u_vo_clk_pll_CLKFX" TNM_NET = "video_clk_period";
+NET "u_vo_clk_gen_u_vo_clk_pll_CLKFX" TNM_NET = "video_clk_tnm";
 
 # Configuration registers main clk and vo clk.
 # Without this, we get masasive timing violations.
-TIMESPEC TS_MAIN_CLK_TO_VO_CLK_FALSE_PATH = FROM "u_main_clk_gen_u_main_clk_pll_CLKFX" TO "u_vo_clk_gen_u_vo_clk_pll_CLKFX" TIG;
+TIMESPEC TS_MAIN_TO_VIDEO = FROM "main_clk_tnm" TO "video_clk_tnm" 8 ns DATAPATHONLY;
+TIMESPEC TS_VIDEO_TO_MAIN = FROM "video_clk_tnm" TO "main_clock_tnm" 8 ns DATAPATHONLY;
+
+TIMESPEC TS_MAIN_TO_RX = FROM "main_clk_tnm" TO "gmii_rx_clk_tnm" 8 ns DATAPATHONLY;
+TIMESPEC TS_RX_TO_MAIN = FROM "gmii_rx_clk_tnm" TO "main_clk_tnm" 8 ns DATAPATHONLY;
+
+TIMESPEC TS_MAIN_TO_USB = FROM "main_clk_tnm" TO "ulpi_clk_tnm" 8 ns DATAPATHONLY;
+TIMESPEC TS_USB_TO_MAIN = FROM "ulpi_clk_tnm" TO "main_clk_tnm" 8 ns DATAPATHONLY;
 
 # Reset Signals
 #NET "SYSRST_N" LOC = AB14   | IOSTANDARD = LVCMOS33;
@@ -260,16 +280,20 @@ INST "core_u_pano_core/u_cpu_top/u_cpu/ram/Mram_ram_symbol1" LOC = RAMB16_X3Y84;
 INST "core_u_pano_core/u_cpu_top/u_cpu/ram/Mram_ram_symbol2" LOC = RAMB16_X3Y82;
 INST "core_u_pano_core/u_cpu_top/u_cpu/ram/Mram_ram_symbol3" LOC = RAMB16_X3Y80;
 
-NET "core_u_pano_core/vo_area_test_patt_ctrl_apb_regs_pattern_nr[*]" TIG;
-NET "core_u_pano_core/vo_area_test_patt_ctrl_apb_regs_const_color*" TIG;
 
-INST "mig_1_/memc1_wrapper_inst/mcb_ui_top_inst/mcb_raw_wrapper_inst/samc_0" LOC = MCB_X1Y1;
-INST "mig_1_/memc1_infrastructure_inst/BUFPLL_MCB1" LOC = BUFPLL_MCB_X2Y5;
-INST "mig_1_/memc1_infrastructure_inst/u_pll_adv" LOC = PLL_ADV_X0Y2;
-INST "mig_1_/memc3_wrapper_inst/mcb_ui_top_inst/mcb_raw_wrapper_inst/samc_0" LOC = MCB_X0Y1;
-INST "mig_1_/memc3_infrastructure_inst/BUFPLL_MCB1" LOC = BUFPLL_MCB_X0Y5;
-INST "mig_1_/memc3_infrastructure_inst/u_pll_adv" LOC = PLL_ADV_X0Y3;
+INST "core_mem/mig_1_/memc1_wrapper_inst/mcb_ui_top_inst/mcb_raw_wrapper_inst/samc_0" LOC = MCB_X1Y1;
+INST "core_mem/mig_1_/memc1_infrastructure_inst/BUFPLL_MCB1" LOC = BUFPLL_MCB_X2Y5;
+INST "core_mem/mig_1_/memc1_infrastructure_inst/u_pll_adv" LOC = PLL_ADV_X0Y2;
+INST "core_mem/mig_1_/memc3_wrapper_inst/mcb_ui_top_inst/mcb_raw_wrapper_inst/samc_0" LOC = MCB_X0Y1;
+INST "core_mem/mig_1_/memc3_infrastructure_inst/BUFPLL_MCB1" LOC = BUFPLL_MCB_X0Y5;
+INST "core_mem/mig_1_/memc3_infrastructure_inst/u_pll_adv" LOC = PLL_ADV_X0Y3;
 
-PIN "mig_1_/memc1_infrastructure_inst/u_pll_adv.CLKIN1" CLOCK_DEDICATED_ROUTE = FALSE;
-PIN "mig_1_/memc3_infrastructure_inst/u_pll_adv.CLKIN1" CLOCK_DEDICATED_ROUTE = FALSE;
+PIN "core_mem/mig_1_/memc1_infrastructure_inst/u_pll_adv.CLKIN1" CLOCK_DEDICATED_ROUTE = FALSE;
+PIN "core_mem/mig_1_/memc3_infrastructure_inst/u_pll_adv.CLKIN1" CLOCK_DEDICATED_ROUTE = FALSE;
+NET "osc_clk" CLOCK_DEDICATED_ROUTE = FALSE;
 
+# From MIG.ucf
+NET "core_mem/mig_1_/memc?_wrapper_inst/mcb_ui_top_inst/mcb_raw_wrapper_inst/selfrefresh_mcb_mode" TIG;
+NET "core_mem/mig_1_/c?_pll_lock" TIG;
+INST "core_mem/mig_1_/memc?_wrapper_inst/mcb_ui_top_inst/mcb_raw_wrapper_inst/gen_term_calib.mcb_soft_calibration_top_inst/mcb_soft_calibration_inst/DONE_SOFTANDHARD_CAL*" TIG;
+NET "core_mem/mig_1_/memc?_wrapper_inst/mcb_ui_top_inst/mcb_raw_wrapper_inst/gen_term_calib.mcb_soft_calibration_top_inst/mcb_soft_calibration_inst/CKE_Train" TIG; ##This path exists for DDR2 only

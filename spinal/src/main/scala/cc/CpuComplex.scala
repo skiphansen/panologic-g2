@@ -151,10 +151,11 @@ case class CpuComplex(config : CpuComplexConfig) extends Component
     //****** MainBus slaves ********
     val mainBusMapping = ArrayBuffer[(PipelinedMemoryBus,SizeMapping)]()
 
-    val ram = Axi4SharedOnChipRam(
-      dataWidth = 32,
-      byteCount = onChipRamSize,
-      idWidth = 4
+    val ram = Axi4SharedOnChipRamMultiPort(
+        portCount = 1,
+        dataWidth = 32,
+        byteCount = onChipRamSize,
+        idWidth = 4
     )
     //val ram = new MuraxPipelinedMemoryBusRam(
     //    onChipRamSize = onChipRamSize,
@@ -175,15 +176,15 @@ case class CpuComplex(config : CpuComplexConfig) extends Component
     val axiCrossbar = Axi4CrossbarFactory()
 
     axiCrossbar.addSlaves(
-        ram.io.axi       -> (0x00000000L,   onChipRamSize),
+        ram.io.axis(0)       -> (0x00000000L,   onChipRamSize),
         io.axiMem1       -> (0x40000000L,   64 MB),
         io.axiMem2       -> (0x44000000L,   64 MB),
         apbBridge.io.axi -> (0x80000000L,   1 MB)
     )
 
     axiCrossbar.addConnections(
-        core.iBus       -> List(ram.io.axi, io.axiMem1, io.axiMem2),
-        core.dBus       -> List(ram.io.axi, io.axiMem1, io.axiMem2, apbBridge.io.axi)
+        core.iBus       -> List(ram.io.axis(0), io.axiMem1, io.axiMem2),
+        core.dBus       -> List(ram.io.axis(0), io.axiMem1, io.axiMem2, apbBridge.io.axi)
     )
 
     axiCrossbar.addPipelining(apbBridge.io.axi)((crossbar,bridge) => {
@@ -207,7 +208,7 @@ case class CpuComplex(config : CpuComplexConfig) extends Component
       crossbar.readRsp               <<  ctrl.readRsp
     })
 
-    axiCrossbar.addPipelining(ram.io.axi)((crossbar,ctrl) => {
+    axiCrossbar.addPipelining(ram.io.axis(0))((crossbar,ctrl) => {
       crossbar.sharedCmd.halfPipe()  >>  ctrl.sharedCmd
       crossbar.writeData            >/-> ctrl.writeData
       crossbar.writeRsp              <<  ctrl.writeRsp

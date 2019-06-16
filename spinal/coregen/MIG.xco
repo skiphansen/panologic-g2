@@ -1,7 +1,7 @@
 ##############################################################
 #
 # Xilinx Core Generator version 14.7
-# Date: Thu Jun  6 00:46:15 2019
+# Date: Sun Jun  9 15:38:21 2019
 #
 ##############################################################
 #
@@ -40,10 +40,10 @@ SELECT MIG_Virtex-6_and_Spartan-6 family Xilinx,_Inc. 3.92
 # END Select
 # BEGIN Parameters
 CSET component_name=MIG
-CSET xml_input_file=./MIG/mig.prj
+CSET xml_input_file=./MIG/user_design/mig.prj
 # END Parameters
 # BEGIN Extra information
 MISC pkg_timestamp=2013-10-13T18:46:09Z
 # END Extra information
 GENERATE
-# CRC: 1ecd8dc8
+# CRC: 1ba17b96

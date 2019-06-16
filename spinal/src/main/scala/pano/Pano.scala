@@ -317,11 +317,23 @@ class Pano(config : PanoConfig) extends Component {
         }
 
         val mem = new MemoryController()
-        mem.io.clk := main_clk
+        mem.io.sys_clk := io.osc_clk
+	mem.io.axi_clk := main_clk
+	mem.io.axi_reset_n := main_reset_
         io.ddr2a <> mem.io.ddr2a
         io.ddr2b <> mem.io.ddr2b
-        mem.io.axi1 << u_pano_core.io.axi1
-        mem.io.axi2 << u_pano_core.io.axi2
+
+	mem.io.axi1.aw <-/< u_pano_core.io.axi1.aw;
+	mem.io.axi1.w  <-/< u_pano_core.io.axi1.w;
+	mem.io.axi1.b  >/-> u_pano_core.io.axi1.b;
+	mem.io.axi1.ar <-/< u_pano_core.io.axi1.ar;
+	mem.io.axi1.r  >/-> u_pano_core.io.axi1.r;
+
+	mem.io.axi2.aw <-/< u_pano_core.io.axi2.aw;
+	mem.io.axi2.w  <-/< u_pano_core.io.axi2.w;
+	mem.io.axi2.b  >/-> u_pano_core.io.axi2.b;
+	mem.io.axi2.ar <-/< u_pano_core.io.axi2.ar;
+	mem.io.axi2.r  >/-> u_pano_core.io.axi2.r;
     }
 
 }

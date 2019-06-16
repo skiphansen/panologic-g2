@@ -13,7 +13,9 @@ import spartan6._
 class MemoryController() extends Component {
 
     val io = new Bundle {
-	val clk = in(Bool)
+	val sys_clk = in(Bool)
+	val axi_clk = in(Bool)
+	val axi_reset_n = in(Bool)
 	val ddr2a = master(DDRIntfc())
 	val ddr2b = master(DDRIntfc())
 	val axi1 = slave(Axi4(Axi4Config(addressWidth = 32, dataWidth = 32, idWidth = 4)))
@@ -60,14 +62,14 @@ class MemoryController() extends Component {
     io.ddr2b.ck_p   <> mig.io.mcb3_dram_ck
     io.ddr2b.ck_n   <> mig.io.mcb3_dram_ck_n
 
-    mig.io.c1_sys_clk := io.clk
-    mig.io.c1_sys_rst_i := True
-    mig.io.c3_sys_clk := io.clk
-    mig.io.c3_sys_rst_i := True
+    mig.io.c1_sys_clk := io.sys_clk
+    mig.io.c1_sys_rst_i := False
+    mig.io.c3_sys_clk := io.sys_clk
+    mig.io.c3_sys_rst_i := False
 
     // AXI 1
-    mig.io.c1_s0_axi_aclk := io.clk
-    mig.io.c1_s0_axi_aresetn := True
+    mig.io.c1_s0_axi_aclk := io.axi_clk
+    mig.io.c1_s0_axi_aresetn := io.axi_reset_n
 
     mig.io.c1_s0_axi_awid := io.axi1.aw.id.asBits
     mig.io.c1_s0_axi_awaddr := io.axi1.aw.addr.asBits
@@ -81,8 +83,8 @@ class MemoryController() extends Component {
     mig.io.c1_s0_axi_awvalid := io.axi1.aw.valid
     io.axi1.aw.ready := mig.io.c1_s0_axi_awready
 
-    mig.io.c1_s0_axi_wdata := io.axi1.w.data.resize(128)
-    mig.io.c1_s0_axi_wstrb := io.axi1.w.strb.resize(16)
+    mig.io.c1_s0_axi_wdata := io.axi1.w.data
+    mig.io.c1_s0_axi_wstrb := io.axi1.w.strb
     mig.io.c1_s0_axi_wlast := io.axi1.w.last
     mig.io.c1_s0_axi_wvalid := io.axi1.w.valid
     io.axi1.w.ready := mig.io.c1_s0_axi_wready
@@ -107,15 +109,15 @@ class MemoryController() extends Component {
     io.axi1.ar.ready := mig.io.c1_s0_axi_arready
 
     io.axi1.r.id := mig.io.c1_s0_axi_rid.asUInt
-    io.axi1.r.data := mig.io.c1_s0_axi_rdata.resize(32)
+    io.axi1.r.data := mig.io.c1_s0_axi_rdata
     io.axi1.r.resp := mig.io.c1_s0_axi_rresp
     io.axi1.r.last := mig.io.c1_s0_axi_rlast
     io.axi1.r.valid := mig.io.c1_s0_axi_rvalid
     mig.io.c1_s0_axi_rready := io.axi1.r.ready
 
     // AXI 2
-    mig.io.c3_s0_axi_aclk := io.clk
-    mig.io.c3_s0_axi_aresetn := True
+    mig.io.c3_s0_axi_aclk := io.axi_clk
+    mig.io.c3_s0_axi_aresetn := io.axi_reset_n
 
     mig.io.c3_s0_axi_awid := io.axi2.aw.id.asBits
     mig.io.c3_s0_axi_awaddr := io.axi2.aw.addr.asBits
@@ -129,8 +131,8 @@ class MemoryController() extends Component {
     mig.io.c3_s0_axi_awvalid := io.axi2.aw.valid
     io.axi2.aw.ready := mig.io.c3_s0_axi_awready
 
-    mig.io.c3_s0_axi_wdata := io.axi2.w.data.resize(128)
-    mig.io.c3_s0_axi_wstrb := io.axi2.w.strb.resize(16)
+    mig.io.c3_s0_axi_wdata := io.axi2.w.data
+    mig.io.c3_s0_axi_wstrb := io.axi2.w.strb
     mig.io.c3_s0_axi_wlast := io.axi2.w.last
     mig.io.c3_s0_axi_wvalid := io.axi2.w.valid
     io.axi2.w.ready := mig.io.c3_s0_axi_wready
@@ -155,7 +157,7 @@ class MemoryController() extends Component {
     io.axi2.ar.ready := mig.io.c3_s0_axi_arready
 
     io.axi2.r.id := mig.io.c3_s0_axi_rid.asUInt
-    io.axi2.r.data := mig.io.c3_s0_axi_rdata.resize(32)
+    io.axi2.r.data := mig.io.c3_s0_axi_rdata
     io.axi2.r.resp := mig.io.c3_s0_axi_rresp
     io.axi2.r.last := mig.io.c3_s0_axi_rlast
     io.axi2.r.valid := mig.io.c3_s0_axi_rvalid

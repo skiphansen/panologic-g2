@@ -1,0 +1,20 @@
+--- b/spinal/coregen/MIG/user_design/rtl/infrastructure.v
++++ a/spinal/coregen/MIG/user_design/rtl/infrastructure.v
+@@ -153,11 +153,12 @@
+       // SINGLE_ENDED input clock input buffers
+       //***********************************************************************
+ 
++      //IBUFG  u_ibufg_sys_clk
++      //    (
++      //     .I  (sys_clk),
++      //     .O  (sys_clk_ibufg)
++      //     );
++      assign sys_clk_ibufg = sys_clk;
+-      IBUFG  u_ibufg_sys_clk
+-          (
+-           .I  (sys_clk),
+-           .O  (sys_clk_ibufg)
+-           );
+    end
+   endgenerate
+ 

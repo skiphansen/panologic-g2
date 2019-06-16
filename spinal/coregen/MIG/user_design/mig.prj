@@ -1,22 +1,22 @@
-<?xml version='1.0' encoding='UTF-8'?>
+<?xml version="1.0" encoding="UTF-8"?>
 <Project NoOfControllers="2" >
     <ModuleName>MIG</ModuleName>
     <TargetFPGA>xc6slx150-fgg484/-2</TargetFPGA>
     <Version>3.92</Version>
     <Controller number="1" >
-        <MemoryDevice>DDR2_SDRAM/Components/MT47H32M16NF-25E</MemoryDevice>
+        <MemoryDevice>DDR2_SDRAM/Components/MT47H32M16XX-25E-IT</MemoryDevice>
         <TimePeriod>3200</TimePeriod>
         <EnableVoltageRange>0</EnableVoltageRange>
         <DataMask>1</DataMask>
         <CustomPart>FALSE</CustomPart>
-        <NewPartName/>
+        <NewPartName></NewPartName>
         <RowAddress>13</RowAddress>
         <ColAddress>10</ColAddress>
-        <BankAddress>3</BankAddress>
+        <BankAddress>2</BankAddress>
         <TimingParameters>
-            <Parameters twtr="7.5" trefi="7.8" twr="15" trtp="7.5" trfc="197.5" trp="12.5" tras="40" trcd="12.5" />
+            <Parameters twtr="7.5" trefi="3.9" twr="15" trtp="7.5" trfc="105" trp="12.5" tras="40" trcd="12.5" />
         </TimingParameters>
-        <mrBurstLength name="Burst Length" >8(011)</mrBurstLength>
+        <mrBurstLength name="Burst Length" >4(010)</mrBurstLength>
         <mrCasLatency name="CAS Latency" >5</mrCasLatency>
         <emrDllEnable name="DLL Enable" >Enable-Normal</emrDllEnable>
         <emrOutputDriveStrength name="Output Drive Strength" >Fullstrength</emrOutputDriveStrength>
@@ -27,31 +27,31 @@
         <emrRDQS name="RDQS Enable" >Disable</emrRDQS>
         <emrOutputs name="Outputs" >Enable</emrOutputs>
         <mr2SelfRefreshTempRange name="High Temparature Self Refresh Rate" >Disable</mr2SelfRefreshTempRange>
-        <PortInterface>AXI</PortInterface>
+        <PortInterface>AXI,AXI,AXI,AXI</PortInterface>
         <AXIParameters>
             <C1_S0_AXI_ADDR_WIDTH>32</C1_S0_AXI_ADDR_WIDTH>
-            <C1_S0_AXI_DATA_WIDTH>128</C1_S0_AXI_DATA_WIDTH>
+            <C1_S0_AXI_DATA_WIDTH>32</C1_S0_AXI_DATA_WIDTH>
             <C1_S0_AXI_ENABLE_AP>0</C1_S0_AXI_ENABLE_AP>
             <C1_S0_AXI_ID_WIDTH>4</C1_S0_AXI_ID_WIDTH>
             <C1_S0_AXI_STRICT_COHERENCY>0</C1_S0_AXI_STRICT_COHERENCY>
-            <C1_S0_AXI_SUPPORTS_NARROW_BURST>1</C1_S0_AXI_SUPPORTS_NARROW_BURST>
+            <C1_S0_AXI_SUPPORTS_NARROW_BURST>0</C1_S0_AXI_SUPPORTS_NARROW_BURST>
         </AXIParameters>
         <Class>Class II</Class>
         <DataClass>Class II</DataClass>
         <InputPinTermination>UNCALIB_TERM</InputPinTermination>
         <DataTermination>25 Ohms</DataTermination>
-        <CalibrationRowAddress/>
-        <CalibrationColumnAddress/>
-        <CalibrationBankAddress/>
+        <CalibrationRowAddress></CalibrationRowAddress>
+        <CalibrationColumnAddress></CalibrationColumnAddress>
+        <CalibrationBankAddress></CalibrationBankAddress>
         <SystemClock>Single-Ended</SystemClock>
         <BypassCalibration>1</BypassCalibration>
         <DebugSignals>Disable</DebugSignals>
         <SystemClock>Single-Ended</SystemClock>
-        <Configuration>One 128-bit bi-directional port</Configuration>
+        <Configuration>Four 32-bit bi-directional ports</Configuration>
         <RzqPin>C19</RzqPin>
         <ZioPin>M19</ZioPin>
         <PortsSelected>Port0</PortsSelected>
-        <PortDirections>Bi-directional</PortDirections>
+        <PortDirections>Bi-directional,none,none,none</PortDirections>
         <UserMemoryAddressMap>ROW_BANK_COLUMN</UserMemoryAddressMap>
         <ArbitrationAlgorithm>Round Robin</ArbitrationAlgorithm>
         <TimeSlot0>0</TimeSlot0>
@@ -68,19 +68,19 @@
         <TimeSlot11>0</TimeSlot11>
     </Controller>
     <Controller number="3" >
-        <MemoryDevice>DDR2_SDRAM/Components/MT47H32M16NF-25E</MemoryDevice>
+        <MemoryDevice>DDR2_SDRAM/Components/MT47H32M16XX-25E-IT</MemoryDevice>
         <TimePeriod>3200</TimePeriod>
         <EnableVoltageRange>0</EnableVoltageRange>
         <DataMask>1</DataMask>
         <CustomPart>FALSE</CustomPart>
-        <NewPartName/>
+        <NewPartName></NewPartName>
         <RowAddress>13</RowAddress>
         <ColAddress>10</ColAddress>
-        <BankAddress>3</BankAddress>
+        <BankAddress>2</BankAddress>
         <TimingParameters>
-            <Parameters twtr="7.5" trefi="7.8" twr="15" trtp="7.5" trfc="197.5" trp="12.5" tras="40" trcd="12.5" />
+            <Parameters twtr="7.5" trefi="3.9" twr="15" trtp="7.5" trfc="105" trp="12.5" tras="40" trcd="12.5" />
         </TimingParameters>
-        <mrBurstLength name="Burst Length" >8(011)</mrBurstLength>
+        <mrBurstLength name="Burst Length" >4(010)</mrBurstLength>
         <mrCasLatency name="CAS Latency" >5</mrCasLatency>
         <emrDllEnable name="DLL Enable" >Enable-Normal</emrDllEnable>
         <emrOutputDriveStrength name="Output Drive Strength" >Fullstrength</emrOutputDriveStrength>
@@ -91,31 +91,31 @@
         <emrRDQS name="RDQS Enable" >Disable</emrRDQS>
         <emrOutputs name="Outputs" >Enable</emrOutputs>
         <mr2SelfRefreshTempRange name="High Temparature Self Refresh Rate" >Disable</mr2SelfRefreshTempRange>
-        <PortInterface>AXI</PortInterface>
+        <PortInterface>AXI,AXI,AXI,AXI</PortInterface>
         <AXIParameters>
             <C3_S0_AXI_ADDR_WIDTH>32</C3_S0_AXI_ADDR_WIDTH>
-            <C3_S0_AXI_DATA_WIDTH>128</C3_S0_AXI_DATA_WIDTH>
+            <C3_S0_AXI_DATA_WIDTH>32</C3_S0_AXI_DATA_WIDTH>
             <C3_S0_AXI_ENABLE_AP>0</C3_S0_AXI_ENABLE_AP>
             <C3_S0_AXI_ID_WIDTH>4</C3_S0_AXI_ID_WIDTH>
             <C3_S0_AXI_STRICT_COHERENCY>0</C3_S0_AXI_STRICT_COHERENCY>
-            <C3_S0_AXI_SUPPORTS_NARROW_BURST>1</C3_S0_AXI_SUPPORTS_NARROW_BURST>
+            <C3_S0_AXI_SUPPORTS_NARROW_BURST>0</C3_S0_AXI_SUPPORTS_NARROW_BURST>
         </AXIParameters>
         <Class>Class II</Class>
         <DataClass>Class II</DataClass>
         <InputPinTermination>UNCALIB_TERM</InputPinTermination>
         <DataTermination>25 Ohms</DataTermination>
-        <CalibrationRowAddress/>
-        <CalibrationColumnAddress/>
-        <CalibrationBankAddress/>
+        <CalibrationRowAddress></CalibrationRowAddress>
+        <CalibrationColumnAddress></CalibrationColumnAddress>
+        <CalibrationBankAddress></CalibrationBankAddress>
         <SystemClock>Single-Ended</SystemClock>
         <BypassCalibration>1</BypassCalibration>
         <DebugSignals>Disable</DebugSignals>
         <SystemClock>Single-Ended</SystemClock>
-        <Configuration>One 128-bit bi-directional port</Configuration>
+        <Configuration>Four 32-bit bi-directional ports</Configuration>
         <RzqPin>N7</RzqPin>
         <ZioPin>W3</ZioPin>
         <PortsSelected>Port0</PortsSelected>
-        <PortDirections>Bi-directional</PortDirections>
+        <PortDirections>Bi-directional,none,none,none</PortDirections>
         <UserMemoryAddressMap>ROW_BANK_COLUMN</UserMemoryAddressMap>
         <ArbitrationAlgorithm>Round Robin</ArbitrationAlgorithm>
         <TimeSlot0>0</TimeSlot0>

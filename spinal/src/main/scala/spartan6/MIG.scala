@@ -9,7 +9,7 @@ case class DDRIntfc() extends Bundle with IMasterSlave
 {
     val d = Analog(Bits(16 bits))
     val a  = Bits(13 bits)
-    val ba = Bits(3 bits)
+    val ba = Bits(2 bits)
     val ras_l = Bool
     val cas_l = Bool
     val we_l = Bool
@@ -51,7 +51,7 @@ case class DDRIntfc() extends Bundle with IMasterSlave
 class MIG(
   AXI_ID_WIDTH : Int = 4,
   AXI_ADDR_WIDTH : Int = 32,
-  AXI_DATA_WIDTH : Int = 128
+  AXI_DATA_WIDTH : Int = 32
 ) extends BlackBox {
 
     val generic = new Generic {
@@ -66,7 +66,7 @@ class MIG(
     val io = new Bundle {
         val mcb1_dram_dq = inout(Analog(Bits(16 bits)))
         val mcb1_dram_a  = out(Bits(13 bits))
-        val mcb1_dram_ba = out(Bits(3 bits))
+        val mcb1_dram_ba = out(Bits(2 bits))
         val mcb1_dram_ras_n = out(Bool)
         val mcb1_dram_cas_n = out(Bool)
         val mcb1_dram_we_n = out(Bool)
@@ -90,7 +90,7 @@ class MIG(
 
         val mcb3_dram_dq = inout(Analog(Bits(16 bits)))
         val mcb3_dram_a  = out(Bits(13 bits))
-        val mcb3_dram_ba = out(Bits(3 bits))
+        val mcb3_dram_ba = out(Bits(2 bits))
         val mcb3_dram_ras_n = out(Bool)
         val mcb3_dram_cas_n = out(Bool)
         val mcb3_dram_we_n = out(Bool)

@@ -41,7 +41,7 @@ void wait(int cycles)
 
 int button_pressed()
 {
-    return REG_RD(BUTTON) == 0x01;
+    return (REG_RD(LED_READ) & 0x04) == 0x00;
 }
 
 int main() {
@@ -77,7 +77,7 @@ int main() {
     ulpi_monitor_rx_cmd();      // This is an endless loop
 #endif
 
-#if 1
+#if 0
     // Basic test that dumps received packets on the GMII interface
     gmii_mdio_init();
     gmii_reg_dump(0);
@@ -120,6 +120,34 @@ int main() {
         address += 16;
     } while (address < 256);
 #endif
+
+#if 1 // Memory test
+
+    while (!button_pressed()){}
+
+    print("Ram test:\n");
+    for (int i=0; i<64; i++) {
+	*(volatile uint32_t*)(0x40000000 + i*4) = i;
+    }
+    print("Write Done, Reading\n");
+    for (int i=0; i<64; i++) {
+	print_int(*(volatile uint32_t*)(0x40000000 + i*4), 1);
+	print(" ");
+    }
+    print("\n");
+
+    print("Ram 2 test:\n");
+    for (int i=0; i<64; i++) {
+	*(volatile uint32_t*)(0x44000000 + i*4) = i;
+    }
+    print("Write Done, Reading\n");
+    for (int i=0; i<64; i++) {
+	print_int(*(volatile uint32_t*)(0x44000000 + i*4), 1);
+	print(" ");
+    }
+    print("\n");
+#endif
+
 
 #if 0
     // This test simply loops through test patterns.
