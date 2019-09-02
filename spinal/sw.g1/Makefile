@@ -14,6 +14,8 @@ CXX             = $(TARGET)-g++
 CFLAGS          = -march=rv32i -mabi=ilp32 -Wall -Wextra -DFREQ=$(FREQ_PLL)000000 -O2 -DPRINT_UART -Iinclude -fno-builtin-printf
 OBJCOPY         = $(TARGET)-objcopy
 OBJDUMP         = $(TARGET)-objdump
+XC3SPROG 	:= xc3sprog
+XC3SPROG_OPTS 	:= -c jtaghs2 -v
 
 #printf configuration flags
 CFLAGS += -DPRINTF_DISABLE_SUPPORT_FLOAT -DPRINTF_DISABLE_SUPPORT_LONG_LONG -DPRINTF_DISABLE_SUPPORT_PTRDIFF_T
@@ -70,6 +72,9 @@ progmem_dis.elf: $(OBJ_FILES) top_defines.h sections.lds Makefile
 
 create_sin_table: create_sin_table.c
 	gcc -o $@ $< -lm
+
+reload:
+	$(XC3SPROG) $(XC3SPROG_OPTS) ../ise.g1/PanoG1.bit
 
 clean:
 	\rm -fr *.o *.hex *.elf *.dis *.bin *.coe *.map *.mif *.mem
