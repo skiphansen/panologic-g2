@@ -262,6 +262,7 @@ class Pano(config : PanoConfig) extends Component {
 
         val u_pano_core = new PanoCore(voClkDomain, config)
 
+        u_pano_core.io.clk_125      <> io.osc_clk
         u_pano_core.io.led_red      <> io.led_red
         u_pano_core.io.led_green    <> io.led_green
         u_pano_core.io.led_blue     <> io.led_blue
@@ -318,22 +319,22 @@ class Pano(config : PanoConfig) extends Component {
 
         val mem = new MemoryController()
         mem.io.sys_clk := io.osc_clk
-	mem.io.axi_clk := main_clk
-	mem.io.axi_reset_n := main_reset_
+        mem.io.axi_clk := main_clk
+        mem.io.axi_reset_n := main_reset_
         io.ddr2a <> mem.io.ddr2a
         io.ddr2b <> mem.io.ddr2b
 
-	mem.io.axi1.aw <-/< u_pano_core.io.axi1.aw;
-	mem.io.axi1.w  <-/< u_pano_core.io.axi1.w;
-	mem.io.axi1.b  >/-> u_pano_core.io.axi1.b;
-	mem.io.axi1.ar <-/< u_pano_core.io.axi1.ar;
-	mem.io.axi1.r  >/-> u_pano_core.io.axi1.r;
+        mem.io.axi1.aw <-/< u_pano_core.io.axi1.aw;
+        mem.io.axi1.w  <-/< u_pano_core.io.axi1.w;
+        mem.io.axi1.b  >/-> u_pano_core.io.axi1.b;
+        mem.io.axi1.ar <-/< u_pano_core.io.axi1.ar;
+        mem.io.axi1.r  >/-> u_pano_core.io.axi1.r;
 
-	mem.io.axi2.aw <-/< u_pano_core.io.axi2.aw;
-	mem.io.axi2.w  <-/< u_pano_core.io.axi2.w;
-	mem.io.axi2.b  >/-> u_pano_core.io.axi2.b;
-	mem.io.axi2.ar <-/< u_pano_core.io.axi2.ar;
-	mem.io.axi2.r  >/-> u_pano_core.io.axi2.r;
+        mem.io.axi2.aw <-/< u_pano_core.io.axi2.aw;
+        mem.io.axi2.w  <-/< u_pano_core.io.axi2.w;
+        mem.io.axi2.b  >/-> u_pano_core.io.axi2.b;
+        mem.io.axi2.ar <-/< u_pano_core.io.axi2.ar;
+        mem.io.axi2.r  >/-> u_pano_core.io.axi2.r;
     }
 
 }

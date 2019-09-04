@@ -17,7 +17,7 @@ void dvi_ctrl_init()
 
     i2c_init(&dvi_ctrl_i2c_ctx);
 
-    byte chrontel_registers[][2] = {
+    static const byte chrontel_registers[][2] = {
         {   0x1c,       0x00},              // 1x DDR clocking
         {   0x1d,       0x40},              // internal clock delay
         {   0x1f,       0x80},              // input data format. Bit 4: vsp, bit 4: hsp

@@ -77,7 +77,7 @@ int main() {
     ulpi_monitor_rx_cmd();      // This is an endless loop
 #endif
 
-#if 0
+#if 1
     // Basic test that dumps received packets on the GMII interface
     gmii_mdio_init();
     gmii_reg_dump(0);
