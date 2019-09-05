@@ -39,6 +39,7 @@
 #define ULPI_RX_CMD_VALUE_BIT           0
 #define ULPI_RX_CMD_CHANGED_BIT         8
 
-
+#define DDR_BASE_ADDR               0x40000000
+#define DDR_LEN                     0x08000000
 
 

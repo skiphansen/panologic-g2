@@ -35,9 +35,9 @@ static void wait(int cycles)
 void gmii_mdio_init()
 {
     // Initial values
-    REG_WR(GMII_MDIO,     (1<<GMII_MDC_VAL_BIT) 
+    REG_WR(GMII_MDIO,     (1<<GMII_MDC_VAL_BIT)
                         | (0<<GMII_MDIO_ENA_BIT)            // MDIO starts out tri-state
-                        | (1<<GMII_MDIO_WR_BIT) 
+                        | (1<<GMII_MDIO_WR_BIT)
         );
 }
 
@@ -251,10 +251,38 @@ uint32_t crc32(uint8_t *buf, unsigned int len)
     return ( ~crc32 );
 }
 
-void gmii_tx_packet(void)
+void gmii_tx_packet(uint8_t *buf, int len)
 {
+    // Calculate FCS
+    uint32_t crc = crc32(buf, len);
 
-    static uint8_t buf[128];
+    //
+    // Output Packet
+    //
+
+    // Preamble
+    for (int i=0; i<7; i++) {
+        REG_WR(GMII_TX_FIFO_WR, 0x55);
+    }
+
+    // SFD
+    REG_WR(GMII_TX_FIFO_WR, 0xd5);
+
+    // Payload
+    for (int i=0; i<len; i++) {
+        REG_WR(GMII_TX_FIFO_WR, buf[i]);
+    }
+
+    // FCS + EOP Flag
+    for (int i=0; i<4; i++) {
+        REG_WR(GMII_TX_FIFO_WR, (crc & 0xFF) | ((i == 3) ? 0x100 : 0));
+        crc >>= 8;
+    }
+}
+
+void gmii_tx_test_packet(void)
+{
+    uint8_t *buf = (uint8_t*)DDR_BASE_ADDR;
     int idx = 0;
 
     // Dest MAC
@@ -275,52 +303,58 @@ void gmii_tx_packet(void)
         buf[idx++] = i | 0x80;
     }
 
-    // Calculate FCS
-    uint32_t crc = crc32(buf, idx);
-
-    //
-    // Output Packet
-    //
-
-    // Preamble
-    for (int i=0; i<7; i++) {
-        REG_WR(GMII_TX_FIFO_WR, 0x55);
-    }
-
-    // SFD
-    REG_WR(GMII_TX_FIFO_WR, 0xd5);
-
-    // Payload
-    for (int i=0; i<idx; i++) {
-        REG_WR(GMII_TX_FIFO_WR, buf[i]);
-    }
-
-    // FCS + EOP Flag
-    for (int i=0; i<4; i++) {
-        REG_WR(GMII_TX_FIFO_WR, (crc & 0xFF) | ((i == 3) ? 0x100 : 0));
-        crc >>= 8;
-    }
+    gmii_tx_packet(buf, idx);
 }
 
 void gmii_dump_packets()
 {
-    int had_data = 0;
+    int had_data = 0, sfd = 0;
+    uint8_t *rxbuf = (uint8_t*)(DDR_BASE_ADDR + 2048);
 
     while(1){
         unsigned int rx_data = REG_RD(GMII_RX_FIFO_RD);
-        if ((rx_data>>16) == 0){
+        if (((rx_data & 0x10000) == 0) || ((rx_data & 0x200) == 0)){
             if (had_data){
                 print_int(had_data, 1);
+
+                uint32_t packetcrc = rxbuf[had_data - 4] | (rxbuf[had_data - 3] << 8) | (rxbuf[had_data - 2] << 16) | (rxbuf[had_data - 1] << 24);
+                if (rx_data & 0x100) {
+                    print(" -- ERR");
+                } else if (had_data > 4) {
+                    uint32_t crc = crc32(rxbuf, had_data - 4);
+                    print(",");
+                    print_int(crc, 1);
+                    if (crc != packetcrc) {
+                        print(" -- BAD\n\n");
+                        for (int i=0; i<had_data; i++) {
+                            print_byte(rxbuf[i], 1);
+                            print(",");
+                        }
+                        while(1);
+                    }
+
+                }
+
                 print("\n\n");
-                gmii_tx_packet();
+                gmii_tx_test_packet();
             }
             had_data = 0;
+            sfd = 0;
             continue;
         }
 
         if (!had_data){
             print(".");
         }
+
+        if (!sfd) {
+            if ((rx_data & 0xFF) == 0xd5) {
+                sfd = 1;
+            }
+            continue;
+        }
+
+        rxbuf[had_data] = rx_data & 0xFF;
 
         had_data += 1;
 
