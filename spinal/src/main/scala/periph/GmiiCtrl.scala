@@ -105,8 +105,8 @@ case class GmiiTxCtrl() extends Component {
 
         val txClkOut = new ODDR2()
 
-        txClkOut.io.D0 := True
-        txClkOut.io.D1 := False
+        txClkOut.io.D0 := False // Clock inverted to guarantee >2ns setup on the data
+        txClkOut.io.D1 := True
         txClkOut.io.C0 := io.clk_125
         txClkOut.io.C1 := !io.clk_125
         txClkOut.io.CE := True
