@@ -80,10 +80,10 @@ int main() {
 #if 1
     // Basic test that dumps received packets on the GMII interface
     gmii_mdio_init();
-    gmii_reg_dump(0);
-    gmii_print_phy_id(0);
+    //gmii_reg_dump(0);
+    //gmii_print_phy_id(0);
     gmii_wait_auto_neg_complete(0);
-    gmii_reg_dump(0);
+    //gmii_reg_dump(0);
 
     gmii_dump_packets(0);
 #endif

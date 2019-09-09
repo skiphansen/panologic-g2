@@ -5,6 +5,15 @@
 #include "top_defines.h"
 #include "print.h"
 
+// Set to 1 to dump packets
+#define DUMP_RX_PACKETS 0
+#define DUMP_TX_PACKETS 0
+
+#define FILE_BUFFER 0x44000000
+
+static uint8_t myMAC[6] = { 0x00, 0x01, 0x02, 0x03, 0x04, 0x05 };
+static const uint8_t broadcastMAC[6] = { 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF };
+
 static inline uint32_t rdcycle(void) {
     uint32_t cycle;
     asm volatile ("rdcycle %0" : "=r"(cycle));
@@ -31,6 +40,16 @@ static void wait(int cycles)
     while ((rdcycle() - start) <= cycles);
 #endif
 }
+
+typedef enum {
+    eBS_BOOTP_REQ,
+    eBS_ARP,
+    eBS_TFTP_RRQ,
+    eBS_TFTP_XFER,
+    eBS_XFER_DONE
+} EBootState;
+
+static EBootState bootState = eBS_BOOTP_REQ;
 
 void gmii_mdio_init()
 {
@@ -114,6 +133,7 @@ void gmii_phy_identifier(int phy_addr, uint32_t *oui, uint32_t *model_nr, uint32
     *rev_nr   = (rdata3 >> 0) & ((1<<4)-1);
 }
 
+#if 0
 void gmii_reg_dump(int phy_addr)
 {
     int rdata;
@@ -145,6 +165,7 @@ void gmii_reg_dump(int phy_addr)
     rdata = gmii_mdio_rd(phy_addr, 17);
     print("Reg 17: PHY Specific Status   : "); print_int(rdata, 1); print("\n");
 }
+#endif
 
 void gmii_wait_auto_neg_complete(int phy_addr)
 {
@@ -155,6 +176,7 @@ void gmii_wait_auto_neg_complete(int phy_addr)
     } while(!(rdata & (1<<5)));
 }
 
+#if 0
 void gmii_print_phy_id(int phy_addr)
 {
     uint32_t oui, model_nr, rev_nr;
@@ -183,6 +205,7 @@ void gmii_monitor_regs(int phy_addr)
         }
     }
 }
+#endif
 
 const uint32_t crc32_table[256] = {
     0x00000000, 0x77073096, 0xee0e612c, 0x990951ba, 0x076dc419,
@@ -253,6 +276,11 @@ uint32_t crc32(uint8_t *buf, unsigned int len)
 
 void gmii_tx_packet(uint8_t *buf, int len)
 {
+    // Pad out the packet
+    for (; len<60; len++) {
+        buf[len] = 0x00;
+    }
+
     // Calculate FCS
     uint32_t crc = crc32(buf, len);
 
@@ -280,24 +308,390 @@ void gmii_tx_packet(uint8_t *buf, int len)
     }
 }
 
+static uint32_t myIP = 0;
+static uint32_t serverIP = 0;
+static char     bootFile[129] = {0};
+static uint8_t  serverMAC[6] = {0};
+static uint16_t tftpBlock = 0;
+static uint16_t tftpSrcPort = 0;
+
+void send_arp_request(uint32_t targetIP);
+void send_tftp_request(void);
+void send_tftp_ack(void);
+
+void gmii_rx_ip_packet(uint8_t *buf, unsigned int len) {
+    uint8_t proto = buf[23];
+    uint16_t srcPort = (buf[34] << 8) | buf[35];
+    uint16_t destPort = (buf[36] << 8) | buf[37];
+
+    switch (bootState) {
+        case eBS_BOOTP_REQ:
+            // Looking for a BOOTP response
+            if (proto == 17) { // UDP
+                if (srcPort == 67 && destPort == 68 && buf[42] == 0x02) { // BOOTP response
+                    myIP = (buf[58] << 24) | (buf[59] << 16) | (buf[60] << 8) | buf[61];
+                    serverIP = (buf[62] << 24) | (buf[63] << 16) | (buf[64] << 8) | buf[65];
+                    for (int i=0; i<128; i++) {
+                        bootFile[i] = buf[i+0x96];
+                    }
+                    bootFile[128] = 0;
+
+                    bootState = eBS_ARP;
+                    print("BOOTP RESP - IP: ");
+                    print_int(myIP, 1);
+                    print(", Server IP: ");
+                    print_int(serverIP, 1);
+                    print(", Boot File: ");
+                    print(bootFile);
+                    print("\n");
+
+                    send_arp_request(serverIP);
+                }
+            }
+            break;
+
+        case eBS_TFTP_RRQ:
+        case eBS_TFTP_XFER:
+            // Looking for TFTP DATA
+            if (destPort == 12345) {
+                uint16_t opcode = (buf[42] << 8) | buf[43];
+                if (opcode == 0x0003) {
+                    uint16_t block = (buf[44] << 8) | buf[45];
+                    if (block == tftpBlock + 1) {
+                        tftpBlock = block;
+                        uint8_t *outputBuffer = (uint8_t*) (FILE_BUFFER + 512 * (block-1));
+                        for (unsigned int i=0; i<len-46; i++) {
+                            outputBuffer[i] = buf[i+46];
+                        }
+
+                        bootState = (len-46 < 512) ? eBS_XFER_DONE : eBS_TFTP_XFER;
+                    }
+                    tftpSrcPort = srcPort;
+                    print("#");
+                    send_tftp_ack();
+
+                } else if (opcode == 0x0005) {
+                    bootState = eBS_TFTP_RRQ;
+                }
+            }
+            break;
+
+        default:
+            break;
+    }
+}
+
+void gmii_rx_arp_packet(uint8_t *buf, unsigned int len) {
+    uint16_t opcode = (buf[0x14] << 8) | buf[0x15];
+    uint32_t senderIP = (buf[0x1c] << 24) | (buf[0x1d] << 16) | (buf[0x1e] << 8) | buf[0x1f];
+
+    switch (bootState) {
+        case eBS_ARP:
+            // Looking for an ARP response
+            if (opcode == 0x0002 && senderIP == serverIP) {
+                for (int i=0; i<6; i++) {
+                    serverMAC[i] = buf[0x16 + i];
+                }
+                print("ARP Response\n");
+                bootState = eBS_TFTP_RRQ;
+                send_tftp_request();
+            }
+            break;
+
+        default:
+            break;
+    }
+}
+
+void gmii_rx_packet(uint8_t *buf, unsigned int len)
+{
+    for (int i=0; i<6; i++) {
+        if (buf[i] != myMAC[i]) {
+            return;
+        }
+    }
+
+    // Packet is for me
+
+#if 0
+    for (unsigned int i=0; i<len; i++) {
+      print_byte(buf[i], 1);
+      print(",");
+    }
+    print("/n/n");
+#endif
+
+    uint16_t ethertype = (buf[12] << 8) | buf[13];
+
+    switch (ethertype) {
+        case 0x0800: // IP
+            gmii_rx_ip_packet(buf, len);
+            break;
+
+        case 0x0806:
+            gmii_rx_arp_packet(buf, len);
+            break;
+
+        default:
+            break;
+    }
+}
+
+int add_unicast_mac_header(uint8_t *buf, const uint8_t *destMAC, uint16_t ethertype) {
+
+    int idx = 0;
+
+    // Dest MAC
+    for (int i=0; i<6; i++) {
+        buf[idx++] = destMAC[i];
+    }
+
+    // Src MAC
+    for (int i=0; i<6; i++) {
+        buf[idx++] = myMAC[i];
+    }
+
+    // Ethertype
+    buf[idx++] = ethertype >> 8;
+    buf[idx++] = ethertype & 0xFF;
+
+    return idx;
+}
+
+int add_broadcast_mac_header(uint8_t *buf, uint16_t ethertype) {
+    return add_unicast_mac_header(buf, broadcastMAC, ethertype);
+}
+
+int add_ip_header(uint8_t *buf, uint32_t srcIP, uint32_t destIP, uint16_t len, uint8_t proto) {
+    int idx = 0;
+
+    len += 20; // IP header length
+
+    buf[idx++] = 0x45;
+    buf[idx++] = 0x00;
+    buf[idx++] = len >> 8;
+    buf[idx++] = len & 0xFF;
+    buf[idx++] = 0x00; // Identification
+    buf[idx++] = 0x00; // Identification
+    buf[idx++] = 0x40; // Don't fragment
+    buf[idx++] = 0x00;
+    buf[idx++] = 0x01; // TTL
+    buf[idx++] = proto;
+    buf[idx++] = 0x00; // csum
+    buf[idx++] = 0x00; // csum
+    buf[idx++] = srcIP >> 24;
+    buf[idx++] = (srcIP >> 16) & 0xFF;
+    buf[idx++] = (srcIP >> 8) & 0xFF;
+    buf[idx++] = (srcIP & 0xFF);
+    buf[idx++] = destIP >> 24;
+    buf[idx++] = (destIP >> 16) & 0xFF;
+    buf[idx++] = (destIP >> 8) & 0xFF;
+    buf[idx++] = (destIP & 0xFF);
+
+    uint32_t csum = 0;
+    for (int i=0; i<idx; i+=2) {
+        csum += (buf[i] << 8) | buf[i+1];
+    }
+    csum = (csum & 0xFFFF) + (csum >> 16);
+    csum = (csum & 0xFFFF) + (csum >> 16);
+    csum = csum ^ 0xFFFF;
+    buf[10] = (csum >> 8) & 0xFF;
+    buf[11] = csum & 0xFF;
+
+    return idx;
+}
+
+int add_udp_header(uint8_t *buf, uint16_t srcPort, uint16_t destPort, uint16_t len) {
+    int idx = 0;
+
+    len += 8;
+
+    buf[idx++] = srcPort >> 8;
+    buf[idx++] = srcPort & 0xFF;
+    buf[idx++] = destPort >> 8;
+    buf[idx++] = destPort & 0xFF;
+    buf[idx++] = len >> 8;
+    buf[idx++] = len & 0xFF;
+    buf[idx++] = 0x00; // csum
+    buf[idx++] = 0x00; // csum
+
+    return idx;
+}
+
+#define BOOTP_SERVER_PORT 67
+#define BOOTP_CLIENT_PORT 68
+
+#define PROTO_UDP 17
+
+#define UDP_LEN 8
+
+void send_bootp_request(void) {
+    print("BOOTP REQ\n");
+    uint8_t *buf = (uint8_t*)DDR_BASE_ADDR;
+    int idx = 0;
+    int len = 300;
+    idx += add_broadcast_mac_header(&buf[idx], 0x0800);
+    idx += add_ip_header(&buf[idx], 0x00000000, 0xFFFFFFFF, len + UDP_LEN, PROTO_UDP);
+    idx += add_udp_header(&buf[idx], BOOTP_CLIENT_PORT, BOOTP_SERVER_PORT, len);
+
+    buf[idx++] = 0x01; // BOOTP request
+    buf[idx++] = 0x01; // Ethernet
+    buf[idx++] = 0x06; // Ethernet HW address length
+#if 1
+    for (int i=0; i<25; i++) {
+        buf[idx++] = 0x00;
+    }
+#else
+    buf[idx++] = 0x00; // Hops
+    buf[idx++] = 0x00; // transaction id
+    buf[idx++] = 0x00; // transaction id
+    buf[idx++] = 0x00; // transaction id
+    buf[idx++] = 0x00; // transaction id
+    buf[idx++] = 0x00; // seconds since boot
+    buf[idx++] = 0x00; // seconds since boot
+    buf[idx++] = 0x00; // unused
+    buf[idx++] = 0x00; // unused
+    buf[idx++] = 0x00; // client IP
+    buf[idx++] = 0x00; // client IP
+    buf[idx++] = 0x00; // client IP
+    buf[idx++] = 0x00; // client IP
+    buf[idx++] = 0x00; // your IP (filled by server in response)
+    buf[idx++] = 0x00; // your IP (filled by server in response)
+    buf[idx++] = 0x00; // your IP (filled by server in response)
+    buf[idx++] = 0x00; // your IP (filled by server in response)
+    buf[idx++] = 0x00; // server IP (filled by server in response)
+    buf[idx++] = 0x00; // server IP (filled by server in response)
+    buf[idx++] = 0x00; // server IP (filled by server in response)
+    buf[idx++] = 0x00; // server IP (filled by server in response)
+    buf[idx++] = 0x00; // gateway IP (filled by server in response)
+    buf[idx++] = 0x00; // gateway IP (filled by server in response)
+    buf[idx++] = 0x00; // gateway IP (filled by server in response)
+    buf[idx++] = 0x00; // gateway IP (filled by server in response)
+#endif
+
+    // client hardware address
+    for (int i=0; i<6; i++) {
+        buf[idx++] = myMAC[i];
+    }
+
+    // server host name + filename (+10 spare hardware address bytes) + vend
+    for (int i=0; i<10 + 64 + 128 + 64; i++) {
+        buf[idx++] = 0x00;
+    }
+
+    gmii_tx_packet(buf, idx);
+}
+
+void send_arp_request(uint32_t targetIP) {
+    print("ARP REQ - ");
+    print_int(targetIP, 1);
+    print("\n");
+
+    uint8_t *buf = (uint8_t*)DDR_BASE_ADDR;
+    int idx = 0;
+    idx += add_broadcast_mac_header(&buf[idx], 0x0806);
+    buf[idx++] = 0x00; // HW type
+    buf[idx++] = 0x01; // HW type (ethernet)
+    buf[idx++] = 0x08; // Protocol (IPv4)
+    buf[idx++] = 0x00; // Protocol (IPv4)
+    buf[idx++] = 0x06; // HW Address Size
+    buf[idx++] = 0x04; // Protocol Address Size
+    buf[idx++] = 0x00; // Opcode (request)
+    buf[idx++] = 0x01; // Opcode (request)
+    for (int i=0; i<6; i++) {
+        buf[idx++] = myMAC[i];
+    }
+    buf[idx++] = (myIP >> 24) & 0xFF;
+    buf[idx++] = (myIP >> 16) & 0xFF;
+    buf[idx++] = (myIP >>  8) & 0xFF;
+    buf[idx++] = myIP & 0xFF;
+    for (int i=0; i<6; i++) {
+        buf[idx++] = 0x00; // Target MAC
+    }
+
+    buf[idx++] = (targetIP >> 24) & 0xFF;
+    buf[idx++] = (targetIP >> 16) & 0xFF;
+    buf[idx++] = (targetIP >>  8) & 0xFF;
+    buf[idx++] = targetIP & 0xFF;
+
+    gmii_tx_packet(buf, idx);
+}
+
+int strlen(const char* s) {
+    int len = 0;
+    while (s[len++] != 0);
+    return len;
+}
+
+void udp_checksum(uint8_t *buf, int len) {
+    uint32_t csum = 0x11; // Protocol
+    csum += (buf[0x26] << 8) | buf[0x27];
+
+    for (int i=0x1a; i<len; i+=2) {
+        csum += (buf[i] << 8) | buf[i+1];
+    }
+    csum = (csum & 0xFFFF) + (csum >> 16);
+    csum = (csum & 0xFFFF) + (csum >> 16);
+    csum = csum ^ 0xFFFF;
+    buf[0x28] = (csum >> 8) & 0xFF;
+    buf[0x29] = csum & 0xFF;
+}
+
+void send_tftp_request(void) {
+    print("TFTP RRQ\n");
+
+    uint8_t *buf = (uint8_t*)DDR_BASE_ADDR;
+    int idx = 0;
+    int len = 8 + strlen(bootFile);
+    idx += add_unicast_mac_header(&buf[idx], serverMAC, 0x0800);
+    idx += add_ip_header(&buf[idx], myIP, serverIP, len + UDP_LEN, PROTO_UDP);
+    idx += add_udp_header(&buf[idx], 12345, 69, len);
+    buf[idx++] = 0x00;
+    buf[idx++] = 0x01; // RRQ
+    for (int i=0; i<129; i++) {
+        buf[idx++] = bootFile[i];
+        if (bootFile[i] == 0) break;
+    }
+    buf[idx++] = 'o';
+    buf[idx++] = 'c';
+    buf[idx++] = 't';
+    buf[idx++] = 'e';
+    buf[idx++] = 't';
+    buf[idx++] = 0;
+
+    udp_checksum(buf, idx);
+
+    gmii_tx_packet(buf, idx);
+}
+
+void send_tftp_ack(void) {
+
+    //print("ACK - ");
+    //print_int(tftpBlock, 1);
+    //print("\n");
+
+    uint8_t *buf = (uint8_t*)DDR_BASE_ADDR;
+    int idx = 0;
+    int len = 4;
+    idx += add_unicast_mac_header(&buf[idx], serverMAC, 0x0800);
+    idx += add_ip_header(&buf[idx], myIP, serverIP, len + UDP_LEN, PROTO_UDP);
+    idx += add_udp_header(&buf[idx], 12345, tftpSrcPort, len);
+    buf[idx++] = 0x00;
+    buf[idx++] = 0x04; // ACK
+    buf[idx++] = tftpBlock >> 8;
+    buf[idx++] = tftpBlock & 0xFF;
+
+    udp_checksum(buf, idx);
+
+    gmii_tx_packet(buf, idx);
+}
+
 void gmii_tx_test_packet(void)
 {
     uint8_t *buf = (uint8_t*)DDR_BASE_ADDR;
     int idx = 0;
 
-    // Dest MAC
-    for (int i=0; i<6; i++) {
-        buf[idx++] = 0xff;
-    }
-
-    // Src MAC
-    for (int i=0; i<6; i++) {
-        buf[idx++] = i;
-    }
-
-    // Ethertype
-    buf[idx++] = 0x01;
-    buf[idx++] = 0x01;
+    idx += add_broadcast_mac_header(&buf[idx], 0x88b5);
 
     for (int i=0; i<64; i++) {
         buf[idx++] = i | 0x80;
@@ -306,37 +700,79 @@ void gmii_tx_test_packet(void)
     gmii_tx_packet(buf, idx);
 }
 
+void timerAction(void) {
+    switch (bootState) {
+        case eBS_BOOTP_REQ:
+            send_bootp_request();
+            break;
+
+        case eBS_ARP:
+            send_arp_request(serverIP);
+            break;
+
+        case eBS_TFTP_RRQ:
+            send_tftp_request();
+            break;
+
+        case eBS_TFTP_XFER:
+            print("T");
+            send_tftp_ack();
+            break;
+
+        default:
+            break;
+    }
+}
+
 void gmii_dump_packets()
 {
     int had_data = 0, sfd = 0;
     uint8_t *rxbuf = (uint8_t*)(DDR_BASE_ADDR + 2048);
+    uint32_t loopCount = 0;
 
     while(1){
+        if (loopCount % 1000000 == 0) {
+           timerAction();
+        }
+        loopCount++;
+
+        if (bootState == eBS_XFER_DONE) {
+            print("\n\nBooting...\n");
+            void (*bootFunc)(void) = (void (*)(void))FILE_BUFFER;
+            bootFunc();
+        }
+
         unsigned int rx_data = REG_RD(GMII_RX_FIFO_RD);
         if (((rx_data & 0x10000) == 0) || ((rx_data & 0x200) == 0)){
             if (had_data){
+#if DUMP_RX_PACKETS
                 print_int(had_data, 1);
+#endif
 
                 uint32_t packetcrc = rxbuf[had_data - 4] | (rxbuf[had_data - 3] << 8) | (rxbuf[had_data - 2] << 16) | (rxbuf[had_data - 1] << 24);
                 if (rx_data & 0x100) {
+#if DUMP_RX_PACKETS
                     print(" -- ERR");
+#endif
                 } else if (had_data > 4) {
                     uint32_t crc = crc32(rxbuf, had_data - 4);
+#if DUMP_RX_PACKETS
                     print(",");
                     print_int(crc, 1);
+#endif
                     if (crc != packetcrc) {
-                        print(" -- BAD\n\n");
-                        for (int i=0; i<had_data; i++) {
-                            print_byte(rxbuf[i], 1);
-                            print(",");
-                        }
-                        while(1);
+#if DUMP_RX_PACKETS
+                        print(" -- BAD CRC\n\n");
+#endif
+                    } else {
+                        gmii_rx_packet(rxbuf, had_data);
                     }
-
                 }
 
+#if DUMP_RX_PACKETS
                 print("\n\n");
-                gmii_tx_test_packet();
+#endif
+                //gmii_tx_test_packet();
             }
             had_data = 0;
             sfd = 0;
@@ -344,7 +780,9 @@ void gmii_dump_packets()
         }
 
         if (!had_data){
+#if DUMP_RX_PACKETS
             print(".");
+#endif
         }
 
         if (!sfd) {
@@ -358,8 +796,10 @@ void gmii_dump_packets()
 
         had_data += 1;
 
+#if DUMP_RX_PACKETS
         print_byte(rx_data, 1);
         print(",");
+#endif
     }
 }
 

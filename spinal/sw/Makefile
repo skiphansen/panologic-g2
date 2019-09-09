@@ -10,7 +10,7 @@ ASFLAGS         = -march=rv32i -mabi=ilp32
 LD              = $(TARGET)-gcc
 LDFLAGS         = -march=rv32i -mabi=ilp32 -Wl,-Tsections.lds,-Map,progmem.map -ffreestanding -nostartfiles -Wl,--gc-sections
 CC              = $(TARGET)-gcc
-CFLAGS          = -march=rv32i -mabi=ilp32 -Wall -Wextra -pedantic -DFREQ=$(FREQ_PLL)000000 -O2 -ffunction-sections -fdata-sections
+CFLAGS          = -march=rv32i -mabi=ilp32 -Wall -Wextra -pedantic -DFREQ=$(FREQ_PLL)000000 -O2 -ffunction-sections -fdata-sections -msave-restore
 #CFLAGS          = -march=rv32i -mabi=ilp32 -Wall -Wextra -pedantic -DFREQ=$(FREQ_PLL)000000 -Os -lto -msave-restore
 OBJCOPY         = $(TARGET)-objcopy
 OBJDUMP         = $(TARGET)-objdump
