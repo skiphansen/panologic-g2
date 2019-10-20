@@ -89,10 +89,13 @@ case class CpuTop(panoConfig: PanoConfig) extends Component {
       slaves = apbMapping
     )
 
-    val jtag = new BSCAN_SPARTAN6()
-    u_cpu.io.jtag.tdi <> jtag.io.TDI
-    u_cpu.io.jtag.tms <> jtag.io.TMS
-    u_cpu.io.jtag.tck <> jtag.io.TCK
-    u_cpu.io.jtag.tdo <> jtag.io.TDO
+    //============================================================
+    // Debug
+    //============================================================
+    val icon = new ICON(nSlaves = 1, jtagChain = 2)
+    u_cpu.io.jtag.tdi := icon.io.tdi
+    u_cpu.io.jtag.tms := icon.io.cmd_sel(0)(0)
+    u_cpu.io.jtag.tck := icon.io.drck
+    icon.io.tdo(0) := u_cpu.io.jtag.tdo
 
 }
