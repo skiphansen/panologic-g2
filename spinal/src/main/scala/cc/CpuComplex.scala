@@ -22,7 +22,7 @@ case class CpuComplexConfig(
                        pipelineMainBus    : Boolean,
                        pipelineApbBridge  : Boolean,
                        apb3Config         : Apb3Config,
-		       axi4Config         : Axi4Config,
+                       axi4Config         : Axi4Config,
                        cpuPlugins         : ArrayBuffer[Plugin[VexRiscv]]){
 
   require(pipelineApbBridge || pipelineMainBus, "At least pipelineMainBus or pipelineApbBridge should be enable to avoid wipe transactions")
@@ -87,8 +87,8 @@ object CpuComplexConfig{
         axi4Config = Axi4Config(
             addressWidth = 32,
             dataWidth = 32,
-	    idWidth = 4
-	)
+            idWidth = 4
+        )
   )
 
   def fast = {
@@ -114,11 +114,11 @@ case class CpuComplex(config : CpuComplexConfig) extends Component
 
     val io = new Bundle {
         val apb                     = master(Apb3(config.apb3Config))
-	val axiMem1                 = master(Axi4Shared(config.axi4Config))
-	val axiMem2                 = master(Axi4Shared(config.axi4Config))
+        val axiMem1                 = master(Axi4Shared(config.axi4Config))
+        val axiMem2                 = master(Axi4Shared(config.axi4Config))
         val externalInterrupt       = in(Bool)
         val timerInterrupt          = in(Bool)
-	val jtag                    = slave(Jtag())
+        val jtag                    = slave(Jtag())
     }
 
     val core = new Area {

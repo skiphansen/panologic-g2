@@ -21,7 +21,7 @@ class BSCAN_SPARTAN6 (
         val TDI              = out(Bool) // Scan Chain Output. Mirror of the TDI input to the FPGA
         val TMS              = out(Bool) // Test Mode Select
         val UPDATE           = out(Bool) // Scan Register Update instruction
-        val TDO              = in(Bool)  // Scan Chaout INput
+        val TDO              = in(Bool)  // Scan Chain INput
     }
 
     noIoPrefix()

@@ -17,7 +17,7 @@ object JtagUart {
 class JtagUart() extends Component {
     val io = new Bundle {
         val tx = slave(Stream(Bits(8 bits)))
-	val rx = master(Stream(Bits(8 bits)))
+        val rx = master(Stream(Bits(8 bits)))
     }
 
     val jtag = new BSCAN_SPARTAN6(jtagChain = 3)
@@ -34,33 +34,33 @@ class JtagUart() extends Component {
     val jtagArea = new ClockingArea(jtagClock) {
 
         val dr_shift     = Reg(Bits(9 bits)) init(0)
-	val push_valid   = Reg(Bool)         init(False)
-	val push_payload = Reg(Bits(8 bits)) init(0)
+        val push_valid   = Reg(Bool)         init(False)
+        val push_payload = Reg(Bits(8 bits)) init(0)
 
-	rxStreamCC.io.push.valid := push_valid
-	rxStreamCC.io.push.payload := push_payload
+        rxStreamCC.io.push.valid := push_valid
+        rxStreamCC.io.push.payload := push_payload
 
-	when (rxStreamCC.io.push.ready) {
-	    rxStreamCC.io.push.valid := False
-	    push_valid := False
-	}
+        when (rxStreamCC.io.push.ready) {
+            rxStreamCC.io.push.valid := False
+            push_valid := False
+        }
 
-	txStreamCC.io.pop.ready := False;
+        txStreamCC.io.pop.ready := False;
 
         when (jtag.io.SEL) {
             when (jtag.io.CAPTURE) {
                 dr_shift(8)             := txStreamCC.io.pop.valid
-		dr_shift(7 downto 0)    := txStreamCC.io.pop.payload
-		txStreamCC.io.pop.ready := True
+                dr_shift(7 downto 0)    := txStreamCC.io.pop.payload
+                txStreamCC.io.pop.ready := True
             }
             when (jtag.io.SHIFT) {
-                dr_shift := (B(jtag.io.TDI, 9 bits) |<< 8) | (dr_shift |>> 1) 
+                dr_shift := (B(jtag.io.TDI, 9 bits) |<< 8) | (dr_shift |>> 1)
             }
             when (jtag.io.UPDATE) {
-		when (dr_shift(8)) {
-		    push_valid   := True
-		    push_payload := dr_shift(7 downto 0)
-		}
+                when (dr_shift(8)) {
+                    push_valid   := True
+                    push_payload := dr_shift(7 downto 0)
+                }
             }
         }
 
@@ -68,9 +68,9 @@ class JtagUart() extends Component {
     }
 
     def driveFrom(busCtrl: BusSlaveFactory, baseAddress: BigInt) = new Area {
-	
-	busCtrl.createAndDriveFlow(Bits(8 bits), address = 8).toStream >> io.tx
-	busCtrl.readStreamNonBlocking(io.rx, address = 12, validBitOffset = 31, payloadBitOffset = 0)
+
+        busCtrl.createAndDriveFlow(Bits(8 bits), address = 8).toStream >> io.tx
+        busCtrl.readStreamNonBlocking(io.rx, address = 12, validBitOffset = 31, payloadBitOffset = 0)
     }
 }
 
@@ -85,5 +85,3 @@ case class Apb3JtagUart() extends Component
     val busCtrl = Apb3SlaveFactory(io.apb)
     val apb_regs = jtagUart.driveFrom(busCtrl, 0x0)
 }
-
-
