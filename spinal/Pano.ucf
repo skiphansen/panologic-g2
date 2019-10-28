@@ -7,8 +7,9 @@ CONFIG VCCAUX = "2.5";
 # at derived constraints if you add anything but a PERIOD. We create a second TNM_NET for TIG or delays
 
 # 125 MHz System Clock (25 MHz when GMII chip is in reset)
-TIMESPEC TS_OSC_CLK = PERIOD "osc_clk" 125 MHz HIGH 50 %;
-NET "osc_clk" TNM_NET = "osc_clk";
+TIMESPEC TS_OSC_CLK = PERIOD "osc_clk_period" 125 MHz HIGH 50 %;
+NET "osc_clk" TNM_NET = "osc_clk_period";
+NET "osc_clk" TNM_NET = "osc_clk_tnm";
 
 # GMII RX input, driven by GMII chip.
 TIMESPEC TS_GMII_RX_CLK = PERIOD "gmii_rx_clk_period" 125 MHz HIGH 50 %;
@@ -38,6 +39,9 @@ TIMESPEC TS_RX_TO_MAIN = FROM "gmii_rx_clk_tnm" TO "main_clk_tnm" 8 ns DATAPATHO
 
 TIMESPEC TS_MAIN_TO_USB = FROM "main_clk_tnm" TO "ulpi_clk_tnm" 8 ns DATAPATHONLY;
 TIMESPEC TS_USB_TO_MAIN = FROM "ulpi_clk_tnm" TO "main_clk_tnm" 8 ns DATAPATHONLY;
+
+TIMESPEC TS_MAIN_TO_OSC = FROM "main_clk_tnm" TO "osc_clk_tnm" 8 ns DATAPATHONLY;
+TIMESPEC TS_OSC_TO_MAIN = FROM "osc_clk_tnm" TO "main_clk_tnm" 8 ns DATAPATHONLY;
 
 # Reset Signals
 #NET "SYSRST_N" LOC = AB14   | IOSTANDARD = LVCMOS33;
