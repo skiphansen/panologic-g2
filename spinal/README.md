@@ -13,6 +13,8 @@ cd ~/projects/panologic-g2/spinal/fonts
 make
 cd ~/projects/panologic-g2/spinal/sw
 make
+cd ~/projects/panologic-g2/spinal/coregen
+make
 cd ~/projects/panologic-g2/spinal
 make syn
 ```
